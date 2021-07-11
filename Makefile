@@ -123,10 +123,10 @@ EVILWM_CFLAGS = -std=c99 $(CFLAGS) $(WARN)
 EVILWM_LDFLAGS = $(LDFLAGS)
 EVILWM_LDLIBS = -lX11 $(OPT_LDLIBS) $(LDLIBS)
 
-HEADERS = client.h config.h display.h events.h evilwm.h keymap.h list.h \
-	log.h screen.h util.h xalloc.h xconfig.h
+HEADERS = client.h config.h display.h events.h evilwm.h func.h keymap.h \
+	list.h log.h screen.h util.h xalloc.h xconfig.h
 OBJS = client.o client_move.o client_new.o display.o events.o ewmh.o \
-	list.o log.o main.o screen.o util.o xconfig.o xmalloc.o
+	func.o list.o log.o main.o screen.o util.o xconfig.o xmalloc.o
 
 .PHONY: all
 all: evilwm$(EXEEXT)

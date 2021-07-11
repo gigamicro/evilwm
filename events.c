@@ -10,14 +10,9 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h>
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-#include <X11/XKBlib.h>
-#include <X11/keysymdef.h>
 
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
@@ -31,7 +26,7 @@
 #include "events.h"
 #include "evilwm.h"
 #include "ewmh.h"
-#include "keymap.h"
+#include "func.h"
 #include "list.h"
 #include "log.h"
 #include "screen.h"
@@ -43,177 +38,6 @@ int wm_exit;
 // Flags that the client list should be scanned and marked clients removed.
 // Set by unhandled X errors and unmap requests.
 int need_client_tidy = 0;
-
-// Process keyboard events.
-
-static void handle_key_event(XKeyEvent *e) {
-	KeySym key = XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0);
-	struct screen *current_screen = find_current_screen();
-
-	switch (key) {
-		case KEY_NEW:
-			spawn((const char *const *)option.term);
-			break;
-		case KEY_NEXT:
-			client_select_next();
-			if (XGrabKeyboard(display.dpy, e->root, False, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess) {
-				XEvent ev;
-				do {
-					XMaskEvent(display.dpy, KeyPressMask|KeyReleaseMask, &ev);
-					if (ev.type == KeyPress && XkbKeycodeToKeysym(display.dpy, ev.xkey.keycode, 0, 0) == KEY_NEXT)
-						client_select_next();
-				} while (ev.type == KeyPress || XkbKeycodeToKeysym(display.dpy, ev.xkey.keycode, 0, 0) == KEY_NEXT);
-				XUngrabKeyboard(display.dpy, CurrentTime);
-			}
-			clients_tab_order = list_to_head(clients_tab_order, current);
-			break;
-		case KEY_DOCK_TOGGLE:
-			set_docks_visible(current_screen, !current_screen->docks_visible);
-			break;
-		case XK_1: case XK_2: case XK_3: case XK_4:
-		case XK_5: case XK_6: case XK_7: case XK_8:
-			switch_vdesk(current_screen, KEY_TO_VDESK(key));
-			break;
-		case KEY_PREVDESK:
-			if (current_screen->vdesk > 0) {
-				switch_vdesk(current_screen,
-						current_screen->vdesk - 1);
-			}
-			break;
-		case KEY_NEXTDESK:
-			if (current_screen->vdesk < VDESK_MAX) {
-				switch_vdesk(current_screen,
-						current_screen->vdesk + 1);
-			}
-			break;
-		case KEY_TOGGLEDESK:
-			switch_vdesk(current_screen, current_screen->old_vdesk);
-			break;
-		default:
-			break;
-	}
-
-	struct client *c = current;
-	if (c == NULL) return;
-
-	struct monitor *monitor = client_monitor(c, NULL);
-	int width_inc = (c->width_inc > 1) ? c->width_inc : 16;
-	int height_inc = (c->height_inc > 1) ? c->height_inc : 16;
-
-	switch (key) {
-		case KEY_LEFT:
-			if (e->state & altmask) {
-				if ((c->width - width_inc) >= c->min_width)
-					c->width -= width_inc;
-			} else {
-				c->x -= 16;
-			}
-			goto move_client;
-		case KEY_DOWN:
-			if (e->state & altmask) {
-				if (!c->max_height || (c->height + height_inc) <= c->max_height)
-					c->height += height_inc;
-			} else {
-				c->y += 16;
-			}
-			goto move_client;
-		case KEY_UP:
-			if (e->state & altmask) {
-				if ((c->height - height_inc) >= c->min_height)
-					c->height -= height_inc;
-			} else {
-				c->y -= 16;
-			}
-			goto move_client;
-		case KEY_RIGHT:
-			if (e->state & altmask) {
-				if (!c->max_width || (c->width + width_inc) <= c->max_width)
-					c->width += width_inc;
-			} else {
-				c->x += 16;
-			}
-			goto move_client;
-		case KEY_TOPLEFT:
-			c->x = monitor->x + c->border;
-			c->y = monitor->y + c->border;
-			goto move_client;
-		case KEY_TOPRIGHT:
-			c->x = monitor->x + monitor->width - c->width-c->border;
-			c->y = monitor->y + c->border;
-			goto move_client;
-		case KEY_BOTTOMLEFT:
-			c->x = monitor->x + c->border;
-			c->y = monitor->y + monitor->height - c->height-c->border;
-			goto move_client;
-		case KEY_BOTTOMRIGHT:
-			c->x = monitor->x + monitor->width - c->width-c->border;
-			c->y = monitor->y + monitor->height - c->height-c->border;
-			goto move_client;
-		case KEY_KILL:
-			send_wm_delete(c, e->state & altmask);
-			break;
-		case KEY_LOWER: case KEY_ALTLOWER:
-			client_lower(c);
-			break;
-		case KEY_INFO:
-			client_show_info(c, e->keycode);
-			break;
-		case KEY_MAX:
-			client_maximise(c, NET_WM_STATE_TOGGLE, MAXIMISE_HORZ|MAXIMISE_VERT);
-			break;
-		case KEY_MAXVERT:
-			if (e->state & altmask) {
-				client_maximise(c, NET_WM_STATE_TOGGLE, MAXIMISE_HORZ);
-			} else {
-				client_maximise(c, NET_WM_STATE_TOGGLE, MAXIMISE_VERT);
-			}
-			break;
-		case KEY_FIX:
-			if (is_fixed(c)) {
-				client_to_vdesk(c, current_screen->vdesk);
-			} else {
-				client_to_vdesk(c, VDESK_FIXED);
-			}
-			break;
-		default:
-			break;
-	}
-	return;
-
-move_client:
-	if (abs(c->x) == c->border && c->oldw != 0)
-		c->x = 0;
-	if (abs(c->y) == c->border && c->oldh != 0)
-		c->y = 0;
-	client_moveresizeraise(c);
-#ifdef WARP_POINTER
-	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
-#endif
-	discard_enter_events(c);
-	return;
-}
-
-// Handle mousebutton events.
-
-static void handle_button_event(XButtonEvent *e) {
-	struct client *c = find_client(e->window);
-
-	if (c) {
-		switch (e->button) {
-			case Button1:
-				client_move_drag(c, e->button);
-				break;
-			case Button2:
-				client_resize_sweep(c, e->button);
-				break;
-			case Button3:
-				client_lower(c);
-				break;
-			default:
-				break;
-		}
-	}
-}
 
 // Apply the changes from an XWindowChanges struct to a client.
 
@@ -580,10 +404,10 @@ void event_main_loop(void) {
 		if (interruptibleXNextEvent(&ev.xevent)) {
 			switch (ev.xevent.type) {
 			case KeyPress:
-				handle_key_event(&ev.xevent.xkey);
+				func_handle_key(&ev.xevent.xkey);
 				break;
 			case ButtonPress:
-				handle_button_event(&ev.xevent.xbutton);
+				func_handle_button(&ev.xevent.xbutton);
 				break;
 			case ConfigureRequest:
 				handle_configure_request(&ev.xevent.xconfigurerequest);
