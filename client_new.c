@@ -107,8 +107,6 @@ void client_manage_new(Window w, struct screen *s) {
 
 	XUngrabServer(display.dpy);
 
-	c->normal_border = option.bw;
-
 	update_window_type_flags(c, window_type);
 	init_geometry(c);
 
@@ -220,18 +218,8 @@ static void init_geometry(struct client *c) {
 	unsigned long nitems;
 	XWindowAttributes attr;
 
-	// MWM hints seem to be the only way that a window can be flagged to
-	// have no border.
-	PropMwmHints *mprop;
-	if ( (mprop = get_property(c->window, X_ATOM(_MOTIF_WM_HINTS), X_ATOM(_MOTIF_WM_HINTS), &nitems)) ) {
-		if (nitems >= PROP_MWM_HINTS_ELEMENTS
-				&& (mprop->flags & MWM_HINTS_DECORATIONS)
-				&& !(mprop->decorations & MWM_DECOR_ALL)
-				&& !(mprop->decorations & MWM_DECOR_BORDER)) {
-			c->normal_border = 0;
-		}
-		XFree(mprop);
-	}
+	// Normal border size from MWM hints
+	c->normal_border = window_normal_border(c->window);
 
 	// Possible get a value for initial virtual desktop from EWMH hint
 	unsigned long *lprop;
@@ -244,10 +232,6 @@ static void init_geometry(struct client *c) {
 		}
 		XFree(lprop);
 	}
-
-	// Check EWMH properties for window type.  We treat some windows (e.g.,
-	// docks) differently).
-	get_window_type(c);
 
 	// Get current window attributes
 	LOG_XENTER("XGetWindowAttributes(window=%lx)", (unsigned long)c->window);
