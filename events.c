@@ -465,18 +465,13 @@ static void handle_client_message(XClientMessageEvent *e) {
 	if (!c) {
 
 		// _NET_REQUEST_FRAME_EXTENTS is intended to be sent from
-		// unmapped windows.  The reply is just an _estimate_ of the
-		// border widths, so for the moment, just guess that it'll be
-		// the default (it may not be if MWM flags suggest no border).
-		//
-		// XXX: would a client expect a reply if this was sent while
-		// mapped?
-		//
-		// TODO: calculate this according to the logic in
-		// client_manage_new() instead of offering up this "estimate".
+		// unmapped windows.  The reply only needs to be an _estimate_
+		// of the border widths, but calculate it anyway - the only
+		// thing that affects this for us is MWM hints.
 
 		if (e->message_type == X_ATOM(_NET_REQUEST_FRAME_EXTENTS)) {
-			ewmh_set_net_frame_extents(e->window, option.bw);
+			int bw = window_normal_border(e->window);
+			ewmh_set_net_frame_extents(e->window, bw);
 		}
 
 		LOG_LEAVE();
