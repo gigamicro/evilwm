@@ -460,7 +460,7 @@ void client_maximise(struct client *c, int action, int hv) {
 
 void client_select_next(void) {
 	struct list *newl = list_find(clients_tab_order, current);
-	struct client *newc = current;
+	struct client *newc;
 
 	do {
 		if (newl) {
