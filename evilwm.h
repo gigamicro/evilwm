@@ -57,9 +57,6 @@ extern struct options option;
 #endif
 
 extern unsigned numlockmask;
-extern unsigned grabmask1;
-extern unsigned grabmask2;
-extern unsigned altmask;
 
 // Application matching
 

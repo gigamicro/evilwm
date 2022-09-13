@@ -11,8 +11,6 @@
 #ifndef EVILWM_CLIENT_H_
 #define EVILWM_CLIENT_H_
 
-#include <X11/X.h>
-
 struct list;
 struct screen;
 struct monitor;
@@ -26,7 +24,6 @@ struct monitor;
 #define VDESK_NONE  (0xfffffffe)
 #define VDESK_FIXED (0xffffffff)
 #define VDESK_MAX   (option.vdesks - 1)
-#define KEY_TO_VDESK(key) ((key) - XK_1)
 #define valid_vdesk(v) ((v) == VDESK_FIXED || (v) < option.vdesks)
 
 struct client {
@@ -88,7 +85,7 @@ void update_window_type_flags(struct client *c, unsigned type);
 
 void client_resize_sweep(struct client *c, unsigned button);
 void client_move_drag(struct client *c, unsigned button);
-void client_show_info(struct client *c, unsigned keycode);
+void client_show_info(struct client *c, XEvent *e);
 void client_moveresize(struct client *c);
 void client_moveresizeraise(struct client *c);
 void client_maximise(struct client *c, int action, int hv);

@@ -22,6 +22,9 @@ desktopfilesdir = $(datarootdir)/applications
 ############################################################################
 # Features
 
+# Note: some options to reconfigure keyboard mappings have been removed, as the
+# "-bind" option should allow that at runtime.
+
 # Uncomment to enable use of sqrt() function in monitor distance calculations.
 OPT_CPPFLAGS += -DHAVE_MATH_H
 OPT_LDLIBS += -lm
@@ -45,9 +48,6 @@ OPT_CPPFLAGS += -DSOLIDDRAG
 
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
-
-# Uncomment to use Ctrl+Alt+q instead of Ctrl+Alt+Escape.  Useful for Cygwin.
-#OPT_CPPFLAGS += -DKEY_KILL=XK_q
 
 # Uncomment to include whatever debugging messages I've left in this release.
 #OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging
@@ -123,9 +123,9 @@ EVILWM_CFLAGS = -std=c99 $(CFLAGS) $(WARN)
 EVILWM_LDFLAGS = $(LDFLAGS)
 EVILWM_LDLIBS = -lX11 $(OPT_LDLIBS) $(LDLIBS)
 
-HEADERS = client.h config.h display.h events.h evilwm.h func.h keymap.h \
+HEADERS = bind.h client.h config.h display.h events.h evilwm.h func.h \
 	list.h log.h screen.h util.h xalloc.h xconfig.h
-OBJS = client.o client_move.o client_new.o display.o events.o ewmh.o \
+OBJS = bind.o client.o client_move.o client_new.o display.o events.o ewmh.o \
 	func.o list.o log.o main.o screen.o util.o xconfig.o xmalloc.o
 
 .PHONY: all

@@ -21,12 +21,12 @@
 #include <X11/extensions/Xrandr.h>
 #endif
 
+#include "bind.h"
 #include "client.h"
 #include "display.h"
 #include "events.h"
 #include "evilwm.h"
 #include "ewmh.h"
-#include "func.h"
 #include "list.h"
 #include "log.h"
 #include "screen.h"
@@ -241,7 +241,7 @@ static void handle_mappingnotify_event(XMappingEvent *e) {
 	if (e->request == MappingKeyboard) {
 		int i;
 		for (i = 0; i < display.nscreens; i++) {
-			grab_keys_for_screen(&display.screens[i]);
+			bind_grab_for_screen(&display.screens[i]);
 		}
 	}
 }
@@ -404,10 +404,10 @@ void event_main_loop(void) {
 		if (interruptibleXNextEvent(&ev.xevent)) {
 			switch (ev.xevent.type) {
 			case KeyPress:
-				func_handle_key(&ev.xevent.xkey);
+				bind_handle_key(&ev.xevent.xkey);
 				break;
 			case ButtonPress:
-				func_handle_button(&ev.xevent.xbutton);
+				bind_handle_button(&ev.xevent.xbutton);
 				break;
 			case ConfigureRequest:
 				handle_configure_request(&ev.xevent.xconfigurerequest);

@@ -16,6 +16,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "bind.h"
 #include "client.h"
 #include "display.h"
 #include "events.h"
@@ -42,17 +43,16 @@ struct options option = {
 #endif
 };
 
+static struct list *opt_bind = NULL;
 static char *opt_grabmask1 = NULL;
 static char *opt_grabmask2 = NULL;
 static char *opt_altmask = NULL;
 
 unsigned numlockmask = 0;
-unsigned grabmask1 = ControlMask|Mod1Mask;
-unsigned grabmask2 = Mod1Mask;
-unsigned altmask = ShiftMask;
 
 struct list *applications = NULL;
 
+static void set_bind(const char *arg);
 static void set_app(const char *arg);
 static void set_app_geometry(const char *arg);
 static void set_app_dock(void);
@@ -73,6 +73,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_STRING,   "mask1",        { .s = &opt_grabmask1 } },
 	{ XCONFIG_STRING,   "mask2",        { .s = &opt_grabmask2 } },
 	{ XCONFIG_STRING,   "altmask",      { .s = &opt_altmask } },
+	{ XCONFIG_CALL_1,   "bind",         { .c1 = &set_bind } },
 	{ XCONFIG_CALL_1,   "app",          { .c1 = &set_app } },
 	{ XCONFIG_CALL_1,   "geometry",     { .c1 = &set_app_geometry } },
 	{ XCONFIG_CALL_1,   "g",            { .c1 = &set_app_geometry } },
@@ -88,7 +89,6 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_END, NULL, { .i = NULL } }
 };
 
-static unsigned parse_modifiers(char *s);
 static void handle_signal(int signo);
 
 static void helptext(void) {
@@ -112,6 +112,7 @@ static void helptext(void) {
 "  --mask1 MASK        modifiers for most keyboard controls [control+alt]\n"
 "  --mask2 MASK        modifiers for mouse button controls [alt]\n"
 "  --altmask MASK      modifiers selecting alternate control behaviour\n"
+"  --bind CTL[=FUNC]   bind (or unbind) input to window manager function\n"
 
 "\n Application matching options:\n"
 "  --app NAME/CLASS      match application by instance name & class\n"
@@ -124,7 +125,18 @@ static void helptext(void) {
 "  -h, --help      display this help and exit\n"
 "  -V, --version   output version information and exit\n"
 
-"\nModifiers: shift, control, alt, mod1..mod5\n"
+"\nWhen binding a control, CTL contains a (case-sensitive) list of modifiers,\n"
+"buttons or keys (using the X11 keysym name) and FUNC lists a function\n"
+"name and optional extra flags.  List entries can be separated with ','\n"
+"or '+'.  If FUNC is missing or empty, the control is unbound.  Modifiers are\n"
+"ignored when binding buttons.\n"
+
+"\nModifiers: mask1, mask2, altmask, shift, control, alt, mod1..mod5\n"
+"Buttons: button1..button5\n"
+"Functions: delete, dock, fix, info, kill, lower, move, next, resize,\n"
+"           spawn, vdesk\n"
+"Flags: up, down, left, right, top, bottom, relative (rel), drag, toggle,\n"
+"       vertical (v), horizontal (h)\n"
 
 	);
 }
@@ -180,12 +192,23 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (opt_grabmask1)
-		grabmask1 = parse_modifiers(opt_grabmask1);
-	if (opt_grabmask2)
-		grabmask2 = parse_modifiers(opt_grabmask2);
-	if (opt_altmask)
-		altmask = parse_modifiers(opt_altmask);
+	bind_modifier("mask1", opt_grabmask1);
+	bind_modifier("mask2", opt_grabmask2);
+	bind_modifier("altmask", opt_altmask);
+
+	bind_reset();
+	while (opt_bind) {
+		char *arg = opt_bind->data;
+		opt_bind = list_delete(opt_bind, arg);
+		char *ctlstr = strtok(arg, "=");
+		if (!ctlstr) {
+			free(arg);
+			continue;
+		}
+		char *funcstr = strtok(NULL, "");
+		bind_control(ctlstr, funcstr);
+		free(arg);
+	}
 
 	if (!display.dpy) {
 		// Open display.  Manages all eligible clients across all screens.
@@ -205,6 +228,13 @@ int main(int argc, char *argv[]) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Option parsing callbacks
+
+static void set_bind(const char *arg) {
+	char *argdup = xstrdup(arg);
+	if (!argdup)
+		return;
+	opt_bind = list_prepend(opt_bind, argdup);
+}
 
 static void set_app(const char *arg) {
 	struct application *new = xmalloc(sizeof(struct application));
@@ -255,42 +285,6 @@ static void set_app_fixed(void) {
 		struct application *app = applications->data;
 		app->vdesk = VDESK_FIXED;
 	}
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// Used for overriding the default key modifiers
-
-static unsigned parse_modifiers(char *s) {
-	static struct {
-		const char *name;
-		unsigned mask;
-	} modifiers[9] = {
-		{ "shift", ShiftMask },
-		{ "lock", LockMask },
-		{ "control", ControlMask },
-		{ "alt", Mod1Mask },
-		{ "mod1", Mod1Mask },
-		{ "mod2", Mod2Mask },
-		{ "mod3", Mod3Mask },
-		{ "mod4", Mod4Mask },
-		{ "mod5", Mod5Mask }
-	};
-
-	char *tmp = strtok(s, ",+");
-	if (!tmp)
-		return 0;
-
-	unsigned ret = 0;
-	do {
-		for (int i = 0; i < 9; i++) {
-			if (!strcmp(modifiers[i].name, tmp))
-				ret |= modifiers[i].mask;
-		}
-		tmp = strtok(NULL, ",+");
-	} while (tmp);
-
-	return ret;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

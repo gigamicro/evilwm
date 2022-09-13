@@ -15,6 +15,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "bind.h"
 #include "client.h"
 #include "display.h"
 #include "evilwm.h"
@@ -314,9 +315,18 @@ static Bool predicate_keyrepeatpress(Display *dummy, XEvent *ev, XPointer arg) {
 // key release is followed by a key press with the same code and timestamp,
 // which indicates autorepeat.
 
-void client_show_info(struct client *c, unsigned keycode) {
-	if (XGrabKeyboard(display.dpy, c->screen->root, False, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)
-		return;
+void client_show_info(struct client *c, XEvent *e) {
+	unsigned input;
+
+	if (e->type == KeyPress) {
+		input = e->xkey.keycode;
+		if (XGrabKeyboard(display.dpy, c->screen->root, False, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)
+			return;
+	} else {
+		input = e->xbutton.button;
+		if (!grab_pointer(c->screen->root, None))
+			return;
+	}
 
 #ifdef INFOBANNER
 	create_info_window(c);
@@ -327,12 +337,18 @@ void client_show_info(struct client *c, unsigned keycode) {
 
 	for (;;) {
 		XEvent ev;
-		XMaskEvent(display.dpy, KeyReleaseMask, &ev);
-		if (ev.xkey.keycode != keycode)
-			continue;
-		if (XCheckIfEvent(display.dpy, &ev, predicate_keyrepeatpress, (XPointer)&ev)) {
-			// Autorepeat keypress detected - ignore!
-			continue;
+		if (e->type == KeyPress) {
+			XMaskEvent(display.dpy, KeyReleaseMask, &ev);
+			if (ev.xkey.keycode != input)
+				continue;
+			if (XCheckIfEvent(display.dpy, &ev, predicate_keyrepeatpress, (XPointer)&ev)) {
+				// Autorepeat keypress detected - ignore!
+				continue;
+			}
+		} else {
+			XMaskEvent(display.dpy, ButtonReleaseMask, &ev);
+			if (ev.xbutton.button != input)
+				continue;
 		}
 		break;
 	}
@@ -344,7 +360,11 @@ void client_show_info(struct client *c, unsigned keycode) {
 	XUngrabServer(display.dpy);
 #endif
 
-	XUngrabKeyboard(display.dpy, CurrentTime);
+	if (e->type == KeyPress) {
+		XUngrabKeyboard(display.dpy, CurrentTime);
+	} else {
+		XUngrabPointer(display.dpy, CurrentTime);
+	}
 }
 
 // Move window to (potentially updated) client coordinates.

@@ -21,6 +21,7 @@
 #include <X11/extensions/shape.h>
 #endif
 
+#include "bind.h"
 #include "client.h"
 #include "display.h"
 #include "evilwm.h"
@@ -331,26 +332,6 @@ static void init_geometry(struct client *c) {
 	client_gravitate(c, c->border);
 }
 
-// Wraps XGrabButton() to grab button presses on a window with or without
-// CapsLock or NumLock.
-
-static void grab_button(unsigned button, unsigned modifiers, Window w) {
-	XGrabButton(display.dpy, button, modifiers, w,
-		    False, ButtonPressMask | ButtonReleaseMask,
-		    GrabModeAsync, GrabModeSync, None, None);
-	XGrabButton(display.dpy, button, modifiers|LockMask, w,
-		    False, ButtonPressMask | ButtonReleaseMask,
-		    GrabModeAsync, GrabModeSync, None, None);
-	if (numlockmask) {
-		XGrabButton(display.dpy, button, modifiers|numlockmask, w,
-			    False, ButtonPressMask | ButtonReleaseMask,
-			    GrabModeAsync, GrabModeSync, None, None);
-		XGrabButton(display.dpy, button, modifiers|numlockmask|LockMask, w,
-			    False, ButtonPressMask | ButtonReleaseMask,
-			    GrabModeAsync, GrabModeSync, None, None);
-	}
-}
-
 // Create parent window for a client and reparent.
 
 static void reparent(struct client *c) {
@@ -385,6 +366,5 @@ static void reparent(struct client *c) {
 	XMapWindow(display.dpy, c->window);
 
 	// Grab mouse button actions on the parent window
-	grab_button(AnyButton, grabmask2, c->parent);
-	grab_button(AnyButton, grabmask2|altmask, c->parent);
+	bind_grab_for_client(c);
 }
