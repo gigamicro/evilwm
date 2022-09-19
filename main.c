@@ -27,6 +27,9 @@
 
 #define CONFIG_FILE ".evilwmrc"
 
+#define xstr(s) str(s)
+#define str(s) #s
+
 struct options option = {
 	.bw = DEF_BW,
 
@@ -90,16 +93,39 @@ static void handle_signal(int signo);
 
 static void helptext(void) {
 	puts(
-"usage: evilwm [-display display] [-term termprog] [-fn fontname]\n"
-"              [-fg foreground] [-fc fixed] [-bg background] [-bw borderwidth]\n"
-"              [-mask1 modifiers] [-mask2 modifiers] [-altmask modifiers]\n"
-"              [-snap num] [-numvdesks num] [-wholescreen]\n"
-"              [-app name/class] [-g geometry] [-dock] [-v vdesk] [-fixed]\n"
-"             "
+"Usage: evilwm [OPTION]...\n"
+"evilwm is a minimalist window manager for X11.\n"
+"\n Options:\n"
+"  --display DISPLAY   X display [from environment]\n"
+"  --term PROGRAM      binary used to spawn terminal [" DEF_TERM "]\n"
+"  --fn FONTNAME       font used to display text [" DEF_FONT "]\n"
+"  --fg COLOUR         colour of active window frames [" DEF_FG "]\n"
+"  --fc COLOUR         colour of fixed window frames [" DEF_FC "]\n"
+"  --bg COLOUR         colour of inactive window frames [" DEF_BG "]\n"
+"  --bw PIXELS         window border width [" xstr(DEF_BW) "]\n"
+"  --snap PIXELS       snap distance when dragging windows [0; disabled]\n"
+"  --wholescreen       ignore monitor geometries when maximising\n"
+"  --numvdesks N       total number of virtual desktops [8]\n"
 #ifdef SOLIDDRAG
-" [-nosoliddrag]"
+"  --nosoliddrag       draw outline when moving or resizing\n"
 #endif
-" [-V]"
+"  --mask1 MASK        modifiers for most keyboard controls [control+alt]\n"
+"  --mask2 MASK        modifiers for mouse button controls [alt]\n"
+"  --altmask MASK      modifiers selecting alternate control behaviour\n"
+
+"\n Application matching options:\n"
+"  --app NAME/CLASS      match application by instance name & class\n"
+"    -g, --geometry GEOM   apply X geometry to matched application\n"
+"        --dock            treat matched app as a dock\n"
+"    -v, --vdesk VDESK     move app to numbered vdesk (indexed from 0)\n"
+"    -f, --fixed           matched app should start fixed\n"
+
+"\n Other options:\n"
+"  -h, --help      display this help and exit\n"
+"  -V, --version   output version information and exit\n"
+
+"\nModifiers: shift, control, alt, mod1..mod5\n"
+
 	);
 }
 
@@ -136,6 +162,7 @@ int main(int argc, char *argv[]) {
 	ret = xconfig_parse_cli(evilwm_options, argc, argv, &argn);
 	if (ret == XCONFIG_MISSING_ARG) {
 		fprintf(stderr, "%s: missing argument to `%s'\n", argv[0], argv[argn]);
+		fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
 		exit(1);
 	} else if (ret == XCONFIG_BAD_OPTION) {
 		if (0 == strcmp(argv[argn], "-h")
@@ -147,7 +174,8 @@ int main(int argc, char *argv[]) {
 			LOG_INFO("evilwm version " VERSION "\n");
 			exit(0);
 		} else {
-			helptext();
+			fprintf(stderr, "%s: unrecognised option '%s'\n", argv[0], argv[argn]);
+			fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
 			exit(1);
 		}
 	}
