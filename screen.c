@@ -235,26 +235,31 @@ void screen_probe_monitors(struct screen *s) {
 		LOG_XENTER("XRRGetMonitors(screen=%d)", s->screen);
 		monitors = XRRGetMonitors(display.dpy, s->root, True, &nmonitors);
 		if (monitors) {
+			struct monitor *new_monitors = s->monitors;
 			if (nmonitors != s->nmonitors) {
 				// allocating in multiple of 4 should stop us
 				// having to reallocate at all in the most
 				// common uses
 				int n = (nmonitors | 3) + 1;
-				s->monitors = realloc(s->monitors, n * sizeof(struct monitor));
+				new_monitors = realloc(s->monitors, n * sizeof(struct monitor));
 			}
-			for (int i = 0; i < nmonitors; i++) {
-				LOG_XDEBUG("monitor %d: %dx%d+%d+%d\n", i, monitors[i].width, monitors[i].height, monitors[i].x, monitors[i].y);
-				s->monitors[i].x = monitors[i].x;
-				s->monitors[i].y = monitors[i].y;
-				s->monitors[i].width = monitors[i].width;
-				s->monitors[i].height = monitors[i].height;
-				s->monitors[i].area = monitors[i].width * monitors[i].height;
+			if (new_monitors) {
+				s->monitors = new_monitors;
+				for (int i = 0; i < nmonitors; i++) {
+					LOG_XDEBUG("monitor %d: %dx%d+%d+%d\n", i, monitors[i].width, monitors[i].height, monitors[i].x, monitors[i].y);
+					s->monitors[i].x = monitors[i].x;
+					s->monitors[i].y = monitors[i].y;
+					s->monitors[i].width = monitors[i].width;
+					s->monitors[i].height = monitors[i].height;
+					s->monitors[i].area = monitors[i].width * monitors[i].height;
+				}
+				s->nmonitors = nmonitors;
 			}
-			s->nmonitors = nmonitors;
 			LOG_XLEAVE();
 			XRRFreeMonitors(monitors);
 			return;
 		}
+		LOG_XLEAVE();
 	}
 #endif
 

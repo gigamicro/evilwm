@@ -53,10 +53,12 @@ void ewmh_set_screen_workarea(struct screen *s) {
 void ewmh_set_net_client_list(struct screen *s) {
 	Window *windows = alloc_window_array();
 	int i = 0;
-	for (struct list *iter = clients_mapping_order; iter; iter = iter->next) {
-		struct client *c = iter->data;
-		if (c->screen == s) {
-			windows[i++] = c->window;
+	if (windows) {
+		for (struct list *iter = clients_mapping_order; iter; iter = iter->next) {
+			struct client *c = iter->data;
+			if (c->screen == s) {
+				windows[i++] = c->window;
+			}
 		}
 	}
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST),
@@ -70,10 +72,12 @@ void ewmh_set_net_client_list(struct screen *s) {
 void ewmh_set_net_client_list_stacking(struct screen *s) {
 	Window *windows = alloc_window_array();
 	int i = 0;
-	for (struct list *iter = clients_stacking_order; iter; iter = iter->next) {
-		struct client *c = iter->data;
-		if (c->screen == s) {
-			windows[i++] = c->window;
+	if (windows) {
+		for (struct list *iter = clients_stacking_order; iter; iter = iter->next) {
+			struct client *c = iter->data;
+			if (c->screen == s) {
+				windows[i++] = c->window;
+			}
 		}
 	}
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST_STACKING),
