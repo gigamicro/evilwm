@@ -170,7 +170,7 @@ BUGS
        The author's idea of friendly may differ to that of many other people.
 
 LICENCE
-       Copyright (C) 1999-2021 Ciaran Anscomb <evilwm@6809.org.uk>
+       Copyright (C) 1999-2022 Ciaran Anscomb <evilwm@6809.org.uk>
 
        This is free software. You can do what you want to it, but if it breaks
        something,  you get to pay for the counselling. The code was originally
@@ -209,4 +209,4 @@ SEE ALSO
 
 
 
-evilwm-1.4                         July 2021                         evilwm(1)
+evilwm-1.4                      September 2022                       evilwm(1)
