@@ -142,7 +142,7 @@ void ewmh_set_net_wm_desktop(struct client *c) {
 			(unsigned char *)&vdesk, 1);
 }
 
-// Check _NET_WM_WINDOW_TYPE property and built a bitmask of EWMH_WINDOW_TYPE_*
+// Check _NET_WM_WINDOW_TYPE property and build a bitmask of EWMH_WINDOW_TYPE_*
 
 unsigned ewmh_get_net_wm_window_type(Window w) {
 	Atom *aprop;
