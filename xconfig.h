@@ -54,4 +54,7 @@ enum xconfig_result xconfig_parse_cli(struct xconfig_option *options,
 
 void xconfig_set_option(struct xconfig_option *options, const char *optstr, const char *arg);
 
+// Free all allocated strings pointed to by options
+void xconfig_free(struct xconfig_option *options);
+
 #endif
