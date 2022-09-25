@@ -8,10 +8,14 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "display.h"
 #include "log.h"
 
 #if defined(DEBUG) || defined(XDEBUG)
