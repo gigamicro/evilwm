@@ -33,7 +33,7 @@
 #include "util.h"
 
 // Event loop will run until this flag is set
-int wm_exit;
+_Bool end_event_loop;
 
 // Flags that the client list should be scanned and marked clients removed.
 // Set by unhandled X errors and unmap requests.
@@ -400,7 +400,7 @@ void event_main_loop(void) {
 	} ev;
 
 	// Main event loop
-	while (!wm_exit) {
+	while (!end_event_loop) {
 		if (interruptibleXNextEvent(&ev.xevent)) {
 			switch (ev.xevent.type) {
 			case KeyPress:

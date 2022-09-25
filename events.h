@@ -11,7 +11,7 @@
 #include <X11/Xdefs.h>
 
 // Event loop will run until this flag is set
-extern int wm_exit;
+extern _Bool end_event_loop;
 
 // Flags that the client list should be scanned and marked clients removed.
 // Set by unhandled X errors and unmap requests.

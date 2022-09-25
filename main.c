@@ -31,17 +31,10 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-struct options option = {
-	.bw = DEF_BW,
+// WM will manage/process events/unmanage until this flag is set
+static _Bool wm_exit;
 
-	.vdesks = 8,
-	.snap = 0,
-	.wholescreen = 0,
-
-#ifdef SOLIDDRAG
-	.no_solid_drag = 0,
-#endif
-};
+struct options option;
 
 static struct list *opt_bind = NULL;
 static char *opt_grabmask1 = NULL;
@@ -152,75 +145,105 @@ int main(int argc, char *argv[]) {
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGHUP, &act, NULL);
 
-	// Default options
-	xconfig_set_option(evilwm_options, "display", "");
-	xconfig_set_option(evilwm_options, "fn", DEF_FONT);
-	xconfig_set_option(evilwm_options, "fg", DEF_FG);
-	xconfig_set_option(evilwm_options, "bg", DEF_BG);
-	xconfig_set_option(evilwm_options, "fc", DEF_FC);
-	xconfig_set_option(evilwm_options, "term", DEF_TERM);
+	// Run until something signals to quit.
+	wm_exit = 0;
+	while (!wm_exit) {
+		end_event_loop = 0;
 
-	// Read configuration file
-	const char *home = getenv("HOME");
-	if (home) {
-		char *conffile = xmalloc(strlen(home) + sizeof(CONFIG_FILE) + 2);
-		strcpy(conffile, home);
-		strcat(conffile, "/" CONFIG_FILE);
-		xconfig_parse_file(evilwm_options, conffile);
-		free(conffile);
-	}
+		option = (struct options) {
+			.bw = DEF_BW,
 
-	// Parse CLI options
-	ret = xconfig_parse_cli(evilwm_options, argc, argv, &argn);
-	if (ret == XCONFIG_MISSING_ARG) {
-		fprintf(stderr, "%s: missing argument to `%s'\n", argv[0], argv[argn]);
-		fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
-		exit(1);
-	} else if (ret == XCONFIG_BAD_OPTION) {
-		if (0 == strcmp(argv[argn], "-h")
-		    || 0 == strcmp(argv[argn], "--help")) {
-			helptext();
-			exit(0);
-		} else if (0 == strcmp(argv[argn], "-V")
-			   || 0 == strcmp(argv[argn], "--version")) {
-			LOG_INFO("evilwm version " VERSION "\n");
-			exit(0);
-		} else {
-			fprintf(stderr, "%s: unrecognised option '%s'\n", argv[0], argv[argn]);
+			.vdesks = 8,
+			.snap = 0,
+			.wholescreen = 0,
+
+#ifdef SOLIDDRAG
+			.no_solid_drag = 0,
+#endif
+		};
+
+		// Default options
+		xconfig_set_option(evilwm_options, "display", "");
+		xconfig_set_option(evilwm_options, "fn", DEF_FONT);
+		xconfig_set_option(evilwm_options, "fg", DEF_FG);
+		xconfig_set_option(evilwm_options, "bg", DEF_BG);
+		xconfig_set_option(evilwm_options, "fc", DEF_FC);
+		xconfig_set_option(evilwm_options, "term", DEF_TERM);
+
+		// Read configuration file
+		const char *home = getenv("HOME");
+		if (home) {
+			char *conffile = xmalloc(strlen(home) + sizeof(CONFIG_FILE) + 2);
+			strcpy(conffile, home);
+			strcat(conffile, "/" CONFIG_FILE);
+			xconfig_parse_file(evilwm_options, conffile);
+			free(conffile);
+		}
+
+		// Parse CLI options
+		ret = xconfig_parse_cli(evilwm_options, argc, argv, &argn);
+		if (ret == XCONFIG_MISSING_ARG) {
+			fprintf(stderr, "%s: missing argument to `%s'\n", argv[0], argv[argn]);
 			fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
 			exit(1);
+		} else if (ret == XCONFIG_BAD_OPTION) {
+			if (0 == strcmp(argv[argn], "-h")
+			    || 0 == strcmp(argv[argn], "--help")) {
+				helptext();
+				exit(0);
+			} else if (0 == strcmp(argv[argn], "-V")
+				   || 0 == strcmp(argv[argn], "--version")) {
+				LOG_INFO("evilwm version " VERSION "\n");
+				exit(0);
+			} else {
+				fprintf(stderr, "%s: unrecognised option '%s'\n", argv[0], argv[argn]);
+				fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
+				exit(1);
+			}
 		}
-	}
 
-	bind_modifier("mask1", opt_grabmask1);
-	bind_modifier("mask2", opt_grabmask2);
-	bind_modifier("altmask", opt_altmask);
+		bind_modifier("mask1", opt_grabmask1);
+		bind_modifier("mask2", opt_grabmask2);
+		bind_modifier("altmask", opt_altmask);
 
-	bind_reset();
-	while (opt_bind) {
-		char *arg = opt_bind->data;
-		opt_bind = list_delete(opt_bind, arg);
-		char *ctlstr = strtok(arg, "=");
-		if (!ctlstr) {
+		bind_reset();
+		while (opt_bind) {
+			char *arg = opt_bind->data;
+			opt_bind = list_delete(opt_bind, arg);
+			char *ctlstr = strtok(arg, "=");
+			if (!ctlstr) {
+				free(arg);
+				continue;
+			}
+			char *funcstr = strtok(NULL, "");
+			bind_control(ctlstr, funcstr);
 			free(arg);
-			continue;
 		}
-		char *funcstr = strtok(NULL, "");
-		bind_control(ctlstr, funcstr);
-		free(arg);
+
+		if (!display.dpy) {
+			// Open display.  Manages all eligible clients across all screens.
+			display_open();
+		}
+
+		event_main_loop();
+
+		// Close display.  This will cleanly unmanage all windows.
+		display_close();
+
+		// Free any allocated strings in parsed options
+		xconfig_free(evilwm_options);
+
+		// Free application configuration
+		while (applications) {
+			struct application *app = applications->data;
+			applications = list_delete(applications, app);
+			if (app->res_name)
+				free(app->res_name);
+			if (app->res_class)
+				free(app->res_class);
+			free(app);
+		}
 	}
-
-	if (!display.dpy) {
-		// Open display.  Manages all eligible clients across all screens.
-		display_open();
-	}
-
-	// Run event look until something signals to quit.
-	wm_exit = 0;
-	event_main_loop();
-
-	// Close display.  This will cleanly unmanage all windows.
-	display_close();
 
 	return 0;
 }
@@ -246,13 +269,11 @@ static void set_app(const char *arg) {
 	if ((tmp = strchr(arg, '/'))) {
 		*(tmp++) = 0;
 	}
-	if (strlen(arg) > 0) {
-		new->res_name = xmalloc(strlen(arg)+1);
-		strcpy(new->res_name, arg);
+	if (*arg) {
+		new->res_name = xstrdup(arg);
 	}
-	if (tmp && strlen(tmp) > 0) {
-		new->res_class = xmalloc(strlen(tmp)+1);
-		strcpy(new->res_class, tmp);
+	if (tmp && *tmp) {
+		new->res_class = xstrdup(tmp);
 	}
 	applications = list_prepend(applications, new);
 }
@@ -292,6 +313,8 @@ static void set_app_fixed(void) {
 // Signals configured in main() trigger a clean shutdown
 
 static void handle_signal(int signo) {
-	(void)signo;  // unused
-	wm_exit = 1;
+	if (signo != SIGHUP) {
+		wm_exit = 1;
+	}
+	end_event_loop = 1;
 }
