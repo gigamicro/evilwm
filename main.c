@@ -273,7 +273,7 @@ static void set_app_dock(void) {
 }
 
 static void set_app_vdesk(const char *arg) {
-	unsigned v = atoi(arg);
+	unsigned v = strtoul(arg, NULL, 0);
 	if (applications && valid_vdesk(v)) {
 		struct application *app = applications->data;
 		app->vdesk = v;

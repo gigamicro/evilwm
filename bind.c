@@ -370,7 +370,7 @@ void bind_control(const char *ctlname, const char *func) {
 		// a simple number?
 		if (*tmp >= '0' && *tmp <= '9') {
 			newbind->flags &= ~FL_VALUEMASK;
-			newbind->flags |= atoi(tmp) & FL_VALUEMASK;
+			newbind->flags |= strtol(tmp, NULL, 0) & FL_VALUEMASK;
 			continue;
 		}
 
