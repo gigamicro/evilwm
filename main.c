@@ -137,6 +137,7 @@ static void helptext(void) {
 int main(int argc, char *argv[]) {
 	struct sigaction act;
 	int argn = 1, ret;
+	Window old_current_window = None;
 
 	act.sa_handler = handle_signal;
 	sigemptyset(&act.sa_mask);
@@ -148,6 +149,7 @@ int main(int argc, char *argv[]) {
 	// Run until something signals to quit.
 	wm_exit = 0;
 	while (!wm_exit) {
+
 		option = (struct options) {
 			.bw = DEF_BW,
 
@@ -226,9 +228,19 @@ int main(int argc, char *argv[]) {
 		// Manage all eligible clients across all screens
 		display_manage_clients();
 
+		// Restore "old current window", if known
+		if (old_current_window != None) {
+			struct client *c = find_client(old_current_window);
+			if (c)
+				select_client(c);
+		}
+
 		// Event loop will run until interrupted
 		end_event_loop = 0;
 		event_main_loop();
+
+		// Record "old current window" across SIGHUPs
+		old_current_window = current ? current->window : None;
 
 		// Important to clean up anything now that might be reallocated
 		// after rereading config, re-managing windows, etc.
