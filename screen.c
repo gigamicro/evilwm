@@ -111,26 +111,6 @@ void screen_init(struct screen *s) {
 	s->active = None;
 	s->docks_visible = 1;
 
-	// Scan all the windows on this screen
-	LOG_XENTER("XQueryTree(screen=%d)", i);
-	unsigned nwins;
-	Window dw1, dw2, *wins;
-	XQueryTree(display.dpy, s->root, &dw1, &dw2, &wins, &nwins);
-	LOG_XDEBUG("%d windows\n", nwins);
-	LOG_XLEAVE();
-
-	// Manage all relevant windows
-	for (unsigned j = 0; j < nwins; j++) {
-		XWindowAttributes winattr;
-		XGetWindowAttributes(display.dpy, wins[j], &winattr);
-		// Override redirect implies a pop-up that we should ignore.
-		// If map_state is not IsViewable, it shouldn't be shown right
-		// now, so don't try to manage it.
-		if (!winattr.override_redirect && winattr.map_state == IsViewable)
-			client_manage_new(wins[j], s);
-	}
-	XFree(wins);
-
 	Atom supported[] = {
 		X_ATOM(_NET_CLIENT_LIST),
 		X_ATOM(_NET_CLIENT_LIST_STACKING),
@@ -204,7 +184,6 @@ void screen_init(struct screen *s) {
 			(unsigned char *)&pid, 1);
 
 	ewmh_set_screen_workarea(s);
-
 }
 
 void screen_deinit(struct screen *s) {

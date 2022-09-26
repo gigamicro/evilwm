@@ -148,8 +148,6 @@ int main(int argc, char *argv[]) {
 	// Run until something signals to quit.
 	wm_exit = 0;
 	while (!wm_exit) {
-		end_event_loop = 0;
-
 		option = (struct options) {
 			.bw = DEF_BW,
 
@@ -220,15 +218,20 @@ int main(int argc, char *argv[]) {
 			free(arg);
 		}
 
+		// Open display only if not already open
 		if (!display.dpy) {
-			// Open display.  Manages all eligible clients across all screens.
 			display_open();
 		}
 
+		// Manage all eligible clients across all screens
+		display_manage_clients();
+
+		// Event loop will run until interrupted
+		end_event_loop = 0;
 		event_main_loop();
 
-		// Close display.  This will cleanly unmanage all windows.
-		display_close();
+		// Important to clean up anything now that might be reallocated
+		// after rereading config, re-managing windows, etc.
 
 		// Free any allocated strings in parsed options
 		xconfig_free(evilwm_options);
@@ -243,7 +246,13 @@ int main(int argc, char *argv[]) {
 				free(app->res_class);
 			free(app);
 		}
+
+		display_unmanage_clients();
+		XSync(display.dpy, True);
 	}
+
+	// Close display
+	display_close();
 
 	return 0;
 }

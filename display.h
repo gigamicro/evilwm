@@ -120,4 +120,10 @@ void display_open(void);
 // Close display.
 void display_close(void);
 
+// Manage all relevant windows.
+void display_manage_clients(void);
+
+// Remove all windows from management.
+void display_unmanage_clients(void);
+
 #endif
