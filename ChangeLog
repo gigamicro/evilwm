@@ -1,3 +1,5 @@
+  * Add "raise" function to complement "lower" [Juan Pedro Vallejo]
+
 Version 1.4.0, Tue Sep 27 2022
 
   * Send more accurate response to _NET_REQUEST_FRAME_EXTENTS.

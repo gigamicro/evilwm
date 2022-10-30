@@ -97,6 +97,7 @@ static struct function_def name_to_func[] = {
 	{ "lower",  func_lower,     FL_CLIENT },
 	{ "move",   func_move,      FL_CLIENT },
 	{ "next",   func_next,      0 },
+	{ "raise",  func_raise,     FL_CLIENT },
 	{ "resize", func_resize,    FL_CLIENT },
 	{ "spawn",  func_spawn,     0 },
 	{ "vdesk",  func_vdesk,     FL_SCREEN },

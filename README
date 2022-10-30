@@ -219,6 +219,10 @@ FUNCTIONS
 
        next   Cycle to the next window.
 
+       raise
+
+       Raises the current window.
+
        resize When bound to a button, resizes a window with the mouse.
 
               When bound to a key, if the relative flag is specified, modifies
