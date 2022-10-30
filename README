@@ -251,8 +251,8 @@ DEFAULT BINDS
               altmask shift
 
    Button binds
-              bind button1=move,drag
-              bind button2=resize,drag
+              bind button1=move
+              bind button2=resize
               bind button3=lower
 
    Keyboard binds
