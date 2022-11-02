@@ -147,8 +147,8 @@ void xconfig_parse_line(struct xconfig_option *options, const char *line) {
 	// from here on, work on a copy of the string
 	char *linedup = xstrdup(line);
 
-	// whitespace and '=' separate option from arguments
-	char *optstr = strtok(linedup, "\t\n\v\f\r =");
+	// whitespace separates option from arguments
+	char *optstr = strtok(linedup, "\t\n\v\f\r ");
 	if (optstr == NULL) {
 		goto done;
 	}
@@ -163,11 +163,11 @@ void xconfig_parse_line(struct xconfig_option *options, const char *line) {
 	if (opt->type == XCONFIG_STR_LIST) {
 		// special case: spaces here mean something
 		arg = strtok(NULL, "\n\v\f\r");
-		while (isspace(*arg) || *arg == '=') {
+		while (isspace(*arg)) {
 			arg++;
 		}
 	} else {
-		arg = strtok(NULL, "\t\n\v\f\r =");
+		arg = strtok(NULL, "\t\n\v\f\r ");
 	}
 
 	set_option(opt, arg ? arg : "");

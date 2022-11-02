@@ -1,4 +1,5 @@
   * Add "raise" function to complement "lower" [Juan Pedro Vallejo]
+  * Allow '=' in option arguments, needed for -bind [Burkhard Kleemeier]
 
 Version 1.4.0, Tue Sep 27 2022
 
