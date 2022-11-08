@@ -1,3 +1,5 @@
+  * Ignore NumLock correctly when processing events [Kacper Gutowski]
+
 Version 1.4.1, Wed Nov  2 2022
 
   * Add "raise" function to complement "lower" [Juan Pedro Vallejo]
