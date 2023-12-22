@@ -46,6 +46,9 @@ struct options {
 	int no_solid_drag;
 #endif
 
+	// disable loading the default key bindings
+	int nodefaultbinds;
+
 	// NULL-terminated array passed to execvp() to launch terminal
 	char **term;
 };

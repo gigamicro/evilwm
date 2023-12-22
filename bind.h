@@ -29,6 +29,8 @@ extern struct name_to_modifier name_to_modifier[];
 #define grabmask2 (name_to_modifier[1].value)
 #define altmask   (name_to_modifier[2].value)
 
+// Remove all binds
+void bind_unset(void);
 // Reset list of binds to the built-ins
 void bind_reset(void);
 

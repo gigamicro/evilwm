@@ -66,6 +66,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_STRING,   "mask1",        { .s = &opt_grabmask1 } },
 	{ XCONFIG_STRING,   "mask2",        { .s = &opt_grabmask2 } },
 	{ XCONFIG_STRING,   "altmask",      { .s = &opt_altmask } },
+	{ XCONFIG_BOOL,    "nodefaultbinds",{ .i = &option.nodefaultbinds } },
 	{ XCONFIG_CALL_1,   "bind",         { .c1 = &set_bind } },
 	{ XCONFIG_CALL_1,   "app",          { .c1 = &set_app } },
 	{ XCONFIG_CALL_1,   "geometry",     { .c1 = &set_app_geometry } },
@@ -203,7 +204,10 @@ int main(int argc, char *argv[]) {
 		bind_modifier("mask2", opt_grabmask2);
 		bind_modifier("altmask", opt_altmask);
 
-		bind_reset();
+		if (option.nodefaultbinds)
+			bind_unset();
+		else
+			bind_reset();
 		while (opt_bind) {
 			char *arg = opt_bind->data;
 			opt_bind = list_delete(opt_bind, arg);

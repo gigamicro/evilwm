@@ -251,14 +251,17 @@ static unsigned flags_by_name(const char *name) {
 
 // Manage list of binds
 
-void bind_reset(void) {
+void bind_unset(void) {
 	// unbind _all_ controls
 	while (controls) {
 		struct bind *b = controls->data;
 		controls = list_delete(controls, b);
 		free(b);
 	}
+}
 
+void bind_reset(void) {
+	bind_unset();
 	// then rebind what's configured
 	for (int i = 0; i < NUM_CONTROL_BUILTINS; i++) {
 		bind_control(control_builtins[i].ctl, control_builtins[i].func);
