@@ -48,6 +48,7 @@ OPT_CPPFLAGS += -DSOLIDDRAG
 
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
+OPT_CPPFLAGS += -DRESIZE_WARP_POINTER
 
 # Uncomment to include whatever debugging messages I've left in this release.
 #OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging

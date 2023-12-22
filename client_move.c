@@ -163,8 +163,10 @@ void client_resize_sweep(struct client *c, unsigned button) {
 	XGrabServer(display.dpy);
 	draw_outline(c);  // draw
 
+#ifdef RESIZE_WARP_POINTER
 	// Warp pointer to the bottom-right of the client for resizing
 	setmouse(c->window, c->width, c->height);
+#endif
 
 	for (;;) {
 		XEvent ev;
