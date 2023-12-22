@@ -122,15 +122,30 @@ void display_open(void) {
 	}
 
 	// Get the font used for window info
+	//https://wiki.archlinux.org/title/X_Logical_Font_Description is useful
 	display.font = XLoadQueryFont(display.dpy, option.font);
 	if (!display.font) {
 		LOG_DEBUG("failed to load specified font, trying default: %s\n", DEF_FONT);
 		display.font = XLoadQueryFont(display.dpy, DEF_FONT);
 	}
 	if (!display.font) {
-		LOG_ERROR("couldn't find a font to use: try starting with -fn fontname\n");
+		LOG_DEBUG("failed to load specified font, trying fallback: *\n");
+		display.font = XLoadQueryFont(display.dpy, "*");
+	}
+	if (!display.font) {
+		LOG_ERROR("XLoadQueryFont couldn't find a font to use: try starting with --fn '<X Logical Font Description>'\n");
 		exit(1);
 	}
+#ifdef DEBUG
+	Atom fontatom;
+	if (!XGetFontProperty(display.font, XA_FONT, &fontatom))
+		LOG_DEBUG("XGetFontProperty(display.font, XA_FONT) failed\n");
+	else {
+		char* fontname = XGetAtomName(display.dpy, fontatom);
+		LOG_DEBUG("Font name is %s\n", fontname);
+		XFree(fontname);
+	}
+#endif
 
 	// Cursors used for different actions
 	display.move_curs = XCreateFontCursor(display.dpy, XC_fleur);
