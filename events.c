@@ -211,7 +211,14 @@ static void handle_property_change(XPropertyEvent *e) {
 	struct client *c = find_client(e->window);
 
 	if (c) {
-		LOG_ENTER("handle_property_change(window=%lx, atom=%s)", (unsigned long)e->window, debug_atom_name(e->atom));
+#ifdef DEBUG
+		XTextProperty wmname;
+		XGetWMName(display.dpy, e->window, &wmname);
+		LOG_ENTER("handle_property_change(window=%lx (\"%s\"), atom=%s)", (unsigned long)e->window, wmname.value, debug_atom_name(e->atom));
+		if (wmname.value)
+			XFree(wmname.value);
+#endif
+
 		if (e->atom == XA_WM_NORMAL_HINTS) {
 			get_wm_normal_hints(c);
 			LOG_DEBUG("geometry=%dx%d+%d+%d\n", c->width, c->height, c->x, c->y);
