@@ -66,6 +66,7 @@ extern unsigned numlockmask;
 struct application {
 	char *res_name;
 	char *res_class;
+	char *WM_NAME;
 	int geometry_mask;
 	int x, y;
 	unsigned width, height;

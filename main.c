@@ -281,21 +281,28 @@ static void set_bind(const char *arg) {
 	opt_bind = list_prepend(opt_bind, argdup);
 }
 
-static void set_app(const char *arg) {
+static void set_app(const char *zeroth) {
+	char *first;
+	char *second = NULL;
+	if ((first = strchr(zeroth, '/'))) {
+		*(first++) = 0;
+	}
+	if (first && *first && (second = strchr(first, '/'))) {
+		*(second++) = 0;
+	}
 	struct application *new = xmalloc(sizeof(struct application));
-	char *tmp;
-	new->res_name = new->res_class = NULL;
+	new->res_name = new->res_class = new->WM_NAME = NULL;
 	new->geometry_mask = 0;
 	new->is_dock = 0;
 	new->vdesk = VDESK_NONE;
-	if ((tmp = strchr(arg, '/'))) {
-		*(tmp++) = 0;
+	if (*zeroth) {
+		new->res_name = xstrdup(zeroth);
 	}
-	if (*arg) {
-		new->res_name = xstrdup(arg);
+	if (first && *first) {
+		new->res_class = xstrdup(first);
 	}
-	if (tmp && *tmp) {
-		new->res_class = xstrdup(tmp);
+	if (second && *second) {
+		new->WM_NAME = xstrdup(second);
 	}
 	applications = list_prepend(applications, new);
 }

@@ -56,7 +56,9 @@ void client_manage_new(Window w, struct screen *s) {
 	// trying to manage it.
 
 	initialising = w;
-	XFetchName(display.dpy, w, &name);
+	XTextProperty wmname;
+	XGetWMName(display.dpy, w, &wmname);
+	name = (char *)wmname.value;
 	XSync(display.dpy, False);
 
 	// If 'initialising' is now set to None, that means doing the
@@ -72,8 +74,6 @@ void client_manage_new(Window w, struct screen *s) {
 	initialising = None;
 	LOG_DEBUG("screen=%d\n", s->screen);
 	LOG_DEBUG("name=%s\n", name ? name : "Untitled");
-	if (name)
-		XFree(name);
 
 	window_type = ewmh_get_net_wm_window_type(w);
 	// Don't manage DESKTOP type windows
@@ -139,8 +139,9 @@ void client_manage_new(Window w, struct screen *s) {
 		for (struct list *iter = applications; iter; iter = iter->next) {
 			struct application *a = iter->data;
 			// Does resource name and class match?
-			if ((!a->res_name || (class->res_name && !strcmp(class->res_name, a->res_name)))
-					&& (!a->res_class || (class->res_class && !strcmp(class->res_class, a->res_class)))) {
+			if ((!a->res_name  || (class->res_name  && !strcmp(class->res_name,  a->res_name )))
+			 && (!a->res_class || (class->res_class && !strcmp(class->res_class, a->res_class)))
+			 && (!a->WM_NAME   || (name             &&  strstr(name,             a->WM_NAME  )))) {
 
 				// Override width or height?
 				if (a->geometry_mask & WidthValue)
@@ -178,6 +179,8 @@ void client_manage_new(Window w, struct screen *s) {
 		XFree(class->res_class);
 		XFree(class);
 	}
+	if (name)
+		XFree(name);
 
 	// Set EWMH property on client advertising WM features
 	ewmh_set_allowed_actions(c);

@@ -160,7 +160,7 @@ void xconfig_parse_line(struct xconfig_option *options, const char *line) {
 	}
 
 	char *arg;
-	if (opt->type == XCONFIG_STR_LIST) {
+	if (opt->type == XCONFIG_STR_LIST || opt->type == XCONFIG_CALL_1) {
 		// special case: spaces here mean something
 		arg = strtok(NULL, "\n\v\f\r");
 		while (isspace(*arg)) {

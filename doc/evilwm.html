@@ -183,10 +183,12 @@ Function and flags is as with key binds above.  Valid buttons are
 
 <dl class='compact'>
 
-<dt><code>--app</code> <var>name/class</var>
+<dt><code>--app</code> [<var>name</var>][/[<var>class</var>][/[<var>title</var>]]]
 
 <dd>match an application by instance name and class (for help in finding these,
-use the <em>xprop</em> tool to extract the <em>WM_CLASS</em> property).
+use the <em>xprop</em> tool to extract the <em>WM_CLASS</em> property;
+the two strings are <var>name</var> and <var>class</var> respectively, checked exactly),
+and by title (checked as substring, <em>WM_NAME</em> in <em>xprop</em>).
 
 <p>Subsequent <code>--geometry</code>, <code>--dock</code>,
 <code>--vdesk</code> and <code>--fixed</code> options will apply to this match.
