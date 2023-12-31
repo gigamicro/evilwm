@@ -23,6 +23,9 @@
 #include "list.h"
 #include "screen.h"
 #include "util.h"
+#ifdef GC_INVERT
+#include "xalloc.h"
+#endif
 
 #define SPACE 3
 
@@ -52,8 +55,25 @@ static void draw_outline(struct client *c) {
 #endif
 }
 
+static void clear_outline(struct client *current_outline){//void){
+	if (current_outline == NULL)
+		return;
+	draw_outline(current_outline);
+	free(current_outline);
+	// current_outline=NULL;
+}
+
+static struct client *set_outline(struct client *c, struct client *current_outline){//){
+	clear_outline(current_outline);
+	draw_outline(c);
+	// *current_outline = *c;
+	return xmemdup(c, sizeof(struct client));
+}
+
 #else
 # define draw_outline(...)
+# define clear_outline(...)
+# define set_outline(...)
 #endif
 
 static int absmin(int a, int b) {
@@ -170,7 +190,11 @@ void client_resize_sweep(struct client *c, unsigned button) {
 #ifdef RESIZE_SERVERGRAB
 	XGrabServer(display.dpy);
 #endif
-	draw_outline(c);  // draw
+#ifdef GC_INVERT
+	struct client *outline_c = NULL;// = c;
+	draw_outline(c);
+	// outline_c = set_outline(c, outline_c);
+#endif
 
 #ifdef RESIZE_WARP_POINTER
 	// Warp pointer to the bottom-right of the client for resizing
@@ -184,7 +208,6 @@ void client_resize_sweep(struct client *c, unsigned button) {
 			case MotionNotify:
 				if (ev.xmotion.root != c->screen->root)
 					break;
-				draw_outline(c);  // erase
 #ifdef RESIZE_SERVERGRAB
 				XUngrabServer(display.dpy);
 #endif
@@ -198,16 +221,20 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				XSync(display.dpy, False);
 				XGrabServer(display.dpy);
 #endif
-				draw_outline(c);  // draw
+#ifdef GC_INVERT
+				outline_c = set_outline(c, outline_c);
+#endif
 				break;
 
 			case ButtonRelease:
 				if (ev.xbutton.button != button)
 					continue;
-				draw_outline(c);  // erase
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
+#ifdef GC_INVERT
+				clear_outline(outline_c);
+#endif
 #ifdef RESIZE_SERVERGRAB
 				XUngrabServer(display.dpy);
 #endif
@@ -252,10 +279,13 @@ void client_move_drag(struct client *c, unsigned button) {
 #ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
 #endif
+#ifdef GC_INVERT
+	struct client *outline_c = NULL;// = c;
 	if (option.no_solid_drag) {
 		XGrabServer(display.dpy);
-		draw_outline(c);  // draw
+		outline_c = set_outline(c, outline_c);
 	}
+#endif
 
 	for (;;) {
 		XEvent ev;
@@ -264,10 +294,6 @@ void client_move_drag(struct client *c, unsigned button) {
 			case MotionNotify:
 				if (ev.xmotion.root != c->screen->root)
 					break;
-				if (option.no_solid_drag) {
-					draw_outline(c);  // erase
-					XUngrabServer(display.dpy);
-				}
 				c->x = old_cx + (ev.xmotion.x - x1);
 				c->y = old_cy + (ev.xmotion.y - y1);
 				if (option.snap && !(ev.xmotion.state & altmask))
@@ -277,9 +303,12 @@ void client_move_drag(struct client *c, unsigned button) {
 				update_info_window(c);
 #endif
 				if (option.no_solid_drag) {
+#ifdef GC_INVERT
+					//XUngrabServer(display.dpy);
 					XSync(display.dpy, False);
-					XGrabServer(display.dpy);
-					draw_outline(c);  // draw
+					//XGrabServer(display.dpy);
+					outline_c = set_outline(c, outline_c);
+#endif
 				} else {
 					XMoveWindow(display.dpy, c->parent,
 							c->x - c->border,
@@ -291,10 +320,12 @@ void client_move_drag(struct client *c, unsigned button) {
 			case ButtonRelease:
 				if (ev.xbutton.button != button)
 					continue;
+#ifdef GC_INVERT
 				if (option.no_solid_drag) {
-					draw_outline(c);  // erase
+					clear_outline(outline_c);
 					XUngrabServer(display.dpy);
 				}
+#endif
 #ifdef INFOBANNER_MOVERESIZE
 				remove_info_window();
 #endif
@@ -313,6 +344,7 @@ void client_move_drag(struct client *c, unsigned button) {
 	}
 }
 
+#ifdef GC_INVERT
 // Predicate function for use with XCheckIfEvent.
 //
 // This is used to detect when a keyrelease is followed by a keypress with the
@@ -388,6 +420,9 @@ void client_show_info(struct client *c, XEvent *e) {
 		XUngrabPointer(display.dpy, CurrentTime);
 	}
 }
+#else
+void client_show_info(struct client *, XEvent *) {}
+#endif
 
 // Move window to (potentially updated) client coordinates.
 
