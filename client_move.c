@@ -157,6 +157,8 @@ void client_resize_sweep(struct client *c, unsigned button) {
 	int old_cx = c->x;
 	int old_cy = c->y;
 
+	struct monitor *monitor = client_monitor(c, NULL);
+
 #ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
 #endif
@@ -178,6 +180,8 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				draw_outline(c);  // erase
 				XUngrabServer(display.dpy);
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
+				if (option.snap && !(ev.xmotion.state & altmask))
+					snap_client(c, monitor);
 #ifdef INFOBANNER_MOVERESIZE
 				update_info_window(c);
 #endif
