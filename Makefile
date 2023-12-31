@@ -46,6 +46,9 @@ OPT_LDLIBS   += -lXext
 # Uncomment to enable solid window drags.  This can be slow on old systems.
 OPT_CPPFLAGS += -DSOLIDDRAG
 
+# Uncomment to enable grabbing the X server when mouse-resizing
+OPT_CPPFLAGS += -DRESIZE_SERVERGRAB
+
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
 OPT_CPPFLAGS += -DRESIZE_WARP_POINTER

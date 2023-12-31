@@ -162,7 +162,9 @@ void client_resize_sweep(struct client *c, unsigned button) {
 #ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
 #endif
+#ifdef RESIZE_SERVERGRAB
 	XGrabServer(display.dpy);
+#endif
 	draw_outline(c);  // draw
 
 #ifdef RESIZE_WARP_POINTER
@@ -178,15 +180,19 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				if (ev.xmotion.root != c->screen->root)
 					break;
 				draw_outline(c);  // erase
+#ifdef RESIZE_SERVERGRAB
 				XUngrabServer(display.dpy);
+#endif
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
 #ifdef INFOBANNER_MOVERESIZE
 				update_info_window(c);
 #endif
+#ifdef RESIZE_SERVERGRAB
 				XSync(display.dpy, False);
 				XGrabServer(display.dpy);
+#endif
 				draw_outline(c);  // draw
 				break;
 
@@ -194,7 +200,9 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				if (ev.xbutton.button != button)
 					continue;
 				draw_outline(c);  // erase
+#ifdef RESIZE_SERVERGRAB
 				XUngrabServer(display.dpy);
+#endif
 #ifdef INFOBANNER_MOVERESIZE
 				remove_info_window();
 #endif
