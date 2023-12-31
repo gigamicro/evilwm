@@ -5,8 +5,11 @@
 // This file is not generated, it is used to sanity check compile options.
 
 // INFOBANNER_MOVERESIZE depends on INFOBANNER
-
 #if defined(INFOBANNER_MOVERESIZE) && !defined(INFOBANNER)
 # define INFOBANNER
 #endif
 
+// INFOBANNER depends on GC_INVERT
+#if defined(INFOBANNER) && !defined(GC_INVERT)
+# define GC_INVERT
+#endif

@@ -32,7 +32,9 @@ struct screen {
 	Window root;         // root window of screen
 	Window supporting;   // dummy window for EWMH
 	Window active;       // current _NET_ACTIVE_WINDOW value for root
+#ifdef GC_INVERT
 	GC invert_gc;        // used to draw outlines
+#endif
 	XColor fg, bg, fc;   // allocated colours; active, inactive, fixed
 	unsigned vdesk;      // current vdesk for screen
 	unsigned old_vdesk;  // previous vdesk, so user may toggle back to it

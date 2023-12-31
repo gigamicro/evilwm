@@ -106,7 +106,9 @@ void display_open(void) {
 		LOG_ERROR("can't open display %s\n", option.display);
 		exit(1);
 	}
+#ifdef INFOBANNER
 	display.info_window = None;
+#endif
 
 	XSetErrorHandler(handle_xerror);
 
@@ -121,6 +123,7 @@ void display_open(void) {
 		display.atom[i] = XInternAtom(display.dpy, atom_list[i], False);
 	}
 
+#ifdef GC_INVERT
 	// Get the font used for window info
 	//https://wiki.archlinux.org/title/X_Logical_Font_Description is useful
 	display.font = XLoadQueryFont(display.dpy, option.font);
@@ -145,6 +148,7 @@ void display_open(void) {
 		LOG_DEBUG("Font name is %s\n", fontname);
 		XFree(fontname);
 	}
+#endif
 #endif
 
 	// Cursors used for different actions
@@ -211,7 +215,9 @@ void display_close(void) {
 
 	for (int i = 0; i < display.nscreens; i++) {
 		screen_deinit(&display.screens[i]);
+#ifdef GC_INVERT
 		XFreeGC(display.dpy, display.screens[i].invert_gc);
+#endif
 		XInstallColormap(display.dpy, DefaultColormap(display.dpy, i));
 		free(display.screens[i].display);
 	}

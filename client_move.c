@@ -26,6 +26,7 @@
 
 #define SPACE 3
 
+#ifdef GC_INVERT
 // Use the inverting graphics context to draw an outline for the client.
 // Drawing it a second time will erase it.  If INFOBANNER_MOVERESIZE is
 // defined, the information window is shown for the duration (but this can be
@@ -50,6 +51,10 @@ static void draw_outline(struct client *c) {
 		buf, strlen(buf));
 #endif
 }
+
+#else
+# define draw_outline(...)
+#endif
 
 static int absmin(int a, int b) {
 	if (abs(a) < abs(b))

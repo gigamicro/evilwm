@@ -82,6 +82,7 @@ void screen_init(struct screen *s) {
 	XAllocNamedColor(display.dpy, DefaultColormap(display.dpy, i), option.bg, &s->bg, &dummy);
 	XAllocNamedColor(display.dpy, DefaultColormap(display.dpy, i), option.fc, &s->fc, &dummy);
 
+#ifdef GC_INVERT
 	// When dragging an outline, we use an inverting graphics context
 	// (GCFunction + GXinvert) so that simply drawing it again will erase
 	// it from the screen.
@@ -93,6 +94,7 @@ void screen_init(struct screen *s) {
 	gv.font = display.font->fid;
 	s->invert_gc = XCreateGC(display.dpy, s->root,
 				 GCFunction | GCSubwindowMode | GCLineWidth | GCFont, &gv);
+#endif
 
 	// We handle events to the root window:
 	// SubstructureRedirectMask - create, destroy, configure window notifications

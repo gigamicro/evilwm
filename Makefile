@@ -29,7 +29,10 @@ desktopfilesdir = $(datarootdir)/applications
 OPT_CPPFLAGS += -DHAVE_MATH_H
 OPT_LDLIBS += -lm
 
-# Uncomment to enable info banner on holding Ctrl+Alt+I.
+# Uncomment to enable invert effects, including resize outlines, nonsolid drags, 
+OPT_CPPFLAGS += -DGC_INVERT
+
+# Uncomment to enable info banner on holding Ctrl+Alt+I (by default).
 OPT_CPPFLAGS += -DINFOBANNER
 
 # Uncomment to show the same banner on moves and resizes.  Can be SLOW!
