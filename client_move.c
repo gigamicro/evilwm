@@ -205,6 +205,9 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				if (ev.xbutton.button != button)
 					continue;
 				draw_outline(c);  // erase
+				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
+				if (option.snap && !(ev.xmotion.state & altmask))
+					snap_client(c, monitor);
 #ifdef RESIZE_SERVERGRAB
 				XUngrabServer(display.dpy);
 #endif
