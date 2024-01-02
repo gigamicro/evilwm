@@ -290,7 +290,9 @@ void client_move_drag(struct client *c, unsigned button) {
 #else
 	if (1) {
 #endif
+#ifdef MOVE_SERVERGRAB
 		XGrabServer(display.dpy);
+#endif
 		outline_c = set_outline(c, outline_c);
 	}
 #endif
@@ -316,9 +318,11 @@ void client_move_drag(struct client *c, unsigned button) {
 				if (1) {
 #endif
 #ifdef GC_INVERT
+#ifdef MOVE_SERVERGRAB
 					//XUngrabServer(display.dpy);
 					XSync(display.dpy, False);
 					//XGrabServer(display.dpy);
+#endif
 					outline_c = set_outline(c, outline_c);
 #endif
 				} else {
@@ -339,7 +343,9 @@ void client_move_drag(struct client *c, unsigned button) {
 				if (1) {
 #endif
 					clear_outline(outline_c);
+#ifdef MOVE_SERVERGRAB
 					XUngrabServer(display.dpy);
+#endif
 				}
 #endif
 #ifdef INFOBANNER_MOVERESIZE
