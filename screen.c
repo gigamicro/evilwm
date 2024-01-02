@@ -91,7 +91,12 @@ void screen_init(struct screen *s) {
 	gv.function = GXinvert;
 	gv.subwindow_mode = IncludeInferiors;
 	gv.line_width = 1;  // option.bw
+#ifdef FONT
 	gv.font = display.font->fid;
+#else
+	#undef GCFont
+	#define GCFont 0
+#endif
 	s->invert_gc = XCreateGC(display.dpy, s->root,
 				 GCFunction | GCSubwindowMode | GCLineWidth | GCFont, &gv);
 #endif

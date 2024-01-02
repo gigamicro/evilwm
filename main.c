@@ -53,7 +53,9 @@ static void set_app_vdesk(const char *arg);
 static void set_app_fixed(void);
 
 static struct xconfig_option evilwm_options[] = {
+#ifdef FONT
 	{ XCONFIG_STRING,   "fn",           { .s = &option.font } },
+#endif
 	{ XCONFIG_STRING,   "display",      { .s = &option.display } },
 	{ XCONFIG_UINT,     "numvdesks",    { .u = &option.vdesks } },
 	{ XCONFIG_STRING,   "fg",           { .s = &option.fg } },
@@ -92,7 +94,9 @@ static void helptext(void) {
 "\n Options:\n"
 "  --display DISPLAY   X display [from environment]\n"
 "  --term PROGRAM      binary used to spawn terminal [" DEF_TERM "]\n"
+#ifdef FONT
 "  --fn FONTNAME       font used to display text [" DEF_FONT "]\n"
+#endif
 "  --fg COLOUR         colour of active window frames [" DEF_FG "]\n"
 "  --fc COLOUR         colour of fixed window frames [" DEF_FC "]\n"
 "  --bg COLOUR         colour of inactive window frames [" DEF_BG "]\n"

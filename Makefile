@@ -29,6 +29,9 @@ desktopfilesdir = $(datarootdir)/applications
 OPT_CPPFLAGS += -DHAVE_MATH_H
 OPT_LDLIBS += -lm
 
+# Uncomment to enable text display
+OPT_CPPFLAGS += -DFONT
+
 # Uncomment to enable invert effects, including resize outlines, nonsolid drags, 
 OPT_CPPFLAGS += -DGC_INVERT
 

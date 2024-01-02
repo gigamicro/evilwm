@@ -36,15 +36,18 @@
 // slow on old X servers).
 
 static void draw_outline(struct client *c) {
+#ifdef FONT
 #ifndef INFOBANNER_MOVERESIZE
 	char buf[27];
 	int width_inc = c->width_inc, height_inc = c->height_inc;
+#endif
 #endif
 
 	XDrawRectangle(display.dpy, c->screen->root, c->screen->invert_gc,
 		c->x - c->border, c->y - c->border,
 		c->width + 2*c->border-1, c->height + 2*c->border-1);
 
+#ifdef FONT
 #ifndef INFOBANNER_MOVERESIZE
 	snprintf(buf, sizeof(buf), "%dx%d+%d+%d", (c->width-c->base_width)/width_inc,
 			(c->height-c->base_height)/height_inc, c->x, c->y);
@@ -52,6 +55,7 @@ static void draw_outline(struct client *c) {
 		c->x + c->width - XTextWidth(display.font, buf, strlen(buf)) - SPACE,
 		c->y + c->height - SPACE,
 		buf, strlen(buf));
+#endif
 #endif
 }
 

@@ -9,7 +9,16 @@
 # define INFOBANNER
 #endif
 
-// INFOBANNER depends on GC_INVERT
-#if defined(INFOBANNER) && !defined(GC_INVERT)
+#ifndef GC_INVERT
+# undef FONT
+#endif
+
+// INFOBANNER depends on FONT
+#if defined(INFOBANNER) && !defined(FONT)
+# define FONT
+#endif
+
+// FONT depends on GC_INVERT
+#if defined(FONT) && !defined(GC_INVERT)
 # define GC_INVERT
 #endif

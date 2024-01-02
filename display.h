@@ -83,10 +83,10 @@ struct display {
 
 	// Atoms
 	Atom atom[NUM_ATOMS];
-
+#ifdef FONT
 	// Font
 	XFontStruct *font;
-
+#endif
 	// Cursors
 	Cursor move_curs;
 	Cursor resize_curs;

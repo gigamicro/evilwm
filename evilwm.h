@@ -20,10 +20,10 @@
 struct options {
 	// Display string (e.g., ":0")
 	char *display;
-
+#ifdef FONT
 	// Text font
 	char *font;
-
+#endif
 	// Border colours
 	char *fg;  // selected (foreground)
 	char *bg;  // unselected (background)

@@ -123,7 +123,7 @@ void display_open(void) {
 		display.atom[i] = XInternAtom(display.dpy, atom_list[i], False);
 	}
 
-#ifdef GC_INVERT
+#ifdef FONT
 	// Get the font used for window info
 	//https://wiki.archlinux.org/title/X_Logical_Font_Description is useful
 	display.font = XLoadQueryFont(display.dpy, option.font);
@@ -210,8 +210,10 @@ void display_open(void) {
 void display_close(void) {
 	XSetInputFocus(display.dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 
+#ifdef FONT
 	if (display.font)
 		XFreeFont(display.dpy, display.font);
+#endif
 
 	for (int i = 0; i < display.nscreens; i++) {
 		screen_deinit(&display.screens[i]);
