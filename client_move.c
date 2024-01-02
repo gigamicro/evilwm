@@ -285,7 +285,11 @@ void client_move_drag(struct client *c, unsigned button) {
 #endif
 #ifdef GC_INVERT
 	struct client *outline_c = NULL;// = c;
+#ifdef SOLIDDRAG
 	if (option.no_solid_drag) {
+#else
+	if (1) {
+#endif
 		XGrabServer(display.dpy);
 		outline_c = set_outline(c, outline_c);
 	}
@@ -306,7 +310,11 @@ void client_move_drag(struct client *c, unsigned button) {
 #ifdef INFOBANNER_MOVERESIZE
 				update_info_window(c);
 #endif
+#ifdef SOLIDDRAG
 				if (option.no_solid_drag) {
+#else
+				if (1) {
+#endif
 #ifdef GC_INVERT
 					//XUngrabServer(display.dpy);
 					XSync(display.dpy, False);
@@ -325,7 +333,11 @@ void client_move_drag(struct client *c, unsigned button) {
 				if (ev.xbutton.button != button)
 					continue;
 #ifdef GC_INVERT
+#ifdef SOLIDDRAG
 				if (option.no_solid_drag) {
+#else
+				if (1) {
+#endif
 					clear_outline(outline_c);
 					XUngrabServer(display.dpy);
 				}
@@ -334,7 +346,11 @@ void client_move_drag(struct client *c, unsigned button) {
 				remove_info_window();
 #endif
 				XUngrabPointer(display.dpy, CurrentTime);
+#ifdef SOLIDDRAG
 				if (option.no_solid_drag) {
+#else
+				if (1) {
+#endif
 					// For solid drags, the client was
 					// moved with the mouse.  For non-solid
 					// drags, we need a final move/raise:
