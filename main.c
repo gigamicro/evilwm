@@ -125,7 +125,7 @@ static void helptext(void) {
 "or '+'.  If FUNC is missing or empty, the control is unbound.  Modifiers are\n"
 "ignored when binding buttons.\n"
 
-"\nModifiers: mask1, mask2, altmask, shift, control, alt, mod1..mod5\n"
+"\nModifiers: mask1, mask2, altmask, shift, control, mod1 (alt), mod2..mod5\n"
 "Buttons: button1..button5\n"
 "Functions: delete, dock, fix, info, kill, lower, move, next, resize,\n"
 "           spawn, vdesk\n"

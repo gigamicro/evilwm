@@ -442,8 +442,7 @@ void event_main_loop(void) {
 				break;
 			default:
 #ifdef SHAPE
-				if (display.have_shape
-				    && ev.xevent.type == display.shape_event) {
+				if (display.have_shape && ev.xevent.type == display.shape_event) {
 					handle_shape_event(&ev.xshape);
 				}
 #endif

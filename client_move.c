@@ -67,7 +67,7 @@ static struct client *set_outline(struct client *c, struct client *current_outli
 	clear_outline(current_outline);
 	draw_outline(c);
 	// *current_outline = *c;
-	return xmemdup(c, sizeof(struct client));
+	return xmemdup(c, sizeof(*c));
 }
 
 #else
