@@ -56,6 +56,11 @@ OPT_CPPFLAGS += -DSOLIDDRAG
 OPT_CPPFLAGS += -DRESIZE_SERVERGRAB
 OPT_CPPFLAGS += -DMOVE_SERVERGRAB
 
+# Uncomment to discard all pointer-enter events apart from those for the already-active window on...
+OPT_CPPFLAGS += -DMAXIMIZE_DISCARDENTERS
+OPT_CPPFLAGS += -DMOVERESIZE_DISCARDENTERS
+#also happens on 'next' bind, handle_configure_request() on current client, new client
+
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
 OPT_CPPFLAGS += -DRESIZE_WARP_POINTER

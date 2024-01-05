@@ -47,7 +47,9 @@ static void do_client_move(struct client *c) {
 #ifdef WARP_POINTER
 	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
 #endif
+#ifdef MOVERESIZE_DISCARDENTERS
 	discard_enter_events(c);
+#endif
 }
 
 void func_delete(void *sptr, XEvent *e, unsigned flags) {

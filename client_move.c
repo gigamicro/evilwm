@@ -554,7 +554,9 @@ void client_maximise(struct client *c, int action, int hv) {
 	}
 	ewmh_set_net_wm_state(c);
 	client_moveresizeraise(c);
+#ifdef MAXIMIZE_DISCARDENTERS
 	discard_enter_events(c);
+#endif
 }
 
 // Find and select the "next" client, relative to the currently selected one
