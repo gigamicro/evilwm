@@ -59,6 +59,7 @@ OPT_CPPFLAGS += -DMOVE_SERVERGRAB
 # Uncomment to discard all pointer-enter events apart from those for the already-active window on...
 OPT_CPPFLAGS += -DMAXIMIZE_DISCARDENTERS
 OPT_CPPFLAGS += -DMOVERESIZE_DISCARDENTERS
+OPT_CPPFLAGS += -DKBMOVERESIZE_DISCARDENTERS
 OPT_CPPFLAGS += -DNEWCLIENT_DISCARDENTERS
 OPT_CPPFLAGS += -DCONFIGURECURRENT_DISCARDENTERS
 #also happens on 'next' bind
@@ -69,6 +70,7 @@ OPT_CPPFLAGS += -DNEWCLIENT_SELECT
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
 OPT_CPPFLAGS += -DRESIZE_WARP_POINTER
+OPT_CPPFLAGS += -DKBMOVERESIZE_WARP_POINTER
 
 # Uncomment to include whatever debugging messages I've left in this release.
 #OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging

@@ -35,7 +35,7 @@ typedef struct {
 		      GrabModeAsync, GrabModeAsync, \
 		      None, curs, CurrentTime) == GrabSuccess)
 
-#if defined(WARP_POINTER) || defined(RESIZE_WARP_POINTER)
+#if defined(WARP_POINTER) || defined(RESIZE_WARP_POINTER) || defined(KBMOVERESIZE_WARP_POINTER)
 // Move the mouse pointer.
 #define setmouse(w, x, y) XWarpPointer(display.dpy, None, w, 0, 0, 0, 0, x, y)
 #endif

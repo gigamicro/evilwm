@@ -314,9 +314,6 @@ void client_move_drag(struct client *c, unsigned button) {
 #endif
 #ifdef SOLIDDRAG
 				if (option.no_solid_drag) {
-#else
-				if (1) {
-#endif
 #ifdef GC_INVERT
 #ifdef MOVE_SERVERGRAB
 					//XUngrabServer(display.dpy);
@@ -326,11 +323,14 @@ void client_move_drag(struct client *c, unsigned button) {
 					outline_c = set_outline(c, outline_c);
 #endif
 				} else {
+#endif
 					XMoveWindow(display.dpy, c->parent,
 							c->x - c->border,
 							c->y - c->border);
 					send_config(c);
+#ifdef SOLIDDRAG
 				}
+#endif
 				break;
 
 			case ButtonRelease:

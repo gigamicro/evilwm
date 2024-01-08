@@ -129,6 +129,12 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	}
 
 	do_client_move(c);
+#if !defined(MOVERESIZE_DISCARDENTERS) && defined(KBMOVERESIZE_DISCARDENTERS)
+	discard_enter_events(c);
+#endif
+#if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
+	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+#endif
 }
 
 void func_next(void *sptr, XEvent *e, unsigned flags) {
@@ -198,6 +204,12 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	}
 
 	do_client_move(c);
+#if !defined(MOVERESIZE_DISCARDENTERS) && defined(KBMOVERESIZE_DISCARDENTERS)
+	discard_enter_events(c);
+#endif
+#if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
+	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+#endif
 }
 
 void func_spawn(void *sptr, XEvent *e, unsigned flags) {
