@@ -9,3 +9,5 @@ evilwm
 .DS_Store
 ## debian rules often present, but separate
 debian/
+## why would you save a sublime project
+*.sublime-*
