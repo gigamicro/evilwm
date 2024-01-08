@@ -23,6 +23,8 @@ warp to alt-tabbed window? warp to corner/same relative position of kbmove/resiz
 
 select nearest window when over root window?
 
+middle ground for CONFIGURECURRENT_DISCARDENTERS; if it teleports vs if it just resizes
+
 ## Simpler tasks
 
 Consider determining initial vdesk from focussed window.

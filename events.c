@@ -152,9 +152,10 @@ static void handle_configure_request(XConfigureRequestEvent *e) {
 			}
 		}
 		do_window_changes(e->value_mask, &wc, c, 0);
-		if (c == current) {
+#ifdef CONFIGURECURRENT_DISCARDENTERS
+		if (c == current)
 			discard_enter_events(c);
-		}
+#endif
 	} else {
 		LOG_XENTER("XConfigureWindow(window=%lx, value_mask=%lx)", (unsigned long)e->window, e->value_mask);
 		XConfigureWindow(display.dpy, e->window, e->value_mask, &wc);

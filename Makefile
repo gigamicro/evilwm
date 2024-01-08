@@ -60,7 +60,8 @@ OPT_CPPFLAGS += -DMOVE_SERVERGRAB
 OPT_CPPFLAGS += -DMAXIMIZE_DISCARDENTERS
 OPT_CPPFLAGS += -DMOVERESIZE_DISCARDENTERS
 OPT_CPPFLAGS += -DNEWCLIENT_DISCARDENTERS
-#also happens on 'next' bind & handle_configure_request() on current client
+OPT_CPPFLAGS += -DCONFIGURECURRENT_DISCARDENTERS
+#also happens on 'next' bind
 
 #Uncomment to select new windows on creation, even if they are not under the pointer
 OPT_CPPFLAGS += -DNEWCLIENT_SELECT
