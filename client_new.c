@@ -199,12 +199,16 @@ void client_manage_new(Window w, struct screen *s) {
 		// pointer.
 		if (get_pointer_root_xy(c->window, NULL, NULL) &&
 		    !(window_type & (EWMH_WINDOW_TYPE_DOCK|EWMH_WINDOW_TYPE_NOTIFICATION))) {
+#ifdef NEWCLIENT_SELECT
 			select_client(c);
+#endif
 #ifdef WARP_POINTER
 			setmouse(c->window, c->width + c->border - 1,
 				 c->height + c->border - 1);
 #endif
+#ifdef NEWCLIENT_DISCARDENTERS
 			discard_enter_events(c);
+#endif
 		}
 	} else {
 		set_wm_state(c, IconicState);
