@@ -258,9 +258,7 @@ int main(int argc, char *argv[]) {
 			struct application *app = applications->data;
 			applications = list_delete(applications, app);
 			if (app->res_name)
-				free(app->res_name);
-			if (app->res_class)
-				free(app->res_class);
+				free(app->res_name); // all string parameters are one malloc
 			free(app);
 		}
 
@@ -285,29 +283,14 @@ static void set_bind(const char *arg) {
 	opt_bind = list_prepend(opt_bind, argdup);
 }
 
-static void set_app(const char *zeroth) {
-	char *first;
-	char *second = NULL;
-	if ((first = strchr(zeroth, '/'))) {
-		*(first++) = 0;
-	}
-	if (first && *first && (second = strchr(first, '/'))) {
-		*(second++) = 0;
-	}
+static void set_app(const char *arg) {
 	struct application *new = xmalloc(sizeof(struct application));
-	new->res_name = new->res_class = new->WM_NAME = NULL;
 	new->geometry_mask = 0;
 	new->is_dock = 0;
 	new->vdesk = VDESK_NONE;
-	if (*zeroth) {
-		new->res_name = xstrdup(zeroth);
-	}
-	if (first && *first) {
-		new->res_class = xstrdup(first);
-	}
-	if (second && *second) {
-		new->WM_NAME = xstrdup(second);
-	}
+	new->res_name = strtok(xstrdup(arg), "/");
+	new->res_class = strtok(NULL, "/");
+	new->WM_NAME = strtok(NULL, "");
 	applications = list_prepend(applications, new);
 }
 
