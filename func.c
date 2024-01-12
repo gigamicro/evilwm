@@ -133,7 +133,8 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	discard_enter_events(c);
 #endif
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
-	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+	// setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+	setmouse(c->window, (c->width + c->border - 1)/2, (c->height + c->border - 1)/2);
 #endif
 }
 
@@ -208,7 +209,8 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	discard_enter_events(c);
 #endif
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
-	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+	// setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+	setmouse(c->window, (c->width + c->border - 1)/2, (c->height + c->border - 1)/2);
 #endif
 }
 
