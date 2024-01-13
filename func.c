@@ -234,23 +234,28 @@ void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 			}
 		}
 	} else if (flags & FL_SCREEN) {
-		struct screen *current_screen = sptr;
+		struct screen *scr = sptr;
 		if (flags & FL_TOGGLE) {
-			switch_vdesk(current_screen, current_screen->old_vdesk);
+			switch_vdesk(scr, scr->old_vdesk);
 		} else if (flags & FL_RELATIVE) {
-			if (flags & FL_DOWN) {
-				if (current_screen->vdesk > 0) {
-					switch_vdesk(current_screen, current_screen->vdesk - 1);
-				}
-			}
-			if (flags & FL_UP) {
-				if (current_screen->vdesk < VDESK_MAX) {
-					switch_vdesk(current_screen, current_screen->vdesk + 1);
-				}
-			}
+			unsigned mod = option.vdesksmod;
+			if (!mod) mod = option.vdesks;// + 1;
+			unsigned v = scr->vdesk % mod;
+			unsigned h = scr->vdesk / mod;
+			unsigned v_max = mod;
+			unsigned h_max = option.vdesks / mod;
+			if (flags & FL_UP  )	v ++;
+			if (flags & FL_DOWN)	v --;
+			if (flags & FL_LEFT)	h --;
+			if (flags & FL_RIGHT)	h ++;
+			if (v >= v_max) v -= v_max;
+			if (h >= h_max) h -= h_max;
+			// if still >=, it was an underflow
+			if (v >= v_max) v += 2 * v_max;
+			if (h >= h_max) h += 2 * h_max;
+			switch_vdesk(scr, h * mod + v);
 		} else {
-			int v = flags & FL_VALUEMASK;
-			switch_vdesk(current_screen, v);
+			switch_vdesk(scr, flags & FL_VALUEMASK);
 		}
 	}
 }

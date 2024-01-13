@@ -1,7 +1,6 @@
 # evilwm TODO
 
 send-to-desktop
-desktop loop
 
 resize initial event
 
@@ -19,15 +18,10 @@ list -> https://cplusplus.com/reference/forward_list/forward_list/
 ## Simpler tasks
 
 Consider determining initial vdesk from focussed window.
-
-Allow specifying a matrix for vdesk organisation, e.g., "-numvdesks 4x2".  Add
-C+A+Up/Down controls to navigate them.
-
-instead of 2d vdesks, try vdesk up/down adding some N to the current vdesk
-variable stop points for l/r?
-(eg: 0123 4567 89AB CDEF, l/r ++/--, u/d +=4/-=4, boundaries for l/r at %4=0/%4=3 )
+^ may have been done previously
 
 ## Intermediate tasks
+
 
 Investigate SHAPEd windows for client sweep/drag.  As it stands, non-solid
 drags and all sweeps draw a border by inverting pixels on the screen, erasing
@@ -39,6 +33,8 @@ undesirable.
 Although the current methods work well enough, it would be nice to not have to
 grab the X server so often.  e.g., when adding or removing a client, maintain a
 set of windows that the error handler should treat differently.
+
+
 
 RandR-based multi-monitor support has now been implemented, but it would be
 nice if, when a client is moved due to removing a monitor, it could be moved
