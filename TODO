@@ -7,23 +7,14 @@ resize initial event
 
 KB movement amount
 
-switch to prevent new windows taking focus
-except those made by `spawn`
-
-higher rates on GC inverts?
-
 'TODO:'
 'XXX'
 
 rmb+- click+drag,click- -> move + resize?
 
-recalculate selected window on release modifier?
-
-warp to alt-tabbed window? warp to corner/same relative position of kbmove/resize?
-
 select nearest window when over root window?
 
-middle ground for CONFIGURECURRENT_DISCARDENTERS; if it teleports vs if it just resizes
+list -> https://cplusplus.com/reference/forward_list/forward_list/
 
 ## Simpler tasks
 
@@ -32,6 +23,9 @@ Consider determining initial vdesk from focussed window.
 Allow specifying a matrix for vdesk organisation, e.g., "-numvdesks 4x2".  Add
 C+A+Up/Down controls to navigate them.
 
+instead of 2d vdesks, try vdesk up/down adding some N to the current vdesk
+variable stop points for l/r?
+(eg: 0123 4567 89AB CDEF, l/r ++/--, u/d +=4/-=4, boundaries for l/r at %4=0/%4=3 )
 
 ## Intermediate tasks
 
