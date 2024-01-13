@@ -598,6 +598,7 @@ void client_select_next(void) {
 #if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)
 	setmouse(newc->window, (newc->width + newc->border - 1)/2, (newc->height + newc->border - 1)/2);
 #endif
-
+#ifdef NEXT_DISCARDENTERS
 	discard_enter_events(newc);
+#endif
 }

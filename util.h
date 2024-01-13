@@ -63,8 +63,15 @@ int window_normal_border(Window w);
 // interruptibleXNextEvent will return zero.
 int interruptibleXNextEvent(XEvent *event);
 
+#if defined(MAXIMIZE_DISCARDENTERS) \
+||  defined(MOVERESIZE_DISCARDENTERS) \
+||  defined(KBMOVERESIZE_DISCARDENTERS) \
+||  defined(NEWCLIENT_DISCARDENTERS) \
+||  defined(CONFIGURECURRENT_DISCARDENTERS) \
+||  defined(NEXT_DISCARDENTERS)
 // Remove enter events from the queue, preserving only the last one
 // corresponding to "except"s parent.
 void discard_enter_events(struct client *except);
+#endif
 
 #endif
