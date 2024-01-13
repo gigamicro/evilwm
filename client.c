@@ -152,13 +152,17 @@ struct monitor *client_monitor(struct client *c, Bool *intersects) {
 	int cy1 = c->y - c->border;
 	int cx2 = cx1 + c->width + c->border*2;
 	int cy2 = cy1 + c->height + c->border*2;
+#ifdef HAVE_MATH_H
 	int cmidx = (cx1 + cx2)/2;
 	int cmidy = (cy1 + cy2)/2;
+#endif
 
 	struct monitor *best = NULL;
 	Bool have_intersection = 0;
 	double best_area_ratio = 0.0;
-	double best_distance = 0.0;;
+#ifdef HAVE_MATH_H
+	double best_distance = 0.0;
+#endif
 
 	for (int i = 0; i < c->screen->nmonitors; i++) {
 		struct monitor *m = &c->screen->monitors[i];

@@ -243,6 +243,7 @@ int main(int argc, char *argv[]) {
 		// Event loop will run until interrupted
 		end_event_loop = 0;
 		event_main_loop();
+		LOG_DEBUG("main event loop ended\n");
 
 		// Record "old current window" across SIGHUPs
 		old_current_window = current ? current->window : None;
