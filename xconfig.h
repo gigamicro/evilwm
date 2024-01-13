@@ -24,8 +24,8 @@ enum xconfig_option_type {
 	XCONFIG_UINT,  // unsigned
 	XCONFIG_STRING,  // char *
 	XCONFIG_STR_LIST,  // char **
-	XCONFIG_CALL_0,  // (void (*)(void)
-	XCONFIG_CALL_1,  // (void (*)(const char *)
+	XCONFIG_CALL_0,  // void (*)(void)
+	XCONFIG_CALL_1,  // void (*)(const char *)
 	XCONFIG_END
 };
 
