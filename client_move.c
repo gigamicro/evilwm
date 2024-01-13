@@ -595,9 +595,8 @@ void client_select_next(void) {
 	// evilwm (possibly to generate the enter event and handle selecting
 	// the client as a result of that), but I don't like it now.
 
-#ifdef WARP_POINTER
-	setmouse(newc->window, newc->width + newc->border - 1,
-			newc->height + newc->border - 1);
+#if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)
+	setmouse(newc->window, (newc->width + newc->border - 1)/2, (newc->height + newc->border - 1)/2);
 #endif
 
 	discard_enter_events(newc);
