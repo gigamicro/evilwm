@@ -139,13 +139,14 @@ void client_manage_new(Window w, struct screen *s) {
 	class = XAllocClassHint();
 	if (class) {
 		XGetClassHint(display.dpy, w, class);
+		LOG_DEBUG("app %s/%s/%s\n",class->res_name,class->res_class,name);
 		for (struct list *iter = applications; iter; iter = iter->next) {
 			struct application *a = iter->data;
 			// Does resource name and class match?
 			if ((!a->res_name  || (class->res_name  && !strcmp(class->res_name,  a->res_name )))
 			 && (!a->res_class || (class->res_class && !strcmp(class->res_class, a->res_class)))
 			 && (!a->WM_NAME   || (name             &&  strstr(name,             a->WM_NAME  )))) {
-
+				LOG_DEBUG("Class match, using app settings\n");
 				// Override width or height?
 				if (a->geometry_mask & WidthValue)
 					c->width = a->width * c->width_inc;
@@ -362,7 +363,7 @@ static void reparent(struct client *c) {
 	                    | ButtonPressMask | EnterWindowMask;
 
 	// Create parent window, accounting for border width
-	c->parent = XCreateWindow(display.dpy, c->screen->root, c->x-c->border, c->y-c->border,
+	c->parent = XCreateWindow(display.dpy, c->screen->root, c->x - c->border, c->y - c->border,
 		c->width, c->height, c->border,
 		DefaultDepth(display.dpy, c->screen->screen), CopyFromParent,
 		DefaultVisual(display.dpy, c->screen->screen),
