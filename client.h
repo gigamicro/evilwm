@@ -64,6 +64,9 @@ struct client {
 	int win_gravity_hint;
 	int win_gravity;
 	int is_dock;
+#ifdef CONFIGREQ
+	int ignore_configreq;
+#endif
 };
 
 // Client tracking information

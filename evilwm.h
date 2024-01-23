@@ -68,6 +68,9 @@ struct application {
 	int geometry_mask;
 	int x, y;
 	unsigned width, height;
+#ifdef CONFIGREQ
+	int ignore_configreq;
+#endif
 	int is_dock;
 	unsigned vdesk;
 };

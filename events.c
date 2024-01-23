@@ -132,8 +132,14 @@ static void do_window_changes(int value_mask, XWindowChanges *wc, struct client 
 	LOG_XLEAVE();
 }
 
+#ifdef CONFIGREQ
 static void handle_configure_request(XConfigureRequestEvent *e) {
 	struct client *c = find_client(e->window);
+	LOG_DEBUG("Configure request\n");
+	if (c && c->ignore_configreq) {
+		LOG_DEBUG("Ignoring configure request due to 'manual' directive\n");
+		return;
+	}
 
 	XWindowChanges wc;
 	wc.x = e->x;
@@ -162,6 +168,7 @@ static void handle_configure_request(XConfigureRequestEvent *e) {
 		LOG_XLEAVE();
 	}
 }
+#endif
 
 static void handle_map_request(XMapRequestEvent *e) {
 	struct client *c = find_client(e->window);
@@ -369,7 +376,13 @@ static void handle_client_message(XClientMessageEvent *e) {
 		return;
 	}
 
+#ifdef CONFIGREQ
 	if (e->message_type == X_ATOM(_NET_WM_STATE)) {
+		if (c && c->ignore_configreq) {
+			LOG_DEBUG("Ignoring _NET_WM_STATE message due to 'manual' directive\n");
+			LOG_LEAVE();
+			return;
+		}
 		int i, maximise_hv = 0;
 		// Message can contain up to two state changes:
 		for (i = 1; i <= 2; i++) {
@@ -387,6 +400,7 @@ static void handle_client_message(XClientMessageEvent *e) {
 		LOG_LEAVE();
 		return;
 	}
+#endif
 
 	LOG_LEAVE();
 }
@@ -417,9 +431,11 @@ void event_main_loop(void) {
 			case ButtonPress:
 				bind_handle_button(&ev.xevent.xbutton);
 				break;
+#ifdef CONFIGREQ
 			case ConfigureRequest:
 				handle_configure_request(&ev.xevent.xconfigurerequest);
 				break;
+#endif
 			case MapRequest:
 				handle_map_request(&ev.xevent.xmaprequest);
 				break;

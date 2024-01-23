@@ -101,6 +101,9 @@ void client_manage_new(Window w, struct screen *s) {
 	c->window = w;
 	c->ignore_unmap = 0;
 	c->remove = 0;
+#ifdef CONFIGREQ
+	c->ignore_configreq = 0;
+#endif
 
 	// Ungrab the X server as soon as possible. Now that the client is
 	// malloc()ed and attached to the list, it is safe for any subsequent
@@ -165,6 +168,12 @@ void client_manage_new(Window w, struct screen *s) {
 
 				// XXX better way of updating window geometry?
 				client_moveresizeraise(c);
+
+#ifdef CONFIGREQ
+				// Force this app to only be move/resized by user?
+				if (a->ignore_configreq)
+					c->ignore_configreq = 1;
+#endif
 
 				// Force treating this app as a dock?
 				if (a->is_dock)

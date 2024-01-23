@@ -67,6 +67,9 @@ OPT_CPPFLAGS += -DNEXT_DISCARDENTERS
 #Uncomment to select new windows on creation, even if they are not under the pointer
 OPT_CPPFLAGS += -DNEWCLIENT_SELECT
 
+#Uncomment to allow windows to move, resize, and maximize themselves
+OPT_CPPFLAGS += -DCONFIGREQ
+
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
 OPT_CPPFLAGS += -DRESIZE_WARP_POINTER

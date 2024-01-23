@@ -48,6 +48,7 @@ struct list *applications = NULL;
 static void set_bind(const char *arg);
 static void set_app(const char *arg);
 static void set_app_geometry(const char *arg);
+static void set_app_manual(void);
 static void set_app_dock(void);
 static void set_app_vdesk(const char *arg);
 static void set_app_fixed(void);
@@ -74,6 +75,9 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_1,   "app",          { .c1 = &set_app } },
 	{ XCONFIG_CALL_1,   "geometry",     { .c1 = &set_app_geometry } },
 	{ XCONFIG_CALL_1,   "g",            { .c1 = &set_app_geometry } },
+#ifdef CONFIGREQ
+	{ XCONFIG_CALL_0,   "manual",       { .c0 = &set_app_manual } },
+#endif
 	{ XCONFIG_CALL_0,   "dock",         { .c0 = &set_app_dock } },
 	{ XCONFIG_CALL_1,   "vdesk",        { .c1 = &set_app_vdesk } },
 	{ XCONFIG_CALL_1,   "v",            { .c1 = &set_app_vdesk } },
@@ -116,6 +120,9 @@ static void helptext(void) {
 "\n Application matching options:\n"
 "  --app NAME/CLASS      match application by instance name & class\n"
 "    -g, --geometry GEOM   apply X geometry to matched application\n"
+#ifdef CONFIGREQ
+"        --manual          disallow app from modifying its own geometry\n"
+#endif
 "        --dock            treat matched app as a dock\n"
 "    -v, --vdesk VDESK     move app to numbered vdesk (indexed from 0)\n"
 "    -f, --fixed           matched app should start fixed\n"
@@ -288,6 +295,9 @@ static void set_bind(const char *arg) {
 static void set_app(const char *arg) {
 	struct application *new = xmalloc(sizeof(struct application));
 	new->geometry_mask = 0;
+#ifdef CONFIGREQ
+	new->ignore_configreq = 0;
+#endif
 	new->is_dock = 0;
 	new->vdesk = VDESK_NONE;
 	new->res_name = strtok(xstrdup(arg), "/");
@@ -303,6 +313,15 @@ static void set_app_geometry(const char *arg) {
 				&app->x, &app->y, &app->width, &app->height);
 	}
 }
+
+#ifdef CONFIGREQ
+static void set_app_manual(void) {
+	if (applications) {
+		struct application *app = applications->data;
+		app->ignore_configreq = 1;
+	}
+}
+#endif
 
 static void set_app_dock(void) {
 	if (applications) {
