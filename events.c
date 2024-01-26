@@ -311,6 +311,28 @@ static void handle_client_message(XClientMessageEvent *e) {
 		if (e->message_type == X_ATOM(_NET_REQUEST_FRAME_EXTENTS)) {
 			int bw = window_normal_border(e->window);
 			ewmh_set_net_frame_extents(e->window, bw);
+			//*
+		} else if (e->message_type == X_ATOM(_NET_ACTIVE_WINDOW)) {
+			LOG_DEBUG("Unmanaged window asks for focus\n"); // XXX Steam does this with its dropdowns
+			XWindowAttributes attr;
+			int root_x; int root_y;
+			//dummy:
+			Window root;
+			Window child;// that the pointer is in
+			int child_x; int child_y;
+			unsigned int mask;//kb modifiers
+			if ( XQueryPointer(display.dpy, e->window, &root, &child, &root_x, &root_y, &child_x, &child_y, &mask)
+				&& XGetWindowAttributes(display.dpy, e->window, &attr) ) {
+				int x = root_x - attr.x;
+				int y = root_y - attr.y;
+				if (x > attr.width ) x = attr.width;
+				if (y > attr.height) y = attr.height;
+				// setmouse(e->window, x, y);
+				XWarpPointer(display.dpy, None, e->window, 0, 0, 0, 0, x, y);
+			}
+			//*/
+		} else {
+			LOG_DEBUG("Unmanaged window, discarding\n");
 		}
 
 		LOG_LEAVE();
