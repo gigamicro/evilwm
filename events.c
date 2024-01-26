@@ -241,11 +241,10 @@ static void handle_property_change(XPropertyEvent *e) {
 }
 
 static void handle_enter_event(XCrossingEvent *e) {
-	struct client *c;
+	struct client *c = find_client(e->window);
 
-	if ((c = find_client(e->window))) {
-		if (!is_fixed(c) && c->vdesk != c->screen->vdesk)
-			return;
+	if (c) {
+		if (!is_fixed(c) && c->vdesk != c->screen->vdesk) return;
 		select_client(c);
 		clients_tab_order = list_to_head(clients_tab_order, c);
 	}
@@ -341,10 +340,8 @@ static void handle_client_message(XClientMessageEvent *e) {
 
 	if (e->message_type == X_ATOM(_NET_ACTIVE_WINDOW)) {
 		// Only do this if it came from direct user action
-		if (e->data.l[0] == 2) {
-			if (c->screen == s)
-				select_client(c);
-		}
+		if (e->data.l[0] == 2 && c->screen == s)
+			select_client(c);
 		LOG_LEAVE();
 		return;
 	}
