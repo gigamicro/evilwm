@@ -64,6 +64,8 @@ const char *debug_atom_name(Atom a);
 void debug_window_attributes(XWindowAttributes *attr);
 // Dump size hints
 void debug_wm_normal_hints(XSizeHints *size);
+// Get XEvent type as string
+const char *xevent_string(int event);
 
 #else
 

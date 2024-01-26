@@ -36,6 +36,51 @@ const char *debug_atom_name(Atom a) {
 
 #ifdef XDEBUG
 
+const char *xevent_string(int event) {
+	// /usr/include/X11/X.h
+	const char *events[] = {
+		"0",
+		"1",
+		"KeyPress",
+		"KeyRelease",
+		"ButtonPress",
+		"ButtonRelease",
+		"MotionNotify",
+		"EnterNotify",
+		"LeaveNotify",
+		"FocusIn",
+		"FocusOut",
+		"KeymapNotify",
+		"Expose",
+		"GraphicsExpose",
+		"NoExpose",
+		"VisibilityNotify",
+		"CreateNotify",
+		"DestroyNotify",
+		"UnmapNotify",
+		"MapNotify",
+		"MapRequest",
+		"ReparentNotify",
+		"ConfigureNotify",
+		"ConfigureRequest",
+		"GravityNotify",
+		"ResizeRequest",
+		"CirculateNotify",
+		"CirculateRequest",
+		"PropertyNotify",
+		"SelectionClear",
+		"SelectionRequest",
+		"SelectionNotify",
+		"ColormapNotify",
+		"ClientMessage",
+		"MappingNotify",
+		"GenericEvent",
+		"LASTEvent",
+		"OOB!"
+	};
+	return ((unsigned)event < 37) ? events[event] : events[37];
+}
+
 static const char *gravity_string(int gravity) {
 	const char *gravities[12] = {
 		"ForgetGravity",

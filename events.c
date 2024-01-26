@@ -458,6 +458,8 @@ void event_main_loop(void) {
 				handle_configure_request(&ev.xevent.xconfigurerequest);
 				break;
 #endif
+			case ConfigureNotify:
+				break;
 			case MapRequest:
 				handle_map_request(&ev.xevent.xmaprequest);
 				break;
@@ -490,6 +492,7 @@ void event_main_loop(void) {
 					handle_randr_event(&ev.xrandr);
 				}
 #endif
+				LOG_XDEBUG("%s\n", xevent_string(ev.xevent.type));
 				break;
 			}
 		}
