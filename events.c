@@ -310,7 +310,7 @@ static void handle_client_message(XClientMessageEvent *e) {
 		if (e->message_type == X_ATOM(_NET_REQUEST_FRAME_EXTENTS)) {
 			int bw = window_normal_border(e->window);
 			ewmh_set_net_frame_extents(e->window, bw);
-			//*
+#ifdef UNMAN_FOCUS_WARP
 		} else if (e->message_type == X_ATOM(_NET_ACTIVE_WINDOW)) {
 			LOG_DEBUG("Unmanaged window asks for focus\n"); // XXX Steam does this with its dropdowns
 			XWindowAttributes attr;
@@ -326,10 +326,12 @@ static void handle_client_message(XClientMessageEvent *e) {
 				int y = root_y - attr.y;
 				if (x > attr.width ) x = attr.width;
 				if (y > attr.height) y = attr.height;
+				if (x < 0) x = 0;
+				if (y < 0) y = 0;
 				// setmouse(e->window, x, y);
 				XWarpPointer(display.dpy, None, e->window, 0, 0, 0, 0, x, y);
 			}
-			//*/
+#endif
 		} else {
 			LOG_DEBUG("Unmanaged window, discarding\n");
 		}
