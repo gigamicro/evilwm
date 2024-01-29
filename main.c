@@ -48,7 +48,9 @@ struct list *applications = NULL;
 static void set_bind(const char *arg);
 static void set_app(const char *arg);
 static void set_app_geometry(const char *arg);
+#ifdef CONFIGREQ
 static void set_app_manual(void);
+#endif
 static void set_app_dock(void);
 static void set_app_vdesk(const char *arg);
 static void set_app_fixed(void);
@@ -109,6 +111,7 @@ static void helptext(void) {
 "  --snap PIXELS       snap distance when dragging windows [0; disabled]\n"
 "  --wholescreen       ignore monitor geometries when maximising\n"
 "  --numvdesks N       total number of virtual desktops [8]\n"
+"  --modvdesks N       virtual desktop subdivision size [numvdesks]\n"
 #ifdef SOLIDDRAG
 "  --nosoliddrag       draw outline when moving or resizing\n"
 #endif
@@ -248,10 +251,12 @@ int main(int argc, char *argv[]) {
 				select_client(c);
 		}
 
+		////////////////////////////////////////
 		// Event loop will run until interrupted
 		end_event_loop = 0;
 		event_main_loop();
 		LOG_DEBUG("main event loop ended\n");
+		////////////////////////////////////////
 
 		// Record "old current window" across SIGHUPs
 		old_current_window = current ? current->window : None;

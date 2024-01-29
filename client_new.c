@@ -167,8 +167,7 @@ void client_manage_new(Window w, struct screen *s) {
 						c->y = a->y + c->border;
 				}
 
-				// XXX better way of updating window geometry?
-				client_moveresizeraise(c);
+				client_moveresize(c);
 
 #ifdef CONFIGREQ
 				// Force this app to only be move/resized by user?

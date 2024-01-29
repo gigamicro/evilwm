@@ -1,5 +1,9 @@
 # evilwm TODO
 
+## Simpler tasks
+
+initial state of docks
+
 send-to-desktop
 
 KB movement amount
@@ -7,17 +11,9 @@ KB movement amount
 'TODO:'
 'XXX'
 
-rmb+- click+drag,click- -> move + resize?
-
-select nearest window when over root window? -nah
 ability to disable focus-keeping on root window?
 
-list -> https://cplusplus.com/reference/forward_list/forward_list/  ?
-
-## Simpler tasks
-
-Consider determining initial vdesk from focussed window.
-^ may have been done previously
+rmb+- click+drag,click- -> move + resize?
 
 ## Intermediate tasks
 
@@ -27,7 +23,8 @@ drags and all sweeps draw a border by inverting pixels on the screen, erasing
 by re-inverting.  This requires the X server to be grabbed, which is
 undesirable.
 
-^ what if you froze the client window and resized our parent? that doesn't work without a freeze, the non-border section just doesn't draw
+^ what if you froze the client window and resized our parent?
+that doesn't work without a freeze, the non-border section just doesn't draw, and even then the undrawn portion would be mostly border
 
 
 Although the current methods work well enough, it would be nice to not have to

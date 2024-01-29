@@ -447,7 +447,7 @@ void client_show_info(struct client *c, XEvent *e) {
 	}
 }
 #else
-void client_show_info(struct client *, XEvent *) {}
+void client_show_info(struct client *c, XEvent *e) {}
 #endif
 
 // Move window to (potentially updated) client coordinates.
@@ -590,13 +590,13 @@ void client_select_next(void) {
 	client_raise(newc);
 	select_client(newc);
 
+#if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)
 	// Optionally force the pointer to jump to the newly-selected window.
 	// I think this was the default behaviour in much earlier versions of
 	// evilwm (possibly to generate the enter event and handle selecting
 	// the client as a result of that), but I don't like it now.
-
-#if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)
-	setmouse(newc->window, (newc->width + newc->border - 1)/2, (newc->height + newc->border - 1)/2);
+	// setmouse(newc->window, (newc->width + newc->border - 1), (newc->height + newc->border - 1));
+	setmouse(newc->window, newc->width/2, newc->height/2);
 #endif
 #ifdef NEXT_DISCARDENTERS
 	discard_enter_events(newc);

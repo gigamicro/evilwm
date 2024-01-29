@@ -14,6 +14,9 @@
 #else
 #define DEF_TERM        "xterm"
 #endif
+#ifndef VERSION
+#define VERSION "?.?.?"
+#endif
 
 // Options
 

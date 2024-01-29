@@ -67,11 +67,6 @@ static _Bool vdeskfrompointerwindow(struct screen *s) {
 	Window child;
 	int cx; int cy;  Window root;  int rx; int ry;  unsigned mask; //dummy
 	if (!XQueryPointer(display.dpy, s->root, &root, &child, &rx, &ry, &cx, &cy, &mask)) return False;
-	/*
-	struct client *c = find_client(child);
-	LOG_DEBUG("window 0x%lx, client 0x%llx\n",child,(long long unsigned)c);
-	if (!c) return False;
-	s->vdesk = c->vdesk;//*/
 	unsigned long nitems;
 	unsigned *ret = get_property(child, X_ATOM(_NET_WM_DESKTOP), XA_CARDINAL, &nitems);
 	if (nitems != 1) { LOG_DEBUG("nitems=%lu for _NET_WM_DESKTOP on window 0x%lx\n", nitems, child); }

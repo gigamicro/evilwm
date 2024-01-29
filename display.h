@@ -101,14 +101,14 @@ struct display {
 	int randr_event_base;
 #endif
 
-	// Screens
-	int nscreens;
-	struct screen *screens;
-
 	// Information window
 #ifdef INFOBANNER
 	Window info_window;
 #endif
+
+	// Screens
+	int nscreens;
+	struct screen *screens;
 };
 
 // evilwm only supports one display at a time; this variable is global:

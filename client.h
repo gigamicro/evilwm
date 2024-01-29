@@ -11,6 +11,8 @@
 #ifndef EVILWM_CLIENT_H_
 #define EVILWM_CLIENT_H_
 
+#include <X11/Xlib.h>
+
 struct list;
 struct screen;
 struct monitor;
