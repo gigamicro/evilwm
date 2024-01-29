@@ -8,6 +8,8 @@
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 
+#include "log.h"
+
 // Required for interpreting MWM hints
 
 #define PROP_MWM_HINTS_ELEMENTS 3
@@ -35,9 +37,9 @@ typedef struct {
 		      GrabModeAsync, GrabModeAsync, \
 		      None, curs, CurrentTime) == GrabSuccess)
 
-#if defined(WARP_POINTER) || defined(RESIZE_WARP_POINTER) || defined(KBMOVERESIZE_WARP_POINTER)
+#if defined(WARP_POINTER) || defined(RESIZE_WARP_POINTER) || defined(KBMOVERESIZE_WARP_POINTER) || defined(UNMAN_FOCUS_WARP_POINTER)
 // Move the mouse pointer.
-#define setmouse(w, x, y) XWarpPointer(display.dpy, None, w, 0, 0, 0, 0, x, y)
+#define setmouse(w, x, y) LOG_DEBUG("setmouse\n");XWarpPointer(display.dpy, None, w, 0, 0, 0, 0, x, y)
 #endif
 
 // Error handler interaction
