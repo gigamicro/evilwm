@@ -51,6 +51,18 @@ static char *screen_to_display_str(int i) {
 	return dpy_str;
 }
 
+static _Bool vdeskfromroot(struct screen *s) {
+	unsigned long nitems;
+	unsigned *ret = get_property(s->root, X_ATOM(_NET_CURRENT_DESKTOP), XA_CARDINAL, &nitems);
+	if (nitems != 1) { LOG_DEBUG("nitems=%lu for _NET_CURRENT_DESKTOP on screen %i (%s)\n",
+		nitems, s->screen, screen_to_display_str(s->screen)); }
+	if (!nitems) return False;
+	if (!ret) return False;
+	s->vdesk = *ret;//[0];
+	XFree(ret);
+	LOG_DEBUG("vdeskfromroot set vdesk to %u\n", s->vdesk);
+	return True;
+}
 // Called once per screen when display is being initialised.
 
 void screen_init(struct screen *s) {
@@ -70,10 +82,8 @@ void screen_init(struct screen *s) {
 #endif
 	screen_probe_monitors(s);
 
-	// Default to first virtual desktop.  TODO: consider checking the
-	// _NET_WM_DESKTOP property of the window with focus when we start to
-	// change this default?
-	s->vdesk = 0;
+	if (!vdeskfromroot(s))
+		s->vdesk = 0;
 
 	// In case the visual for this screen uses a colourmap, ensure our
 	// border colours are in it.
@@ -200,7 +210,7 @@ void screen_deinit(struct screen *s) {
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_NUMBER_OF_DESKTOPS));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_DESKTOP_GEOMETRY));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_DESKTOP_VIEWPORT));
-	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_CURRENT_DESKTOP));
+	//XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_CURRENT_DESKTOP));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_ACTIVE_WINDOW));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_WORKAREA));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_SUPPORTING_WM_CHECK));
