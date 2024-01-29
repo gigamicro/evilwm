@@ -63,6 +63,25 @@ static _Bool vdeskfromroot(struct screen *s) {
 	LOG_DEBUG("vdeskfromroot set vdesk to %u\n", s->vdesk);
 	return True;
 }
+static _Bool vdeskfrompointerwindow(struct screen *s) {
+	Window child;
+	int cx; int cy;  Window root;  int rx; int ry;  unsigned mask; //dummy
+	if (!XQueryPointer(display.dpy, s->root, &root, &child, &rx, &ry, &cx, &cy, &mask)) return False;
+	/*
+	struct client *c = find_client(child);
+	LOG_DEBUG("window 0x%lx, client 0x%llx\n",child,(long long unsigned)c);
+	if (!c) return False;
+	s->vdesk = c->vdesk;//*/
+	unsigned long nitems;
+	unsigned *ret = get_property(child, X_ATOM(_NET_WM_DESKTOP), XA_CARDINAL, &nitems);
+	if (nitems != 1) { LOG_DEBUG("nitems=%lu for _NET_WM_DESKTOP on window 0x%lx\n", nitems, child); }
+	if (!nitems) return False;
+	if (!ret) return False;
+	s->vdesk = *ret;
+	LOG_DEBUG("vdeskfrompointerwindow set vdesk to %u\n", s->vdesk);
+	return True;
+}
+
 // Called once per screen when display is being initialised.
 
 void screen_init(struct screen *s) {
@@ -83,6 +102,7 @@ void screen_init(struct screen *s) {
 	screen_probe_monitors(s);
 
 	if (!vdeskfromroot(s))
+	if (!vdeskfrompointerwindow(s))
 		s->vdesk = 0;
 
 	// In case the visual for this screen uses a colourmap, ensure our
@@ -210,7 +230,7 @@ void screen_deinit(struct screen *s) {
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_NUMBER_OF_DESKTOPS));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_DESKTOP_GEOMETRY));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_DESKTOP_VIEWPORT));
-	//XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_CURRENT_DESKTOP));
+	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_CURRENT_DESKTOP));//disable to use vdeskfromroot more
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_ACTIVE_WINDOW));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_WORKAREA));
 	XDeleteProperty(display.dpy, s->root, X_ATOM(_NET_SUPPORTING_WM_CHECK));
