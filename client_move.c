@@ -459,6 +459,17 @@ void client_moveresize(struct client *c) {
 	send_config(c);
 }
 
+// Make sure window is onscreen (by moving it *if* necessary)
+void client_intersect(struct client *c) {
+	int intersects;
+	struct monitor *close = client_monitor(c, &intersects);
+	if (intersects) return;
+	if (c->x > close->x+close->width ) c->x = close->x+close->width;
+	if (c->x < close->x-c    ->width ) c->x = close->x-c    ->width;
+	if (c->y > close->y+close->height) c->y = close->y+close->height;
+	if (c->y < close->y-c    ->height) c->y = close->y-c    ->height;
+	client_moveresize(c);
+}
 // Same, but raise the client first.
 
 void client_moveresizeraise(struct client *c) {
@@ -588,6 +599,7 @@ void client_select_next(void) {
 
 	client_show(newc);  // XXX why would it be hidden?
 	client_raise(newc);
+	client_intersect(newc);
 	select_client(newc);
 
 #if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)

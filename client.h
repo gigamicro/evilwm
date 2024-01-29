@@ -92,6 +92,7 @@ void client_resize_sweep(struct client *c, unsigned button);
 void client_move_drag(struct client *c, unsigned button);
 void client_show_info(struct client *c, XEvent *e);
 void client_moveresize(struct client *c);
+void client_intersect(struct client *c);
 void client_moveresizeraise(struct client *c);
 void client_maximise(struct client *c, int action, int hv);
 void client_select_next(void);
