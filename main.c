@@ -81,6 +81,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_0,   "manual",       { .c0 = &set_app_manual } },
 #endif
 	{ XCONFIG_CALL_0,   "dock",         { .c0 = &set_app_dock } },
+	{ XCONFIG_INT,      "docks",        { .i = &option.docks } },
 	{ XCONFIG_CALL_1,   "vdesk",        { .c1 = &set_app_vdesk } },
 	{ XCONFIG_CALL_1,   "v",            { .c1 = &set_app_vdesk } },
 	{ XCONFIG_CALL_0,   "fixed",        { .c0 = &set_app_fixed } },
@@ -159,6 +160,7 @@ static const char *default_options[] = {
 	"bw " xstr(DEF_BW),
 	"fc " DEF_FC,
 	"numvdesks 8",
+	"docks 1",
 };
 #define NUM_DEFAULT_OPTIONS (sizeof(default_options)/sizeof(default_options[0]))
 

@@ -191,6 +191,10 @@ void client_manage_new(Window w, struct screen *s) {
 	if (name)
 		XFree(name);
 
+	LOG_DEBUG("vdesk %u\n", c->vdesk);
+	LOG_DEBUG("is_dock %i\n", c->is_dock);
+	LOG_DEBUG("ignore_configreq %i\n", c->ignore_configreq);
+
 	// Set EWMH property on client advertising WM features
 	ewmh_set_allowed_actions(c);
 
@@ -201,7 +205,7 @@ void client_manage_new(Window w, struct screen *s) {
 	// Only map the window frame (and thus the window) if it's supposed
 	// to be visible on this virtual desktop.  Otherwise, set it to
 	// IconicState (hidden).
-	if (is_fixed(c) || c->vdesk == s->vdesk) {
+	if ((is_fixed(c) || c->vdesk == s->vdesk) && (!c->is_dock || s->docks_visible)) {
 		client_show(c);
 		client_raise(c);
 		// Don't focus windows that aren't on the same display as the

@@ -141,7 +141,7 @@ void screen_init(struct screen *s) {
 	bind_grab_for_screen(s);
 
 	s->active = None;
-	s->docks_visible = 1;
+	s->docks_visible = option.docks;
 
 	Atom supported[] = {
 		X_ATOM(_NET_CLIENT_LIST),

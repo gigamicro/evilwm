@@ -51,6 +51,9 @@ struct options {
 	int no_solid_drag;
 #endif
 
+	// Initial dock state
+	int docks;
+
 	// disable loading the default key bindings
 	int nodefaultbinds;
 
