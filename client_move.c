@@ -459,6 +459,13 @@ void client_moveresize(struct client *c) {
 	send_config(c);
 }
 
+// Same, but raise the client first.
+
+void client_moveresizeraise(struct client *c) {
+	client_raise(c);
+	client_moveresize(c);
+}
+
 // Make sure window is onscreen (by moving it *if* necessary)
 void client_intersect(struct client *c) {
 	int intersects;
@@ -468,12 +475,6 @@ void client_intersect(struct client *c) {
 	if (c->x < close->x-c    ->width ) c->x = close->x-c    ->width;
 	if (c->y > close->y+close->height) c->y = close->y+close->height;
 	if (c->y < close->y-c    ->height) c->y = close->y-c    ->height;
-	client_moveresize(c);
-}
-// Same, but raise the client first.
-
-void client_moveresizeraise(struct client *c) {
-	client_raise(c);
 	client_moveresize(c);
 }
 

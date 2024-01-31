@@ -40,8 +40,11 @@ struct options {
 	// Loop increment & vertical movement amount for vdesks
 	unsigned vdesksmod;
 
-	// Snap to border flag
+	// Snap to border distance
 	int snap;
+
+	// Default keyboard movement distance
+	int kbpx;
 
 	// Whole screen flag (ignore monitor information)
 	int wholescreen;

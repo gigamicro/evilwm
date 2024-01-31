@@ -68,6 +68,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_INT,      "bw",           { .i = &option.bw } },
 	{ XCONFIG_STR_LIST, "term",         { .sl = &option.term } },
 	{ XCONFIG_INT,      "snap",         { .i = &option.snap } },
+	{ XCONFIG_INT,      "kbpx",         { .i = &option.kbpx } },
 	{ XCONFIG_BOOL,     "wholescreen",  { .i = &option.wholescreen } },
 	{ XCONFIG_STRING,   "mask1",        { .s = &opt_grabmask1 } },
 	{ XCONFIG_STRING,   "mask2",        { .s = &opt_grabmask2 } },
@@ -161,6 +162,7 @@ static const char *default_options[] = {
 	"fc " DEF_FC,
 	"numvdesks 8",
 	"docks 1",
+	"kbpx 16",
 };
 #define NUM_DEFAULT_OPTIONS (sizeof(default_options)/sizeof(default_options[0]))
 

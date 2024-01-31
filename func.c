@@ -91,8 +91,8 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 		return;
 
 	struct monitor *monitor = client_monitor(c, NULL);
-	int width_inc = (c->width_inc > 1) ? c->width_inc : 16;
-	int height_inc = (c->height_inc > 1) ? c->height_inc : 16;
+	int width_inc = (c->width_inc > 1) ? c->width_inc : option.kbpx;
+	int height_inc = (c->height_inc > 1) ? c->height_inc : option.kbpx;
 
 	if (e->type == ButtonPress) {
 		XButtonEvent *xbutton = (XButtonEvent *)e;
@@ -170,8 +170,8 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	int width_inc = (c->width_inc > 1) ? c->width_inc : 16;
-	int height_inc = (c->height_inc > 1) ? c->height_inc : 16;
+	int width_inc = (c->width_inc > 1) ? c->width_inc : option.kbpx;
+	int height_inc = (c->height_inc > 1) ? c->height_inc : option.kbpx;
 
 	if (e->type == ButtonPress) {
 		XButtonEvent *xbutton = (XButtonEvent *)e;
