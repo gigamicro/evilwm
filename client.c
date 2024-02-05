@@ -379,13 +379,10 @@ void client_to_vdesk(struct client *c, unsigned vdesk) {
 void remove_client(struct client *c) {
 	LOG_ENTER("remove_client(window=%lx, %s)", (unsigned long)c->window, c->remove ? "withdrawing" : "wm quitting");
 
-	// Grab the server so any X errors are guaranteed to come from our actions.
-	XGrabServer(display.dpy);
-
 	// Flag to ignore any X errors we trigger.  The window may well already
 	// have been deleted from the server, so anything we try to do to it
 	// here would raise one.
-	ignore_xerror = 1;
+	removing = c->window;
 
 	// ICCCM 4.1.3.1
 	// "When the window is withdrawn, the window manager will either change
@@ -460,9 +457,7 @@ void remove_client(struct client *c) {
 	}
 #endif
 
-	XUngrabServer(display.dpy);
-	XSync(display.dpy, False);
-	ignore_xerror = 0;
+	// removing = None;
 	LOG_LEAVE();
 }
 

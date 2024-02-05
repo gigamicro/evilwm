@@ -5,8 +5,7 @@
 #ifndef EVILWM_UTIL_H_
 #define EVILWM_UTIL_H_
 
-#include <X11/X.h>
-#include <X11/Xdefs.h>
+#include <X11/Xlib.h>
 
 #include "log.h"
 
@@ -43,8 +42,8 @@ typedef struct {
 #endif
 
 // Error handler interaction
-extern int ignore_xerror;
 extern volatile Window initialising;
+extern volatile Window removing;
 
 // Spawn a subprocess (usually xterm or similar)
 void spawn(const char *const cmd[]);

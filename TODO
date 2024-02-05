@@ -23,10 +23,6 @@ undesirable.
 that doesn't work without a freeze, the non-border section just doesn't draw, and even then the undrawn portion would be mostly border
 
 
-Although the current methods work well enough, it would be nice to not have to
-grab the X server so often.  e.g., when adding or removing a client, maintain a
-set of windows that the error handler should treat differently.
-
 
 RandR-based multi-monitor support has now been implemented, but it would be
 nice if, when a client is moved due to removing a monitor, it could be moved

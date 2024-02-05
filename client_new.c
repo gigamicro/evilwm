@@ -45,8 +45,6 @@ void client_manage_new(Window w, struct screen *s) {
 
 	LOG_ENTER("client_manage_new(window=%lx)", (unsigned long)w);
 
-	XGrabServer(display.dpy);
-
 	// First a bit of interaction with the error handler due to X's
 	// tendency to batch event notifications.  We set a global variable to
 	// the id of the window we're initialising then do simple X call on
@@ -59,7 +57,6 @@ void client_manage_new(Window w, struct screen *s) {
 	XTextProperty wmname;
 	XGetWMName(display.dpy, w, &wmname);
 	name = (char *)wmname.value;
-	XSync(display.dpy, False);
 
 	// If 'initialising' is now set to None, that means doing the
 	// XFetchName raised BadWindow - the window has been removed before
@@ -67,19 +64,18 @@ void client_manage_new(Window w, struct screen *s) {
 
 	if (initialising == None) {
 		LOG_DEBUG("XError occurred for initialising window - aborting...\n");
-		XUngrabServer(display.dpy);
 		LOG_LEAVE();
 		return;
 	}
-	initialising = None;
 	LOG_DEBUG("screen=%d\n", s->screen);
-	LOG_DEBUG("name=%s\n", name ? name : "Untitled");
+	LOG_DEBUG("name=%s\n", name);
 
 	window_type = ewmh_get_net_wm_window_type(w);
 	// Don't manage DESKTOP type windows
 	if (window_type & EWMH_WINDOW_TYPE_DESKTOP) {
+		LOG_DEBUG("EWMH_WINDOW_TYPE_DESKTOP\n");
 		XMapWindow(display.dpy, w);
-		XUngrabServer(display.dpy);
+		LOG_LEAVE();
 		return;
 	}
 
@@ -89,7 +85,6 @@ void client_manage_new(Window w, struct screen *s) {
 	if (!c) {
 		LOG_ERROR("out of memory allocating new client\n");
 		XMapWindow(display.dpy, w);
-		XUngrabServer(display.dpy);
 		LOG_LEAVE();
 		return;
 	}
@@ -109,7 +104,7 @@ void client_manage_new(Window w, struct screen *s) {
 	// malloc()ed and attached to the list, it is safe for any subsequent
 	// X calls to raise an X error and thus flag it for removal.
 
-	XUngrabServer(display.dpy);
+	//initialising = None;
 
 	update_window_type_flags(c, window_type);
 	init_geometry(c);

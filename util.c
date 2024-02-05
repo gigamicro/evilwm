@@ -31,8 +31,8 @@
 #define MAXIMUM_PROPERTY_LENGTH 4096
 
 // Error handler interaction
-int ignore_xerror = 0;
 volatile Window initialising = None;
+volatile Window removing = None;
 
 // Spawn a subprocess by fork()ing twice so we don't have to worry about
 // SIGCHLDs.
@@ -68,16 +68,12 @@ void spawn(const char *const cmd[]) {
 int handle_xerror(Display *dsply, XErrorEvent *e) {
 	struct client *c;
 	(void)dsply;  // unused
-
-	LOG_ENTER("handle_xerror(error=%d, request=%d/%d, resourceid=%lx)", e->error_code, e->request_code, e->minor_code, e->resourceid);
-
+	char buf[64];
+	if (  XGetErrorText( display.dpy, e->error_code, buf, sizeof(buf)/sizeof(buf[0]) )  )
+		buf[0]=0;
+	LOG_ENTER("handle_xerror(error=%d \x1b[31m%s\x1b[0m, request=%d/%d, resourceid=%lx)",
+		e->error_code, buf, e->request_code, e->minor_code, e->resourceid);
 	// Some parts of the code deliberately disable error checking.
-
-	if (ignore_xerror) {
-		LOG_DEBUG("ignoring...\n");
-		LOG_LEAVE();
-		return 0;
-	}
 
 	// client_manage_new() sets initialising to non-None to test if a
 	// window still exists.  If we end up here, the test failed, so
@@ -86,6 +82,14 @@ int handle_xerror(Display *dsply, XErrorEvent *e) {
 	if (initialising != None && e->resourceid == initialising) {
 		LOG_DEBUG("error caught while initialising window=%lx\n", (unsigned long)initialising);
 		initialising = None;
+		LOG_LEAVE();
+		return 0;
+	}
+
+	// same in remove_client()
+	if (removing != None && e->resourceid == removing) {
+		LOG_DEBUG("error caught while removing window=%lx\n", (unsigned long)removing);
+		// removing = None;
 		LOG_LEAVE();
 		return 0;
 	}
