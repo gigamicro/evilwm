@@ -238,7 +238,7 @@ void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 		if (flags & FL_TOGGLE) {
 			switch_vdesk(scr, scr->old_vdesk);
 		} else if (flags & FL_RELATIVE) {
-			unsigned mod = option.vdesksmod;
+			unsigned mod = option.modvdesks;
 			if (!mod) mod = option.vdesks;// + 1;
 			unsigned v = scr->vdesk % mod;
 			unsigned h = scr->vdesk / mod;

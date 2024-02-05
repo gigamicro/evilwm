@@ -61,7 +61,7 @@ static struct xconfig_option evilwm_options[] = {
 #endif
 	{ XCONFIG_STRING,   "display",      { .s = &option.display } },
 	{ XCONFIG_UINT,     "numvdesks",    { .u = &option.vdesks } },
-	{ XCONFIG_UINT,     "modvdesks",    { .u = &option.vdesksmod } },
+	{ XCONFIG_UINT,     "modvdesks",    { .u = &option.modvdesks } },
 	{ XCONFIG_STRING,   "fg",           { .s = &option.fg } },
 	{ XCONFIG_STRING,   "bg",           { .s = &option.bg } },
 	{ XCONFIG_STRING,   "fc",           { .s = &option.fc } },

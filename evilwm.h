@@ -38,7 +38,7 @@ struct options {
 	// Number of virtual desktops
 	unsigned vdesks;
 	// Loop increment & vertical movement amount for vdesks
-	unsigned vdesksmod;
+	unsigned modvdesks;
 
 	// Snap to border distance
 	int snap;
