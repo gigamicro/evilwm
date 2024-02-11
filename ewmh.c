@@ -201,8 +201,6 @@ void ewmh_set_net_wm_state(struct client *c) {
 
 // When we receive _NET_REQUEST_FRAME_EXTENTS from an unmapped window, we are
 // to set _NET_FRAME_EXTENTS on that window even before it becomes managed.
-// TODO: set this property on a client once the border size for it is known
-// during client_manage_new().
 
 void ewmh_set_net_frame_extents(Window w, unsigned long border) {
 	unsigned long extents[4];

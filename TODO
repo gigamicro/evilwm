@@ -11,6 +11,16 @@ ability to disable focus-keeping on root window?
 
 rmb+- click+drag,click- -> move + resize?
 
+configurable array of commands to run indexed by FL_VALUEMASK?
+
+FL_boundary('bound'?)/limit('lim')/etc flag
+FL_BOTTOM=FL_this|FL_DOWN
+move,rel+(this)+left -> c.x = c.x - (c.bw*2? + c.width) etc
+
+bind for dock visibility only while held
+bind for other things while held?
+key release binds
+
 ## Intermediate tasks
 
 
@@ -21,7 +31,6 @@ undesirable.
 
 ^ what if you froze the client window and resized our parent?
 that doesn't work without a freeze, the non-border section just doesn't draw, and even then the undrawn portion would be mostly border
-
 
 
 RandR-based multi-monitor support has now been implemented, but it would be
@@ -44,3 +53,9 @@ screen 100x100  window 1x1+98+198 -> wrong
 
 ^ also, offscreen windows - move so that only the nearest portion of the border is visible on next()?
 
+
+what about making the list type something with trivial removal (iterators just skip null values) and append/prepend?
+periodically reallocated array?
+linkedlist with final null-null element?
+linkedlist with pointers from data?
+... 3x doubly linked list in struct client?

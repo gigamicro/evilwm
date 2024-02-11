@@ -199,7 +199,6 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 }
 
 void func_spawn(void *sptr, XEvent *e, unsigned flags) {
-	// TODO: configurable array of commands to run indexed by FL_VALUEMASK?
 	(void)sptr;
 	(void)e;
 	(void)flags;
