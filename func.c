@@ -101,31 +101,15 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	}
 
 	if (flags & FL_RELATIVE) {
-		if (flags & FL_RIGHT) {
-			c->x += width_inc;
-		}
-		if (flags & FL_LEFT) {
-			c->x -= width_inc;
-		}
-		if (flags & FL_DOWN) {
-			c->y += height_inc;
-		}
-		if (flags & FL_UP) {
-			c->y -= height_inc;
-		}
+		if (flags & FL_RIGHT) c->x += width_inc;
+		if (flags & FL_LEFT ) c->x -= width_inc;
+		if (flags & FL_DOWN ) c->y += height_inc;
+		if (flags & FL_UP   ) c->y -= height_inc;
 	} else {
-		if (flags & FL_RIGHT) {
-			c->x = monitor->x + monitor->width - c->width-c->border;
-		}
-		if (flags & FL_LEFT) {
-			c->x = monitor->x + c->border;
-		}
-		if (flags & FL_BOTTOM) {
-			c->y = monitor->y + monitor->height - c->height-c->border;
-		}
-		if (flags & FL_TOP) {
-			c->y = monitor->y + c->border;
-		}
+		if (flags & FL_RIGHT ) c->x = monitor->x + monitor->width  - c->width  - c->border;
+		if (flags & FL_LEFT  ) c->x = monitor->x +                               c->border;
+		if (flags & FL_BOTTOM) c->y = monitor->y + monitor->height - c->height - c->border;
+		if (flags & FL_TOP   ) c->y = monitor->y +                               c->border;
 	}
 
 	do_client_move(c);
