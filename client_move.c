@@ -592,8 +592,8 @@ void client_select_next(void) {
 		newc = newl->data;
 		if (newc == current)
 			return;
-	} while ((!is_fixed(newc) && (newc->vdesk != newc->screen->vdesk))
-		 || (newc->is_dock && !newc->screen->docks_visible));
+	} while ( (!is_fixed(newc) && (newc->vdesk != newc->screen->vdesk))
+		 || (newc->is_dock && !newc->screen->docks_visible) );
 
 	if (!newc)
 		return;
@@ -601,8 +601,6 @@ void client_select_next(void) {
 	client_show(newc);  // XXX why would it be hidden?
 	client_raise(newc);
 	client_intersect(newc);
-	select_client(newc);
-
 #if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)
 	// Optionally force the pointer to jump to the newly-selected window.
 	// I think this was the default behaviour in much earlier versions of
@@ -611,6 +609,7 @@ void client_select_next(void) {
 	// setmouse(newc->window, (newc->width + newc->border - 1), (newc->height + newc->border - 1));
 	setmouse(newc->window, newc->width/2, newc->height/2);
 #endif
+	select_client(newc);
 #ifdef NEXT_DISCARDENTERS
 	discard_enter_events(newc);
 #endif
