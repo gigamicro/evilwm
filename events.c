@@ -483,11 +483,13 @@ void event_main_loop(void) {
 #ifdef SHAPE
 				if (display.have_shape && ev.xevent.type == display.shape_event) {
 					handle_shape_event(&ev.xshape);
+					break;
 				}
 #endif
 #ifdef RANDR
 				if (display.have_randr && ev.xevent.type == display.randr_event_base + RRScreenChangeNotify) {
 					handle_randr_event(&ev.xrandr);
+					break;
 				}
 #endif
 				LOG_XDEBUG("%s\n", xevent_string(ev.xevent.type));
