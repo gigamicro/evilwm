@@ -30,6 +30,7 @@
 #define option_no_solid_drag 1
 #endif
 
+////////////////////////////////
 #ifdef SHAPE_MOVERESIZE
 #define OUTLINE
 #include <X11/extensions/shape.h>
@@ -66,20 +67,11 @@ static void do_outline(struct client *c, _Bool set) {
 	XDestroyRegion(region);
 	XDestroyRegion(region2);
 }
-static void draw_outline(struct client *c) {
-	do_outline(c, 1);
-}
-static void clear_outline(struct client *current_outline){
-	if (current_outline == NULL)
-		return;
-	do_outline(current_outline, 0);
-}
-static struct client *set_outline(struct client *c, struct client *current_outline){
-	(void)current_outline;
-	draw_outline(c);
-	return c;
-}
+# define init_outline(...)
+# define clear_outline(c) if (c != NULL) do_outline(c, 0)
+# define set_outline(c) do_outline(c, 1);
 
+////////////////////////////////
 #elif defined(GC_INVERT)
 #define OUTLINE
 #include "xalloc.h"
@@ -90,19 +82,16 @@ static struct client *set_outline(struct client *c, struct client *current_outli
 #define SPACE 3
 
 static void draw_outline(struct client *c) {
-#ifdef FONT
-#ifndef INFOBANNER_MOVERESIZE
+#if defined(FONT) && !defined(INFOBANNER_MOVERESIZE)
 	char buf[27];
 	int width_inc = c->width_inc, height_inc = c->height_inc;
-#endif
 #endif
 
 	XDrawRectangle(display.dpy, c->screen->root, c->screen->invert_gc,
 		c->x - c->border, c->y - c->border,
 		c->width + 2*c->border-1, c->height + 2*c->border-1);
 
-#ifdef FONT
-#ifndef INFOBANNER_MOVERESIZE
+#if defined(FONT) && !defined(INFOBANNER_MOVERESIZE)
 	snprintf(buf, sizeof(buf), "%dx%d+%d+%d", (c->width-c->base_width)/width_inc,
 			(c->height-c->base_height)/height_inc, c->x, c->y);
 	XDrawString(display.dpy, c->screen->root, c->screen->invert_gc,
@@ -110,28 +99,31 @@ static void draw_outline(struct client *c) {
 		c->y + c->height - SPACE,
 		buf, strlen(buf));
 #endif
-#endif
 }
 
-static void clear_outline(struct client *current_outline){//void){
+static void clear_outline(struct client *current_outline){
 	if (current_outline == NULL)
 		return;
 	draw_outline(current_outline);
 	free(current_outline);
-	// current_outline=NULL;
 }
 
-static struct client *set_outline(struct client *c, struct client *current_outline){//){
+static struct client *set_outline(struct client *c, struct client *current_outline){
 	clear_outline(current_outline);
 	draw_outline(c);
-	// *current_outline = *c;
 	return xmemdup(c, sizeof(*c));
 }
 
+# define init_outline(c) struct client *outline_c = NULL
+# define set_outline(c) outline_c = set_outline(c, outline_c)
+# define clear_outline(c) outline_c = NULL; clear_outline(outline_c)
+
+////////////////////////////////
 #else
-# define draw_outline(...)
-# define clear_outline(...)
+# define init_outline(...)
 # define set_outline(...)
+# define clear_outline(...)
+////////////////////////////////
 #endif
 
 static int absmin(int a, int b) {
@@ -248,10 +240,8 @@ void client_resize_sweep(struct client *c, unsigned button) {
 #ifdef RESIZE_SERVERGRAB
 	XGrabServer(display.dpy);
 #endif
-#ifdef OUTLINE
-	struct client *outline_c = NULL;// = c;
-	outline_c = set_outline(c, outline_c);
-#endif
+	init_outline(c);
+	set_outline(c);
 
 #ifdef RESIZE_WARP_POINTER
 	// Warp pointer to the bottom-right of the client for resizing
@@ -281,9 +271,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				XSync(display.dpy, False);
 				XGrabServer(display.dpy);
 #endif
-#ifdef OUTLINE
-				outline_c = set_outline(c, outline_c);
-#endif
+				set_outline(c);
 				break;
 
 			case ButtonRelease:
@@ -292,9 +280,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
-#ifdef OUTLINE
-				clear_outline(outline_c);
-#endif
+				clear_outline(c);
 #ifdef RESIZE_SERVERGRAB
 				XUngrabServer(display.dpy);
 #endif
@@ -339,15 +325,13 @@ void client_move_drag(struct client *c, unsigned button) {
 #ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
 #endif
-#ifdef OUTLINE
-	struct client *outline_c = NULL;// = c;
+	init_outline(c);
 	if (option_no_solid_drag) {
 #ifdef MOVE_SERVERGRAB
 		XGrabServer(display.dpy);
 #endif
-		outline_c = set_outline(c, outline_c);
+		set_outline(c);
 	}
-#endif
 
 	for (;;) {
 		XEvent ev;
@@ -365,15 +349,11 @@ void client_move_drag(struct client *c, unsigned button) {
 				update_info_window(c);
 #endif
 				if (option_no_solid_drag) {
-#ifdef OUTLINE
 #ifdef MOVE_SERVERGRAB
-					//XUngrabServer(display.dpy);
 					XSync(display.dpy, False);
-					//XGrabServer(display.dpy);
 #endif
 #ifndef SHAPE_MOVERESIZE
-					outline_c = set_outline(c, outline_c);
-#endif
+					set_outline(c);
 #endif
 				} else {
 					XMoveWindow(display.dpy, c->parent,
@@ -386,14 +366,12 @@ void client_move_drag(struct client *c, unsigned button) {
 			case ButtonRelease:
 				if (ev.xbutton.button != button)
 					continue;
-#ifdef OUTLINE
 				if (option_no_solid_drag) {
-					clear_outline(outline_c);
+					clear_outline(c);
 #ifdef MOVE_SERVERGRAB
 					XUngrabServer(display.dpy);
 #endif
 				}
-#endif
 #ifdef INFOBANNER_MOVERESIZE
 				remove_info_window();
 #endif
@@ -454,8 +432,8 @@ void client_show_info(struct client *c, XEvent *e) {
 	create_info_window(c);
 #else
 	XGrabServer(display.dpy);
-	struct client *outline_c = NULL;
-	outline_c = set_outline(c, outline_c);
+	init_outline(c);
+	set_outline(c);
 #endif
 
 	for (;;) {
