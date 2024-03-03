@@ -49,43 +49,35 @@ OPT_LDLIBS   += -lXrandr
 OPT_CPPFLAGS += -DSHAPE
 OPT_LDLIBS   += -lXext
 
-# Uncomment to enable solid window drags.  This can be slow on old systems.
-OPT_CPPFLAGS += -DSOLIDDRAG
-# OPT_CPPFLAGS += -DSOLIDSWEEP
-
-# Uncomment to enable window-border-only mouse drag & sweep
-OPT_CPPFLAGS += -DSHAPE_MOVERESIZE
-
-# Uncomment to enable grabbing the X server when mouse-resizing/mouse-moving
-# OPT_CPPFLAGS += -DRESIZE_SERVERGRAB
-# OPT_CPPFLAGS += -DMOVE_SERVERGRAB
+# Uncomment to enable SHAPE extension instead of GG invert on moveresize
+OPT_CPPFLAGS += -DSHAPE_OUTLINE
 
 # Uncomment to discard all pointer-enter events apart from those for the already-active window on...
-OPT_CPPFLAGS += -DMAXIMIZE_DISCARDENTERS
-OPT_CPPFLAGS += -DMOVERESIZE_DISCARDENTERS
-OPT_CPPFLAGS += -DKBMOVERESIZE_DISCARDENTERS
-OPT_CPPFLAGS += -DNEWCLIENT_DISCARDENTERS
-OPT_CPPFLAGS += -DCONFIGURECURRENT_DISCARDENTERS
-OPT_CPPFLAGS += -DNEXT_DISCARDENTERS
+# OPT_CPPFLAGS += -DMAXIMIZE_DISCARDENTERS
+# OPT_CPPFLAGS += -DMOVERESIZE_DISCARDENTERS
+# OPT_CPPFLAGS += -DKBMOVERESIZE_DISCARDENTERS
+# OPT_CPPFLAGS += -DNEWCLIENT_DISCARDENTERS
+# OPT_CPPFLAGS += -DCONFIGURECURRENT_DISCARDENTERS
+# OPT_CPPFLAGS += -DNEXT_DISCARDENTERS
 
 #Uncomment to select new windows on creation, even if they are not under the pointer
-OPT_CPPFLAGS += -DNEWCLIENT_SELECT
+# OPT_CPPFLAGS += -DNEWCLIENT_SELECT
 
 #Uncomment to allow windows to move, resize, and maximize themselves
 OPT_CPPFLAGS += -DCONFIGREQ
 
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
-OPT_CPPFLAGS += -DRESIZE_WARP_POINTER
-#OPT_CPPFLAGS += -DKBMOVERESIZE_WARP_POINTER
-#OPT_CPPFLAGS += -DNEXT_WARP_POINTER
-OPT_CPPFLAGS += -DUNMAN_FOCUS_WARP_POINTER # Warps the pointer into unmanaged windows that send _NET_ACTIVE_WINDOW
+# OPT_CPPFLAGS += -DRESIZE_WARP_POINTER
+OPT_CPPFLAGS += -DKBMOVERESIZE_WARP_POINTER
+OPT_CPPFLAGS += -DNEXT_WARP_POINTER
+# OPT_CPPFLAGS += -DUNMAN_FOCUS_WARP_POINTER # Warps the pointer into unmanaged windows that send _NET_ACTIVE_WINDOW
 
 # Uncomment to include whatever debugging messages I've left in this release.
-#OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging
-#OPT_CPPFLAGS += -DXDEBUG  # show some X calls
+OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging
+OPT_CPPFLAGS += -DXDEBUG  # show some X calls
 
-OPT_CPPFLAGS += -DNDEBUG  # disable asserts
+# OPT_CPPFLAGS += -DNDEBUG  # disable asserts
 
 # Uncomment to map KEY_TOPLEFT to XK_z (suitable for quertz keyboards)
 #OPT_CPPFLAGS += -DQWERTZ_KEYMAP

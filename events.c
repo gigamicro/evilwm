@@ -263,7 +263,7 @@ static void handle_mappingnotify_event(XMappingEvent *e) {
 #ifdef SHAPE
 static void handle_shape_event(XShapeEvent *e) {
 	struct client *c = find_client(e->window);
-	if (c)
+	if (c && c->window == e->window)
 		set_shape(c);
 }
 #endif

@@ -88,9 +88,8 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_0,   "fixed",        { .c0 = &set_app_fixed } },
 	{ XCONFIG_CALL_0,   "f",            { .c0 = &set_app_fixed } },
 	{ XCONFIG_CALL_0,   "s",            { .c0 = &set_app_fixed } },
-#ifdef SOLIDDRAG
-	{ XCONFIG_BOOL,     "nosoliddrag",  { .i = &option.no_solid_drag } },
-#endif
+	{ XCONFIG_BOOL,     "soliddrag",    { .i = &option.solid_drag } },
+	{ XCONFIG_BOOL,     "solidsweep",   { .i = &option.solid_sweep } },
 	{ XCONFIG_END, NULL, { .i = NULL } }
 };
 
@@ -163,6 +162,9 @@ static const char *default_options[] = {
 	"numvdesks 8",
 	"docks 1",
 	"kbpx 16",
+#ifdef SOLIDDRAG
+	"soliddrag",
+#endif
 };
 #define NUM_DEFAULT_OPTIONS (sizeof(default_options)/sizeof(default_options[0]))
 

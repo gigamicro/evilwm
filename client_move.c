@@ -24,19 +24,15 @@
 #include "screen.h"
 #include "util.h"
 
-#ifdef SOLIDDRAG
-#define option_no_solid_drag option.no_solid_drag
-#else
-#define option_no_solid_drag 1
-#endif
-
 ////////////////////////////////
-#ifdef SHAPE_MOVERESIZE
-#define OUTLINE
+#ifdef SHAPE_OUTLINE
 #include <X11/extensions/shape.h>
 
 static void do_outline(struct client *c, _Bool set) {
-
+	if (!c) {
+		// LOG_DEBUG("Tried to SHAPE outline a null client\n");
+		return;
+	}
 	if (!display.have_shape) {
 		LOG_ERROR("No SHAPE extension\n");
 		return;
@@ -47,33 +43,34 @@ static void do_outline(struct client *c, _Bool set) {
 		.width = c->width,
 		.height = c->height,
 	};
-	Region region  = XCreateRegion(); XUnionRectWithRegion(&rect, region,  region );
-	Region region2 = XCreateRegion(); XUnionRectWithRegion(&rect, region2, region2);
+	Region region = XCreateRegion(); XUnionRectWithRegion(&rect, region, region);
+	Region holed = XCreateRegion(); XUnionRectWithRegion(&rect, holed, holed);
 	// XShrinkRegion(region, -c->border, -c->border);
-	XShrinkRegion(region, -0x4000,-0x4000);
-	XSubtractRegion(region, region2, region2);
+	XShrinkRegion(region, -0x4000, -0x4000);
+	XSubtractRegion(region, holed, holed);
 	if (set) {
+		XMoveResizeWindow(display.dpy, c->parent, c->x - c->border, c->y - c->border, c->width, c->height);
 		XConfigureWindow(display.dpy, c->parent, CWBorderWidth, &(XWindowChanges){ .border_width = c->normal_border || option.bw });
-		XShapeCombineRegion(display.dpy, c->parent, ShapeClip, 0, 0, region2, ShapeSet);
-		XShapeCombineRegion(display.dpy, c->parent, ShapeBounding, 0, 0, region2, ShapeSet);
+		XShapeCombineRegion(display.dpy, c->parent, ShapeClip, 0, 0, holed, ShapeSet);
+		XShapeCombineRegion(display.dpy, c->parent, ShapeBounding, 0, 0, holed, ShapeSet);
 		XUnmapWindow(display.dpy,c->window);
-		c->ignore_unmap++;
 	} else {
 		XConfigureWindow(display.dpy, c->parent, CWBorderWidth, &(XWindowChanges){ .border_width = c->border });
 		XShapeCombineRegion(display.dpy, c->parent, ShapeClip, 0, 0, region, ShapeSet);
 		XShapeCombineRegion(display.dpy, c->parent, ShapeBounding, 0, 0, region, ShapeSet);
+		set_shape(c);//ShapeBounding
 		XMapWindow(display.dpy,c->window);
+		c->ignore_unmap++;// here because consecutive unmaps don't reissue the notification
 	}
 	XDestroyRegion(region);
-	XDestroyRegion(region2);
+	XDestroyRegion(holed);
 }
 # define init_outline(...)
-# define clear_outline(c) if (c != NULL) do_outline(c, 0)
-# define set_outline(c) do_outline(c, 1);
+# define set_outline(c) do_outline(c, 1)
+# define clear_outline(c) { if (c != NULL) do_outline(c, 0); }
 
 ////////////////////////////////
 #elif defined(GC_INVERT)
-#define OUTLINE
 #include "xalloc.h"
 // Use the inverting graphics context to draw an outline for the client.
 // Drawing it a second time will erase it.  If INFOBANNER_MOVERESIZE is
@@ -110,13 +107,13 @@ static void clear_outline(struct client *current_outline){
 
 static struct client *set_outline(struct client *c, struct client *current_outline){
 	clear_outline(current_outline);
-	draw_outline(c);
+	{ draw_outline(c); }
 	return xmemdup(c, sizeof(*c));
 }
 
 # define init_outline(c) struct client *outline_c = NULL
-# define set_outline(c) outline_c = set_outline(c, outline_c)
-# define clear_outline(c) outline_c = NULL; clear_outline(outline_c)
+# define set_outline(c) { XSync(display.dpy, False); XGrabServer(display.dpy); outline_c = set_outline(c, outline_c); }
+# define clear_outline(c) { clear_outline(outline_c); outline_c = NULL; XUngrabServer(display.dpy); }
 
 ////////////////////////////////
 #else
@@ -134,6 +131,7 @@ static int absmin(int a, int b) {
 
 // Snap a client to the edges of other clients (if on same screen, and visible)
 // or to the screen border.
+// Typically skipped when altmask is held (default shift)
 
 static void snap_client(struct client *c, struct monitor *monitor) {
 	int dx, dy;
@@ -214,13 +212,13 @@ static void recalculate_sweep(struct client *c, int x1, int y1, int x2, int y2, 
 	}
 }
 
-// Handle user resizing a window with the mouse.  Takes over processing X
-// motion events until the mouse button is released.
-//
-// Note that because of the way this draws an outline, other events are blocked
-// until the mouse is moved.  TODO: consider using a SHAPEd window for this,
-// where available.
+#ifndef INFOBANNER_MOVERESIZE
+# define create_info_window(...)
+# define update_info_window(...)
+# define remove_info_window(...)
+#endif
 
+// Handle user resizing a window with the mouse.
 void client_resize_sweep(struct client *c, unsigned button) {
 	// Ensure we can grab pointer events.
 	if (!grab_pointer(c->screen->root, display.resize_curs))
@@ -234,15 +232,10 @@ void client_resize_sweep(struct client *c, unsigned button) {
 
 	struct monitor *monitor = client_monitor(c, NULL);
 
-#ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
-#endif
-#ifdef RESIZE_SERVERGRAB
-	XGrabServer(display.dpy);
-#endif
 	init_outline(c);
-	set_outline(c);
-
+	if (!option.solid_sweep)
+		set_outline(c);
 #ifdef RESIZE_WARP_POINTER
 	// Warp pointer to the bottom-right of the client for resizing
 	setmouse(c->window, c->width, c->height);
@@ -255,39 +248,30 @@ void client_resize_sweep(struct client *c, unsigned button) {
 			case MotionNotify:
 				if (ev.xmotion.root != c->screen->root)
 					break;
-#ifdef RESIZE_SERVERGRAB
-				XUngrabServer(display.dpy);
-#endif
+				XUngrabServer(display.dpy);// outline
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
-#ifdef SOLIDSWEEP
-				client_moveresize(c);
-#endif
-#ifdef INFOBANNER_MOVERESIZE
+
+				if (option.solid_sweep)
+					client_moveresize(c);
+				else
+					set_outline(c);
+
 				update_info_window(c);
-#endif
-#ifdef RESIZE_SERVERGRAB
-				XSync(display.dpy, False);
-				XGrabServer(display.dpy);
-#endif
-				set_outline(c);
 				break;
 
 			case ButtonRelease:
 				if (ev.xbutton.button != button)
-					continue;
+					break;
+				if (!option.solid_sweep)
+					clear_outline(c);
+				remove_info_window();
+				XUngrabPointer(display.dpy, CurrentTime);
+
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
-				clear_outline(c);
-#ifdef RESIZE_SERVERGRAB
-				XUngrabServer(display.dpy);
-#endif
-#ifdef INFOBANNER_MOVERESIZE
-				remove_info_window();
-#endif
-				XUngrabPointer(display.dpy, CurrentTime);
 				client_moveresizeraise(c);
 				// In case maximise state has changed:
 				ewmh_set_net_wm_state(c);
@@ -322,14 +306,9 @@ void client_move_drag(struct client *c, unsigned button) {
 
 	struct monitor *monitor = client_monitor(c, NULL);
 
-#ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
-#endif
 	init_outline(c);
-	if (option_no_solid_drag) {
-#ifdef MOVE_SERVERGRAB
-		XGrabServer(display.dpy);
-#endif
+	if (!option.solid_drag) {
 		set_outline(c);
 	}
 
@@ -345,38 +324,32 @@ void client_move_drag(struct client *c, unsigned button) {
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
 
-#ifdef INFOBANNER_MOVERESIZE
 				update_info_window(c);
-#endif
-				if (option_no_solid_drag) {
-#ifdef MOVE_SERVERGRAB
-					XSync(display.dpy, False);
-#endif
-#ifndef SHAPE_MOVERESIZE
-					set_outline(c);
-#endif
-				} else {
+				if (option.solid_drag) {
 					XMoveWindow(display.dpy, c->parent,
 							c->x - c->border,
 							c->y - c->border);
 					send_config(c);
+				} else {
+#ifdef SHAPE_OUTLINE
+					XMoveWindow(display.dpy, c->parent,
+							c->x - c->border,
+							c->y - c->border);
+#else
+					set_outline(c);
+#endif
 				}
 				break;
 
 			case ButtonRelease:
 				if (ev.xbutton.button != button)
 					continue;
-				if (option_no_solid_drag) {
+				if (!option.solid_drag) {
 					clear_outline(c);
-#ifdef MOVE_SERVERGRAB
-					XUngrabServer(display.dpy);
-#endif
 				}
-#ifdef INFOBANNER_MOVERESIZE
 				remove_info_window();
-#endif
 				XUngrabPointer(display.dpy, CurrentTime);
-				if (option_no_solid_drag) {
+				if (!option.solid_drag) {
 					// For solid drags, the client was
 					// moved with the mouse.  For non-solid
 					// drags, we need a final move/raise:
@@ -389,6 +362,10 @@ void client_move_drag(struct client *c, unsigned button) {
 		}
 	}
 }
+
+#undef create_info_window
+#undef update_info_window
+#undef remove_info_window
 
 #ifdef GC_INVERT
 // Predicate function for use with XCheckIfEvent.
@@ -458,7 +435,6 @@ void client_show_info(struct client *c, XEvent *e) {
 	remove_info_window();
 #else
 	clear_outline(c, outline_c);
-	XUngrabServer(display.dpy);
 #endif
 
 	if (e->type == KeyPress) {
@@ -635,3 +611,7 @@ void client_select_next(void) {
 	discard_enter_events(newc);
 #endif
 }
+
+#undef init_outline
+#undef clear_outline
+#undef set_outline

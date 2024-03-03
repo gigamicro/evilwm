@@ -511,7 +511,7 @@ void set_shape(struct client *c) {
 
 	if (XShapeQueryExtents(display.dpy, c->window, &bounding_shaped, &i, &i,
 				&u, &u, &b, &i, &i, &u, &u) && bounding_shaped) {
-		LOG_DEBUG("%d shape extents\n", bounding_shaped);
+		LOG_DEBUG("Shape(window=%li)\n", c->window);
 		XShapeCombineShape(display.dpy, c->parent, ShapeBounding, 0, 0,
 				c->window, ShapeBounding, ShapeSet);
 	}

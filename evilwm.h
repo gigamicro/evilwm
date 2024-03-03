@@ -49,10 +49,9 @@ struct options {
 	// Whole screen flag (ignore monitor information)
 	int wholescreen;
 
-#ifdef SOLIDDRAG
-	// Solid drag disabled flag
-	int no_solid_drag;
-#endif
+	// Solid drag & sweep enable flags
+	int solid_drag;
+	int solid_sweep;
 
 	// Initial dock state
 	int docks;
