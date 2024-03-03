@@ -154,14 +154,13 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	int width_inc = (c->width_inc > 1) ? c->width_inc : option.kbpx;
-	int height_inc = (c->height_inc > 1) ? c->height_inc : option.kbpx;
-
 	if (e->type == ButtonPress) {
-		XButtonEvent *xbutton = (XButtonEvent *)e;
-		client_resize_sweep(c, xbutton->button);
+		client_resize_sweep(c, e->xbutton.button);
 		return;
 	}
+
+	int width_inc = (c->width_inc > 1) ? c->width_inc : option.kbpx;
+	int height_inc = (c->height_inc > 1) ? c->height_inc : option.kbpx;
 
 	if (flags & FL_RELATIVE) {
 		if (flags & FL_RIGHT) {
