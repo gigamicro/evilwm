@@ -23,17 +23,71 @@
 #include "list.h"
 #include "screen.h"
 #include "util.h"
-#ifdef GC_INVERT
-#include "xalloc.h"
+
+#ifdef SOLIDDRAG
+#define option_no_solid_drag option.no_solid_drag
+#else
+#define option_no_solid_drag 1
 #endif
 
-#define SPACE 3
+#ifdef SHAPE_MOVERESIZE
+#define OUTLINE
+#include <X11/extensions/shape.h>
 
-#ifdef GC_INVERT
+static void do_outline(struct client *c, _Bool set) {
+
+	if (!display.have_shape) {
+		LOG_ERROR("No SHAPE extension\n");
+		return;
+	}
+
+	XRectangle rect = {
+		.x = 0, .y = 0,
+		.width = c->width,
+		.height = c->height,
+	};
+	Region region  = XCreateRegion(); XUnionRectWithRegion(&rect, region,  region );
+	Region region2 = XCreateRegion(); XUnionRectWithRegion(&rect, region2, region2);
+	// XShrinkRegion(region, -c->border, -c->border);
+	XShrinkRegion(region, -0x4000,-0x4000);
+	XSubtractRegion(region, region2, region2);
+	if (set) {
+		XConfigureWindow(display.dpy, c->parent, CWBorderWidth, &(XWindowChanges){ .border_width = c->normal_border || option.bw });
+		XShapeCombineRegion(display.dpy, c->parent, ShapeClip, 0, 0, region2, ShapeSet);
+		XShapeCombineRegion(display.dpy, c->parent, ShapeBounding, 0, 0, region2, ShapeSet);
+		XUnmapWindow(display.dpy,c->window);
+		c->ignore_unmap++;
+	} else {
+		XConfigureWindow(display.dpy, c->parent, CWBorderWidth, &(XWindowChanges){ .border_width = c->border });
+		XShapeCombineRegion(display.dpy, c->parent, ShapeClip, 0, 0, region, ShapeSet);
+		XShapeCombineRegion(display.dpy, c->parent, ShapeBounding, 0, 0, region, ShapeSet);
+		XMapWindow(display.dpy,c->window);
+	}
+	XDestroyRegion(region);
+	XDestroyRegion(region2);
+}
+static void draw_outline(struct client *c) {
+	do_outline(c, 1);
+}
+static void clear_outline(struct client *current_outline){
+	if (current_outline == NULL)
+		return;
+	do_outline(current_outline, 0);
+}
+static struct client *set_outline(struct client *c, struct client *current_outline){
+	(void)current_outline;
+	draw_outline(c);
+	return c;
+}
+
+#elif defined(GC_INVERT)
+#define OUTLINE
+#include "xalloc.h"
 // Use the inverting graphics context to draw an outline for the client.
 // Drawing it a second time will erase it.  If INFOBANNER_MOVERESIZE is
 // defined, the information window is shown for the duration (but this can be
 // slow on old X servers).
+#define SPACE 3
 
 static void draw_outline(struct client *c) {
 #ifdef FONT
@@ -194,10 +248,9 @@ void client_resize_sweep(struct client *c, unsigned button) {
 #ifdef RESIZE_SERVERGRAB
 	XGrabServer(display.dpy);
 #endif
-#ifdef GC_INVERT
+#ifdef OUTLINE
 	struct client *outline_c = NULL;// = c;
-	draw_outline(c);
-	// outline_c = set_outline(c, outline_c);
+	outline_c = set_outline(c, outline_c);
 #endif
 
 #ifdef RESIZE_WARP_POINTER
@@ -218,6 +271,9 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
+#ifdef SOLIDSWEEP
+				client_moveresize(c);
+#endif
 #ifdef INFOBANNER_MOVERESIZE
 				update_info_window(c);
 #endif
@@ -225,7 +281,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				XSync(display.dpy, False);
 				XGrabServer(display.dpy);
 #endif
-#ifdef GC_INVERT
+#ifdef OUTLINE
 				outline_c = set_outline(c, outline_c);
 #endif
 				break;
@@ -236,7 +292,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
-#ifdef GC_INVERT
+#ifdef OUTLINE
 				clear_outline(outline_c);
 #endif
 #ifdef RESIZE_SERVERGRAB
@@ -283,13 +339,9 @@ void client_move_drag(struct client *c, unsigned button) {
 #ifdef INFOBANNER_MOVERESIZE
 	create_info_window(c);
 #endif
-#ifdef GC_INVERT
+#ifdef OUTLINE
 	struct client *outline_c = NULL;// = c;
-#ifdef SOLIDDRAG
-	if (option.no_solid_drag) {
-#else
-	if (1) {
-#endif
+	if (option_no_solid_drag) {
 #ifdef MOVE_SERVERGRAB
 		XGrabServer(display.dpy);
 #endif
@@ -312,36 +364,30 @@ void client_move_drag(struct client *c, unsigned button) {
 #ifdef INFOBANNER_MOVERESIZE
 				update_info_window(c);
 #endif
-#ifdef SOLIDDRAG
-				if (option.no_solid_drag) {
-#ifdef GC_INVERT
+				if (option_no_solid_drag) {
+#ifdef OUTLINE
 #ifdef MOVE_SERVERGRAB
 					//XUngrabServer(display.dpy);
 					XSync(display.dpy, False);
 					//XGrabServer(display.dpy);
 #endif
+#ifndef SHAPE_MOVERESIZE
 					outline_c = set_outline(c, outline_c);
 #endif
-				} else {
 #endif
+				} else {
 					XMoveWindow(display.dpy, c->parent,
 							c->x - c->border,
 							c->y - c->border);
 					send_config(c);
-#ifdef SOLIDDRAG
 				}
-#endif
 				break;
 
 			case ButtonRelease:
 				if (ev.xbutton.button != button)
 					continue;
-#ifdef GC_INVERT
-#ifdef SOLIDDRAG
-				if (option.no_solid_drag) {
-#else
-				if (1) {
-#endif
+#ifdef OUTLINE
+				if (option_no_solid_drag) {
 					clear_outline(outline_c);
 #ifdef MOVE_SERVERGRAB
 					XUngrabServer(display.dpy);
@@ -352,11 +398,7 @@ void client_move_drag(struct client *c, unsigned button) {
 				remove_info_window();
 #endif
 				XUngrabPointer(display.dpy, CurrentTime);
-#ifdef SOLIDDRAG
-				if (option.no_solid_drag) {
-#else
-				if (1) {
-#endif
+				if (option_no_solid_drag) {
 					// For solid drags, the client was
 					// moved with the mouse.  For non-solid
 					// drags, we need a final move/raise:
@@ -412,7 +454,8 @@ void client_show_info(struct client *c, XEvent *e) {
 	create_info_window(c);
 #else
 	XGrabServer(display.dpy);
-	draw_outline(c);
+	struct client *outline_c = NULL;
+	outline_c = set_outline(c, outline_c);
 #endif
 
 	for (;;) {
@@ -436,7 +479,7 @@ void client_show_info(struct client *c, XEvent *e) {
 #ifdef INFOBANNER
 	remove_info_window();
 #else
-	draw_outline(c);
+	clear_outline(c, outline_c);
 	XUngrabServer(display.dpy);
 #endif
 

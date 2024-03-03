@@ -22,3 +22,10 @@
 #if defined(FONT) && !defined(GC_INVERT)
 # define GC_INVERT
 #endif
+
+#ifdef SHAPE_MOVERESIZE
+#undef SOLIDSWEEP
+#undef SOLIDDRAG
+#define SOLIDSWEEP
+#define SOLIDDRAG
+#endif

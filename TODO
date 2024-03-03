@@ -24,15 +24,6 @@ key release binds
 ## Intermediate tasks
 
 
-Investigate SHAPEd windows for client sweep/drag.  As it stands, non-solid
-drags and all sweeps draw a border by inverting pixels on the screen, erasing
-by re-inverting.  This requires the X server to be grabbed, which is
-undesirable.
-
-^ what if you froze the client window and resized our parent?
-that doesn't work without a freeze, the non-border section just doesn't draw, and even then the undrawn portion would be mostly border
-
-
 RandR-based multi-monitor support has now been implemented, but it would be
 nice if, when a client is moved due to removing a monitor, it could be moved
 back to its original position if the _same_ monitor is reattached.  Whether a

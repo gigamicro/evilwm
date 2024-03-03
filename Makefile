@@ -51,10 +51,14 @@ OPT_LDLIBS   += -lXext
 
 # Uncomment to enable solid window drags.  This can be slow on old systems.
 OPT_CPPFLAGS += -DSOLIDDRAG
+# OPT_CPPFLAGS += -DSOLIDSWEEP
+
+# Uncomment to enable window-border-only mouse drag & sweep
+OPT_CPPFLAGS += -DSHAPE_MOVERESIZE
 
 # Uncomment to enable grabbing the X server when mouse-resizing/mouse-moving
-OPT_CPPFLAGS += -DRESIZE_SERVERGRAB
-OPT_CPPFLAGS += -DMOVE_SERVERGRAB
+# OPT_CPPFLAGS += -DRESIZE_SERVERGRAB
+# OPT_CPPFLAGS += -DMOVE_SERVERGRAB
 
 # Uncomment to discard all pointer-enter events apart from those for the already-active window on...
 OPT_CPPFLAGS += -DMAXIMIZE_DISCARDENTERS
