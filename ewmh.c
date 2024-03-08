@@ -118,6 +118,10 @@ void ewmh_set_allowed_actions(struct client *c) {
 			XA_ATOM, 32, PropModeReplace,
 			(unsigned char *)&allowed_actions,
 			nelements);
+	// As this function is only called when creating a client, take this
+	// opportunity to set any initial state on its window.  In particular,
+	// I'm interested in docks immediately getting focussed state.
+	ewmh_set_net_wm_state(c);
 }
 
 // When window manager is shutting down, the _NET_WM_ALLOWED_ACTIONS property
