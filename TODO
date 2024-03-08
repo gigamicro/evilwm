@@ -11,7 +11,7 @@ ability to disable focus-keeping on root window?
 
 rmb+- click+drag,click- -> move + resize?
 
-configurable array of commands to run indexed by FL_VALUEMASK?
+func_spawn: configurable array of commands to run indexed by FL_VALUEMASK?
 
 FL_boundary('bound'?)/limit('lim')/etc flag
 FL_BOTTOM=FL_this|FL_DOWN

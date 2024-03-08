@@ -32,7 +32,7 @@ OPT_LDLIBS += -lm
 # Uncomment to enable text display
 OPT_CPPFLAGS += -DFONT
 
-# Uncomment to enable invert effects, including resize outlines, nonsolid drags, 
+# Uncomment to enable invert effects, including resize outlines, invert drags, text
 OPT_CPPFLAGS += -DGC_INVERT
 
 # Uncomment to enable info banner on holding Ctrl+Alt+I (by default).
