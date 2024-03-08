@@ -178,8 +178,9 @@ void ewmh_set_net_wm_state(struct client *c) {
 		state[i++] = X_ATOM(_NET_WM_STATE_MAXIMIZED_HORZ);
 	if (c->oldh && c->oldw)
 		state[i++] = X_ATOM(_NET_WM_STATE_FULLSCREEN);
-	if (c == current) {
+	if (c == current || c->is_dock)
 		state[i++] = X_ATOM(_NET_WM_STATE_FOCUSED);
+	if (c == current) {
 		if (c->screen->active != c->window) {
 			XChangeProperty(display.dpy, c->screen->root,
 			                X_ATOM(_NET_ACTIVE_WINDOW),
