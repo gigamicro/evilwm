@@ -54,6 +54,9 @@ static void set_app_manual(void);
 static void set_app_dock(void);
 static void set_app_vdesk(const char *arg);
 static void set_app_fixed(void);
+#ifdef SOLIDDRAG
+static void unset_solid_drag(void);
+#endif
 
 static struct xconfig_option evilwm_options[] = {
 #ifdef FONT
@@ -88,6 +91,9 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_0,   "fixed",        { .c0 = &set_app_fixed } },
 	{ XCONFIG_CALL_0,   "f",            { .c0 = &set_app_fixed } },
 	{ XCONFIG_CALL_0,   "s",            { .c0 = &set_app_fixed } },
+#ifdef SOLIDDRAG
+	{ XCONFIG_CALL_0,   "nosoliddrag",  { .c0 = &unset_solid_drag } },
+#endif
 	{ XCONFIG_BOOL,     "soliddrag",    { .i = &option.solid_drag } },
 	{ XCONFIG_BOOL,     "solidsweep",   { .i = &option.solid_sweep } },
 	{ XCONFIG_END, NULL, { .i = NULL } }
@@ -355,6 +361,12 @@ static void set_app_fixed(void) {
 		app->vdesk = VDESK_FIXED;
 	}
 }
+
+#ifdef SOLIDDRAG
+static void unset_solid_drag(void) {
+	option.solid_drag = 0;
+}
+#endif
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
