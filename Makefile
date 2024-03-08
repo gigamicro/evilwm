@@ -110,7 +110,9 @@ OPT_CPPFLAGS += -DXDEBUG  # show some X calls
 CC = gcc
 
 # Override if desired:
-CFLAGS = -Os
+# CFLAGS = -Os
+# CFLAGS = -Og -g
+CFLAGS = -Ofast
 WARN = -Wall -W -Wstrict-prototypes -Wpointer-arith -Wcast-align \
 	-Wshadow -Waggregate-return -Wnested-externs -Winline -Wwrite-strings \
 	-Wundef -Wsign-compare -Wmissing-prototypes -Wredundant-decls
