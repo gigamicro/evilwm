@@ -102,18 +102,21 @@ static void clear_outline(struct client *current_outline){
 	if (current_outline == NULL)
 		return;
 	draw_outline(current_outline);
+	XUngrabServer(display.dpy);
 	free(current_outline);
 }
 
 static struct client *set_outline(struct client *c, struct client *current_outline){
 	clear_outline(current_outline);
-	{ draw_outline(c); }
+	XSync(display.dpy, False);
+	XGrabServer(display.dpy);
+	draw_outline(c);
 	return xmemdup(c, sizeof(*c));
 }
 
 # define init_outline(c) struct client *outline_c = NULL
-# define set_outline(c) { XSync(display.dpy, False); XGrabServer(display.dpy); outline_c = set_outline(c, outline_c); }
-# define clear_outline(c) { clear_outline(outline_c); outline_c = NULL; XUngrabServer(display.dpy); }
+# define set_outline(c) { outline_c = set_outline(c, outline_c); }
+# define clear_outline(c) { clear_outline(outline_c); outline_c = NULL; }
 
 ////////////////////////////////
 #else
