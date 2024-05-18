@@ -317,10 +317,20 @@ static void set_app(const char *arg) {
 #endif
 	new->is_dock = 0;
 	new->vdesk = VDESK_NONE;
-	new->res_name = strtok(xstrdup(arg), "/");
-	new->res_class = strtok(NULL, "/");
-	new->WM_NAME = strtok(NULL, "");
+	new->res_name = NULL;
+	new->res_class = NULL;
+	new->WM_NAME = NULL;
 	applications = list_prepend(applications, new);
+	if (!*arg) return;
+	new->res_name = xstrdup(arg);
+
+	new->res_class = strchr(new->res_name, '/');
+	if (!new->res_class) return;
+	*new->res_class++ = '\0';
+
+	new->WM_NAME = strchr(new->res_class, '/');
+	if (!new->WM_NAME) return;
+	*new->WM_NAME++ = '\0';
 }
 
 static void set_app_geometry(const char *arg) {
