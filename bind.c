@@ -186,7 +186,8 @@ static struct {
 
 	// Screen misc
 	{ "mask1+d",                "dock,toggle" },
-	{ "mask1+Multi_key",        "binds,toggle" },
+	{ "mask1+Multi_key",        "binds,down" },
+	{ "mask1+altmask+Multi_key","binds,up" },
 
 	// Button controls
 	{ "button1",                "move" },
@@ -256,6 +257,7 @@ static unsigned flags_by_name(const char *name) {
 // Manage list of binds
 static struct list *controlstash = NULL;
 void stashbinds(struct screen *s) {
+	if (controlstash) return;
 	controlstash = controls;
 	controls = NULL;
 	struct list *buttoncontrols = NULL;
@@ -288,6 +290,7 @@ void stashbinds(struct screen *s) {
 	l->next = buttoncontrols;
 }
 void unstashbinds(struct screen *s) {
+	if (!controlstash) return;
 	while (controls) controls = list_delete(controls, controls->data);
 	controls = controlstash;
 	controlstash = NULL;
