@@ -17,6 +17,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "bind.h"
 #include "client.h"
 #include "display.h"
 #include "evilwm.h"
@@ -240,4 +241,11 @@ void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 			switch_vdesk(scr, flags & FL_VALUEMASK);
 		}
 	}
+}
+
+void func_binds(void *sptr, XEvent *e, unsigned flags) {
+	(void)e;
+	if (!(flags & FL_TOGGLE)) {LOG_DEBUG("func_binds abort due to no FL_TOGGLE");return;}
+	// flags & ? for on/off bind?
+	togglebinds(sptr);
 }

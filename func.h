@@ -40,5 +40,6 @@ void func_raise(void *, XEvent *, unsigned);
 void func_resize(void *, XEvent *, unsigned);
 void func_spawn(void *, XEvent *, unsigned);
 void func_vdesk(void *, XEvent *, unsigned);
+void func_binds(void *, XEvent *, unsigned);
 
 #endif

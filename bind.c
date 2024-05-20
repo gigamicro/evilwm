@@ -102,6 +102,7 @@ static struct function_def name_to_func[] = {
 	{ "spawn",  func_spawn,     0 },
 	{ "vdesk",  func_vdesk,     FL_SCREEN },
 	{ "fix",    func_vdesk,     FL_CLIENT },
+	{ "binds",  func_binds,     FL_SCREEN },
 };
 #define NUM_NAME_TO_FUNC (int)(sizeof(name_to_func) / sizeof(name_to_func[0]))
 
@@ -185,6 +186,7 @@ static struct {
 
 	// Screen misc
 	{ "mask1+d",                "dock,toggle" },
+	{ "mask1+Multi_key",        "binds,toggle" },
 
 	// Button controls
 	{ "button1",                "move" },
@@ -252,6 +254,55 @@ static unsigned flags_by_name(const char *name) {
 }
 
 // Manage list of binds
+static struct list *controlstash = NULL;
+void stashbinds(struct screen *s) {
+	controlstash = controls;
+	controls = NULL;
+	struct list *buttoncontrols = NULL;
+	LOG_DEBUG("stashing binds");
+	for (struct list *l = controlstash; l; l = l->next) {
+		struct bind *b = l->data;
+		if (b->func == func_binds && b->flags&(FL_TOGGLE|0)) {
+			//keep binds for, well, reapplying the binds
+			LOG_DEBUG("!");
+			controls = list_prepend(controls, b);
+		} else if (b->type == ButtonPress) {
+			LOG_DEBUG(":");
+			buttoncontrols = list_prepend(buttoncontrols, b);
+			//ungrab buttons on all clients
+			for (struct list *lc = clients_tab_order; lc; lc = lc->next) {
+				struct client *c = lc->data;
+				XUngrabButton(display.dpy, b->control.button, grabmask2, c->parent);
+				XUngrabButton(display.dpy, b->control.button, grabmask2|altmask, c->parent);
+			}
+		} else {
+			LOG_DEBUG(".");
+		}
+	}
+	LOG_DEBUG("\n");
+	//rebind kept controls
+	bind_grab_for_screen(s);
+	//and add button controls back to the list, for border clicks
+	struct list *l = controls;
+	while (l->next) l=l->next;
+	l->next = buttoncontrols;
+}
+void unstashbinds(struct screen *s) {
+	while (controls) controls = list_delete(controls, controls->data);
+	controls = controlstash;
+	controlstash = NULL;
+	LOG_DEBUG("unstashing binds\n");
+	bind_grab_for_screen(s);
+	// go through and grab buttons on clients
+	for (struct list *l = clients_tab_order; l; l = l->next) {
+		struct client *c = l->data;
+		bind_grab_for_client(c);
+	}
+}
+void togglebinds(struct screen *s) {
+	if (controlstash) unstashbinds(s);
+	else stashbinds(s);
+}
 
 void bind_unset(void) {
 	// unbind _all_ controls
