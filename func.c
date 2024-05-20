@@ -245,7 +245,10 @@ void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 
 void func_binds(void *sptr, XEvent *e, unsigned flags) {
 	(void)e;
-	if (!(flags & FL_TOGGLE)) {LOG_DEBUG("func_binds abort due to no FL_TOGGLE");return;}
+	if (!(flags & (FL_TOGGLE | FL_UP | FL_DOWN))) {LOG_DEBUG("func_binds abort due to invalid flags\n");return;}
 	// flags & ? for on/off bind?
-	togglebinds(sptr);
+	if (flags & FL_TOGGLE) togglebinds(sptr);
+	else if (flags & FL_UP) unstashbinds(sptr);
+	else if (flags & FL_DOWN) stashbinds(sptr);
+	else LOG_DEBUG("func_binds invalid flags\n");
 }
