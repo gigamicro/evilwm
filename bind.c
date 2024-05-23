@@ -282,6 +282,16 @@ void stashbinds(struct screen *s) {
 		}
 	}
 	LOG_DEBUG("\n");
+	if (!controls) {
+		LOG_ERROR("stashbinds(): No surviving controls! Binding mask1+altmask+Multi_key=binds,up\n");
+		struct bind *b = xmalloc(sizeof(*b));
+		*b=(struct bind){
+			.type=KeyPress,.control.key=XStringToKeysym("Multi_key"),
+			.state = modifier_by_name("mask1")->value | modifier_by_name("altmask")->value,
+			.func=func_binds,.flags=FL_SCREEN|FL_UP,
+		};
+		controls = list_prepend(controls, b);
+	}
 	//rebind kept controls
 	bind_grab_for_screen(s);
 	//and add button controls back to the list, for border clicks
