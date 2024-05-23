@@ -258,10 +258,10 @@ static unsigned flags_by_name(const char *name) {
 static struct list *controlstash = NULL;
 void stashbinds(struct screen *s) {
 	if (controlstash) return;
+	LOG_DEBUG("stashing binds");
 	controlstash = controls;
 	controls = NULL;
 	struct list *buttoncontrols = NULL;
-	LOG_DEBUG("stashing binds");
 	for (struct list *l = controlstash; l; l = l->next) {
 		struct bind *b = l->data;
 		if (b->func == func_binds && b->flags&(FL_TOGGLE|FL_UP)) {
@@ -291,10 +291,10 @@ void stashbinds(struct screen *s) {
 }
 void unstashbinds(struct screen *s) {
 	if (!controlstash) return;
+	LOG_DEBUG("unstashing binds\n");
 	while (controls) controls = list_delete(controls, controls->data);
 	controls = controlstash;
 	controlstash = NULL;
-	LOG_DEBUG("unstashing binds\n");
 	bind_grab_for_screen(s);
 	// go through and grab buttons on clients
 	for (struct list *l = clients_tab_order; l; l = l->next) {
