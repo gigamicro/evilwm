@@ -264,7 +264,7 @@ void stashbinds(struct screen *s) {
 	LOG_DEBUG("stashing binds");
 	for (struct list *l = controlstash; l; l = l->next) {
 		struct bind *b = l->data;
-		if (b->func == func_binds && b->flags&(FL_TOGGLE|0)) {
+		if (b->func == func_binds && b->flags&(FL_TOGGLE|FL_UP)) {
 			//keep binds for, well, reapplying the binds
 			LOG_DEBUG("!");
 			controls = list_prepend(controls, b);
