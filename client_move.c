@@ -50,7 +50,7 @@ static void do_outline(struct client *c, _Bool set) {
 	XSubtractRegion(region, holed, holed);
 	if (set) {
 		XMoveResizeWindow(display.dpy, c->parent, c->x - c->border, c->y - c->border, c->width, c->height);
-		XConfigureWindow(display.dpy, c->parent, CWBorderWidth, &(XWindowChanges){ .border_width = c->normal_border });
+		XConfigureWindow(display.dpy, c->parent, CWBorderWidth, &(XWindowChanges){ .border_width = c->normal_border?c->normal_border:option.bw });
 		XShapeCombineRegion(display.dpy, c->parent, ShapeClip, 0, 0, holed, ShapeSet);
 		XShapeCombineRegion(display.dpy, c->parent, ShapeBounding, 0, 0, holed, ShapeSet);
 		XUnmapWindow(display.dpy,c->window);
