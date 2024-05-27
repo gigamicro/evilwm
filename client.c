@@ -223,6 +223,10 @@ void client_hide(struct client *c) {
 	c->ignore_unmap++;  // ignore unmap so we don't remove client
 	XUnmapWindow(display.dpy, c->parent);
 	set_wm_state(c, IconicState);
+	if (current == c) {
+		select_client(NULL);
+		LOG_DEBUG("client %lx (window=%lx) hidden\n", (unsigned long)c, (unsigned long)c->window);
+	}
 }
 
 // Show client (and flag it as normal - not iconified).  Used for vdesks and
