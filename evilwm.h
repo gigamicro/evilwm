@@ -52,8 +52,10 @@ struct options {
 
 extern struct options option;
 
-#ifndef SOLIDDRAG
-# define option.no_solid_drag 1
+#ifdef SOLIDDRAG
+# define OPTION_NO_SOLID_DRAG (option.no_solid_drag)
+#else
+# define OPTION_NO_SOLID_DRAG (1)
 #endif
 
 extern unsigned numlockmask;

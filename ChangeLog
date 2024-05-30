@@ -1,3 +1,5 @@
+  * Fix compilation with SOLIDDRAG undefined [jake]
+
 Version 1.4.3, Sat Mar  9 2024
 
   * Force dock windows to have _NET_WM_STATE_FOCUSED
