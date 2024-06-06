@@ -61,14 +61,16 @@ struct list *list_append(struct list *list, void *data) {
 struct list *list_delete(struct list *list, void *data) {
 	if (!data)
 		return list;
-	for (struct list **elemp = &list; *elemp; elemp = &(*elemp)->next) {
-		if ((*elemp)->data == data) {
-			struct list *elem = *elemp;
-			*elemp = elem->next;
-			free(elem);
-			break;
-		}
+	if (list->data == data) {
+		struct list *elem = list;
+		list = elem->next;
+		free(elem);
+		return list;
 	}
+	struct list *prev = list_find_prev(list,data);
+	struct list *elem = prev->next;
+	prev->next=elem->next;
+	free(elem);
 	return list;
 }
 
@@ -84,8 +86,23 @@ struct list *list_to_head(struct list *list, void *data) {
 struct list *list_to_tail(struct list *list, void *data) {
 	if (!data)
 		return list;
-	list = list_delete(list, data);
-	return list_append(list, data);
+	if (list->data == data) {
+		struct list *elem = list;
+		list = list->next;
+		struct list *tail = list;
+		while (tail->next) tail=tail->next;
+		tail->next = elem;
+		elem->next = NULL;
+		return list;
+	}
+	struct list *cont = list_find_prev(list,data);
+	if (!cont) return list_append(list, data);
+	struct list *mvelem = cont->next;
+	cont->next=mvelem->next;
+	mvelem->next=NULL;
+	while (cont->next) cont=cont->next;
+	cont->next=mvelem;
+	return list;
 }
 
 // Find list element containing data
@@ -94,5 +111,13 @@ struct list *list_find(struct list *list, void *data) {
 		if (elem->data == data)
 			return elem;
 	}
+	return NULL;
+}
+// find the previous element to that
+struct list *list_find_prev(struct list *list, void *data) {
+	if (list->data == data) return list_prepend(list,NULL); // XXX
+	for (struct list *elem = list; elem->next; elem = elem->next)
+		if (elem->next->data == data)
+			return elem;
 	return NULL;
 }
