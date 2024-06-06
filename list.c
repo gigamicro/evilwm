@@ -25,6 +25,8 @@ static struct list *list_new(void *data) {
 
 // Insert new data before given position
 struct list *list_insert_before(struct list *list, struct list *before, void *data) {
+	if (!before)
+		return list_append(list,data);
 	struct list *elem = list_new(data);
 	if (!elem)
 		return list;
@@ -54,7 +56,12 @@ struct list *list_prepend(struct list *list, void *data) {
 
 // Add new data to tail of list
 struct list *list_append(struct list *list, void *data) {
-	return list_insert_before(list, NULL, data);
+	struct list *elem = list_new(data);
+	if (!list) return elem;
+	struct list *tail = list;
+	while (tail->next) tail=tail->next;
+	tail->next=elem;
+	return list;
 }
 
 // Delete list element containing data
