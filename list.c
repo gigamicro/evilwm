@@ -78,8 +78,14 @@ struct list *list_delete(struct list *list, void *data) {
 struct list *list_to_head(struct list *list, void *data) {
 	if (!data)
 		return list;
-	list = list_delete(list, data);
-	return list_prepend(list, data);
+	if (list->data == data)
+		return list;
+	struct list *cont = list_find_prev(list,data);
+	if (!cont) return list_prepend(list, data);
+	struct list *mvelem = cont->next;
+	cont->next=mvelem->next;
+	mvelem->next=list;
+	return mvelem;
 }
 
 // Move existing list element containing data to tail of list
@@ -89,6 +95,7 @@ struct list *list_to_tail(struct list *list, void *data) {
 	if (list->data == data) {
 		struct list *elem = list;
 		list = list->next;
+		if (!list) return elem; // single element
 		struct list *tail = list;
 		while (tail->next) tail=tail->next;
 		tail->next = elem;
@@ -99,9 +106,9 @@ struct list *list_to_tail(struct list *list, void *data) {
 	if (!cont) return list_append(list, data);
 	struct list *mvelem = cont->next;
 	cont->next=mvelem->next;
-	mvelem->next=NULL;
 	while (cont->next) cont=cont->next;
 	cont->next=mvelem;
+	mvelem->next=NULL;
 	return list;
 }
 
