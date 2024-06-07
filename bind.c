@@ -115,9 +115,13 @@ struct name_to_flags {
 
 static struct name_to_flags name_to_flags[] = {
 	{ "up",             FL_UP },
+	{ "u",              FL_UP },
 	{ "down",           FL_DOWN },
+	{ "d",              FL_DOWN },
 	{ "left",           FL_LEFT },
+	{ "l",              FL_LEFT },
 	{ "right",          FL_RIGHT },
+	{ "r",              FL_RIGHT },
 	{ "top",            FL_TOP },
 	{ "bottom",         FL_BOTTOM },
 	{ "relative",       FL_RELATIVE },

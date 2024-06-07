@@ -242,6 +242,8 @@ void client_resize_sweep(struct client *c, unsigned button) {
 #ifdef RESIZE_WARP_POINTER
 	// Warp pointer to the bottom-right of the client for resizing
 	setmouse(c->window, c->width, c->height);
+#else
+	// do initial resize to pointer
 #endif
 
 	for (;;) {

@@ -23,6 +23,7 @@ key release binds
 
 resize snap should actually snap size
 make snap_client use another function per edge? per point?
+one pass for anchor, one pass for cursor
 
 use getpointer for drag/sweep? wouldn't have to grab
 but when would it poll lol

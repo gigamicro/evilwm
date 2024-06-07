@@ -29,7 +29,7 @@
 #define FL_HORZ        (FL_LEFT|FL_RIGHT)
 
 // Bindable functions
-
+#include <X11/Xlib.h>
 void func_delete(void *, XEvent *, unsigned);
 void func_dock(void *, XEvent *, unsigned);
 void func_info(void *, XEvent *, unsigned);
