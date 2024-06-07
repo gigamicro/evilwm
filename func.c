@@ -155,7 +155,7 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	if (e->type == ButtonPress) {
+	if (e->type == ButtonPress && !(flags & FL_TOGGLE)) {
 		client_resize_sweep(c, e->xbutton.button);
 		return;
 	}
@@ -178,10 +178,10 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 		}
 	} else if (flags & FL_TOGGLE) {
 		int hv = 0;
-		if ((flags & FL_HORZ) == FL_HORZ) {
+		if (flags & FL_HORZ) {
 			hv |= MAXIMISE_HORZ;
 		}
-		if ((flags & FL_VERT) == FL_VERT) {
+		if (flags & FL_VERT) {
 			hv |= MAXIMISE_VERT;
 		}
 		client_maximise(c, NET_WM_STATE_TOGGLE, hv);
