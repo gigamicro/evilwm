@@ -221,21 +221,17 @@ void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 		if (flags & FL_TOGGLE) {
 			switch_vdesk(scr, scr->old_vdesk);
 		} else if (flags & FL_RELATIVE) {
-			unsigned mod = option.modvdesks;
-			if (!mod) mod = option.vdesks;// + 1;
+			unsigned mod = option.modvdesks?option.modvdesks:option.vdesks;// + 1;
 			unsigned v = scr->vdesk % mod;
 			unsigned h = scr->vdesk / mod;
 			unsigned v_max = mod;
 			unsigned h_max = option.vdesks / mod;
-			if (flags & FL_UP  )	v ++;
-			if (flags & FL_DOWN)	v --;
-			if (flags & FL_LEFT)	h --;
-			if (flags & FL_RIGHT)	h ++;
-			if (v >= v_max) v -= v_max;
-			if (h >= h_max) h -= h_max;
-			// if still >=, it was an underflow
-			if (v >= v_max) v += 2 * v_max;
-			if (h >= h_max) h += 2 * h_max;
+			if (flags & FL_UP   ) v ++;
+			if (flags & FL_DOWN ) v += v_max-1;
+			v %= v_max;
+			if (flags & FL_LEFT ) h += h_max-1;
+			if (flags & FL_RIGHT) h ++;
+			h %= h_max;
 			switch_vdesk(scr, h * mod + v);
 		} else {
 			switch_vdesk(scr, flags & FL_VALUEMASK);
