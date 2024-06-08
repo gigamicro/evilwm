@@ -77,7 +77,9 @@ extern struct list *clients_mapping_order;
 extern struct list *clients_stacking_order;
 extern struct client *current;
 
-#define is_fixed(c) (c->vdesk == VDESK_FIXED)
+#define is_fixed(c) ((c)->vdesk == VDESK_FIXED)
+#define on_vdesk(c) (is_fixed(c)||(c)->vdesk==(c)->screen->vdesk)
+#define is_visible(c) ( (c)->is_dock ? (c)->screen->docks_visible : on_vdesk(c) )
 
 // client_new.c: newly manage a window
 

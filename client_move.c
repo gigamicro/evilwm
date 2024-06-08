@@ -577,43 +577,29 @@ void client_maximise(struct client *c, int action, int hv) {
 // (basically, handle Alt+Tab).  Order is most-recently-used (maintained in the
 // clients_tab_order list).
 
+static struct client *next_visible_client(struct list *order) {
+	if (!order) return NULL;
+	for (struct list *l = order->next/*note the next*/; l; l=l->next) {
+		if (is_visible((struct client *)l->data)) return l->data;
+	}
+	return NULL;
+}
+
 void client_select_next(void) {
-	struct list *newl = list_find(clients_tab_order, current);
-	struct client *newc;
-
-	do {
-		if (newl) {
-			newl = newl->next;
-			if (!newl && !current)
-				return;
-		}
-		if (!newl)
-			newl = clients_tab_order;
-		if (!newl)
-			return;
-		newc = newl->data;
-		if (newc == current)
-			return;
-	} while ( (!is_fixed(newc) && (newc->vdesk != newc->screen->vdesk))
-		 || (newc->is_dock && !newc->screen->docks_visible) );
-
-	if (!newc)
-		return;
-
-	client_show(newc);  // XXX why would it be hidden?
-	client_raise(newc);
-	client_intersect(newc);
-#if defined(WARP_POINTER) || defined(NEXT_WARP_POINTER)
-	// Optionally force the pointer to jump to the newly-selected window.
-	// I think this was the default behaviour in much earlier versions of
-	// evilwm (possibly to generate the enter event and handle selecting
-	// the client as a result of that), but I don't like it now.
-	// setmouse(newc->window, (newc->width + newc->border - 1), (newc->height + newc->border - 1));
-	setmouse(newc->window, newc->width/2, newc->height/2);
+	if (!clients_tab_order) return;
+	struct client *c = next_visible_client(list_find(clients_tab_order, current));
+	if (!c) c = next_visible_client(&(struct list){.next=clients_tab_order});
+	if (!c) return;
+	client_raise(c);
+	client_intersect(c);
+#ifdef NEXT_WARP_POINTER
+	setmouse(c->window, c->width/2, c->height/2);
+#elif defined(WARP_POINTER)
+	setmouse(c->window, c->width+c->border-1, c->height+c->border-1);
 #endif
-	select_client(newc);
+	select_client(c);
 #ifdef NEXT_DISCARDENTERS
-	discard_enter_events(newc);
+	discard_enter_events(c);
 #endif
 }
 
