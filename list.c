@@ -13,40 +13,18 @@
 
 #include "list.h"
 
-// Wrap data in a new list container
-static struct list *list_new(void *data) {
-	struct list *new = malloc(sizeof(*new));
-	if (!new)
-		return NULL;
-	new->next = NULL;
-	new->data = data;
-	return new;
-}
-
 // Insert new data before given position
-struct list *list_insert_before(struct list *list, struct list *before, void *data) {
-	if (!before)
-		return list_append(list,data);
-	struct list *elem = list_new(data);
-	if (!elem)
-		return list;
-	if (!list)
-		return elem;
-	elem->next = before;
-	if (before == list)
-		return elem;
-	for (struct list *iter = list; iter; iter = iter->next) {
-		if (iter->next == before) {
-			iter->next = elem;
-			return list;
-		}
-		if (!iter->next) {
-			elem->next = NULL;
-			iter->next = elem;
-			return list;
-		}
-	}
-	abort();
+static struct list *list_insert_before(struct list *list, struct list *before, void *data) {
+	if (!before) return list_append(list,data);
+	struct list *elem = malloc(sizeof(struct list));
+	if (!elem) return list; // malloc fail
+	*elem = (struct list){ before, data };
+	if (!list) return elem; // new list
+	if (before == list) return elem; // prepend to list
+	// insert in list
+	*elem = *before;
+	*before = (struct list){ elem, data };
+	return list;
 }
 
 // Add new data to head of list
@@ -56,7 +34,8 @@ struct list *list_prepend(struct list *list, void *data) {
 
 // Add new data to tail of list
 struct list *list_append(struct list *list, void *data) {
-	struct list *elem = list_new(data);
+	struct list *elem = malloc(sizeof(*elem));
+	*elem=(struct list){NULL,data};
 	if (!list) return elem;
 	struct list *tail = list;
 	while (tail->next) tail=tail->next;
@@ -66,8 +45,7 @@ struct list *list_append(struct list *list, void *data) {
 
 // Delete list element containing data
 struct list *list_delete(struct list *list, void *data) {
-	if (!data)
-		return list;
+	if (!data) return list;
 	if (list->data == data) {
 		struct list *elem = list;
 		list = elem->next;
@@ -83,10 +61,8 @@ struct list *list_delete(struct list *list, void *data) {
 
 // Move existing list element containing data to head of list
 struct list *list_to_head(struct list *list, void *data) {
-	if (!data)
-		return list;
-	if (list->data == data)
-		return list;
+	if (!data) return list;
+	if (list->data == data) return list;
 	struct list *cont = list_find_prev(list,data);
 	if (!cont) return list_prepend(list, data);
 	struct list *mvelem = cont->next;
@@ -97,9 +73,8 @@ struct list *list_to_head(struct list *list, void *data) {
 
 // Move existing list element containing data to tail of list
 struct list *list_to_tail(struct list *list, void *data) {
-	if (!data)
-		return list;
-	if (list->data == data) {
+	if (!data) return list;
+	if (list->data == data) { // head to tail
 		struct list *elem = list;
 		list = list->next;
 		if (!list) return elem; // single element
