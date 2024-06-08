@@ -290,26 +290,15 @@ void screen_probe_monitors(struct screen *s) {
 // explicitly).  Fixed clients are always shown.
 
 void switch_vdesk(struct screen *s, unsigned v) {
-#ifdef DEBUG
-	int nhidden = 0, nraised = 0;
-#endif
 
-	// Sanity check vdesk number.
-	if (!valid_vdesk(v))
-		return;
-
-	// Selected == current?  Do nothing.
-	if (v == s->vdesk)
-		return;
+	if (!valid_vdesk(v)) return;
+	if (v == s->vdesk) return; // already there
 
 	LOG_ENTER("switch_vdesk(screen=%d, from=%d, to=%d)", s->screen, s->vdesk, v);
 
-	// If current client is not fixed, deselect it.  An enter event from
-	// mapping clients may select a new one.
-	if (current && !is_fixed(current)) {
-		select_client(NULL);
-	}
-
+#ifdef DEBUG
+	int nhidden = 0, nraised = 0;
+#endif
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *c = iter->data;
 		if (c->screen != s)
