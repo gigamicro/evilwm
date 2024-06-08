@@ -351,13 +351,12 @@ void set_docks_visible(struct screen *s, int is_visible) {
 
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *c = iter->data;
-		if (c->screen != s)
-			continue;
+		if (c->screen != s) continue;
 		if (c->is_dock) {
 			if (is_visible) {
 				// XXX I've assumed that if you want to see
 				// them, you also want them raised...
-				if (is_fixed(c) || (c->vdesk == s->vdesk)) {
+				if (on_vdesk(c)) {
 					client_show(c);
 					client_raise(c);
 				}

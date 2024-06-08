@@ -204,7 +204,7 @@ void client_manage_new(Window w, struct screen *s) {
 	// Only map the window frame (and thus the window) if it's supposed
 	// to be visible on this virtual desktop.  Otherwise, set it to
 	// IconicState (hidden).
-	if ((is_fixed(c) || c->vdesk == s->vdesk) && (!c->is_dock || s->docks_visible)) {
+	if (is_visible(c)) {
 		client_show(c);
 		client_raise(c);
 		// Don't focus windows that aren't on the same display as the

@@ -189,8 +189,7 @@ static void handle_map_request(XMapRequestEvent *e) {
 
 	LOG_ENTER("handle_map_request(window=%lx)", (unsigned long)e->window);
 	if (c) {
-		if (!is_fixed(c) && c->vdesk != c->screen->vdesk)
-			switch_vdesk(c->screen, c->vdesk);
+		if (!on_vdesk(c)) switch_vdesk(c->screen, c->vdesk);
 		client_show(c);
 		client_raise(c);
 	} else {
@@ -246,9 +245,7 @@ static void handle_property_change(XPropertyEvent *e) {
 			LOG_DEBUG("geometry=%dx%d+%d+%d\n", c->width, c->height, c->x, c->y);
 		} else if (e->atom == X_ATOM(_NET_WM_WINDOW_TYPE)) {
 			get_window_type(c);
-			if (!c->is_dock && (is_fixed(c) || (c->vdesk == c->screen->vdesk))) {
-				client_show(c);
-			}
+			if (is_visible(c)) client_show(c);
 		}
 		LOG_LEAVE();
 	}
@@ -258,7 +255,7 @@ static void handle_enter_event(XCrossingEvent *e) {
 	struct client *c = find_client(e->window);
 
 	if (c) {
-		if (!is_fixed(c) && c->vdesk != c->screen->vdesk) return;
+		if (!on_vdesk(c)) return;
 		select_client(c);
 		clients_tab_order = list_to_head(clients_tab_order, c);
 	}

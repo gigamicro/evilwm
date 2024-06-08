@@ -146,14 +146,9 @@ static void snap_client(struct client *c, struct monitor *monitor) {
 	dx = dy = option.snap;
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *ci = iter->data;
-		if (ci == c)
-			continue;
-		if (ci->screen != c->screen)
-			continue;
-		if (!is_fixed(ci) && ci->vdesk != c->screen->vdesk)
-			continue;
-		if (ci->is_dock && !c->screen->docks_visible)
-			continue;
+		if (ci == c) continue;
+		if (ci->screen != c->screen) continue;
+		if (!is_visible(ci)) continue;
 		if (ci->y - ci->border - c->border - c->height - c->y <= option.snap && c->y - c->border - ci->border - ci->height - ci->y <= option.snap) {
 			dx = absmin(dx, ci->x + ci->width - c->x + c->border + ci->border);
 			dx = absmin(dx, ci->x + ci->width - c->x - c->width);
