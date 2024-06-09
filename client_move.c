@@ -216,6 +216,13 @@ static void recalculate_sweep(struct client *c, int x1, int y1, int x2, int y2, 
 # define remove_info_window(...)
 #endif
 
+static int motion_predicate(Display *d, XEvent *ev, XPointer arg){
+	(void)d;
+	(void)arg;
+	if (ev->type == MotionNotify) return 1;
+	return 0;
+}
+
 // Handle user resizing a window with the mouse.
 void client_resize_sweep(struct client *c, unsigned button) {
 	// Ensure we can grab pointer events.
@@ -241,7 +248,6 @@ void client_resize_sweep(struct client *c, unsigned button) {
 	// do initial resize to pointer
 #endif
 
-	Time lastupdate=0;
 	for (;;) {
 		XEvent ev;
 		XMaskEvent(display.dpy, ButtonPressMask|ButtonReleaseMask|PointerMotionMask, &ev);
@@ -254,8 +260,8 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
 
-				if (ev.xmotion.time - lastupdate > 3) {
-					lastupdate = ev.xmotion.time;
+				XEvent evc;
+				if (!XCheckIfEvent(display.dpy,&evc,motion_predicate,NULL)) {
 					if (option.solid_sweep)
 						client_moveresize(c);
 					else
@@ -316,7 +322,6 @@ void client_move_drag(struct client *c, unsigned button) {
 		set_outline(c);
 	}
 
-	Time lastupdate=0;
 	for (;;) {
 		XEvent ev;
 		XMaskEvent(display.dpy, ButtonPressMask|ButtonReleaseMask|PointerMotionMask, &ev);
@@ -329,8 +334,8 @@ void client_move_drag(struct client *c, unsigned button) {
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
 
-				if (ev.xmotion.time - lastupdate > 3) {
-					lastupdate = ev.xmotion.time;
+				XEvent evc;
+				if (!XCheckIfEvent(display.dpy,&evc,motion_predicate,NULL)) {
 					update_info_window(c);
 					if (option.solid_drag) {
 						XMoveWindow(display.dpy, c->parent,
