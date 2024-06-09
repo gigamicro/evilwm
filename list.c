@@ -35,8 +35,9 @@ struct list *list_prepend(struct list *list, void *data) {
 // Add new data to tail of list
 struct list *list_append(struct list *list, void *data) {
 	struct list *elem = malloc(sizeof(*elem));
+	if (!elem) return list; // malloc fail
 	*elem=(struct list){NULL,data};
-	if (!list) return elem;
+	if (!list) return elem; // new list
 	struct list *tail = list;
 	while (tail->next) tail=tail->next;
 	tail->next=elem;
@@ -62,9 +63,9 @@ struct list *list_delete(struct list *list, void *data) {
 // Move existing list element containing data to head of list
 struct list *list_to_head(struct list *list, void *data) {
 	if (!data) return list;
-	if (list->data == data) return list;
+	if (list->data == data) return list; // already there
 	struct list *cont = list_find_prev(list,data);
-	if (!cont) return list_prepend(list, data);
+	if (!cont) return list_prepend(list, data); // wasn't in list
 	struct list *mvelem = cont->next;
 	cont->next=mvelem->next;
 	mvelem->next=list;
@@ -85,7 +86,7 @@ struct list *list_to_tail(struct list *list, void *data) {
 		return list;
 	}
 	struct list *cont = list_find_prev(list,data);
-	if (!cont) return list_append(list, data);
+	if (!cont) return list_append(list, data); // wasn't in list
 	struct list *mvelem = cont->next;
 	cont->next=mvelem->next;
 	while (cont->next) cont=cont->next;
