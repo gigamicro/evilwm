@@ -241,6 +241,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 	// do initial resize to pointer
 #endif
 
+	Time lastupdate=0;
 	for (;;) {
 		XEvent ev;
 		XMaskEvent(display.dpy, ButtonPressMask|ButtonReleaseMask|PointerMotionMask, &ev);
@@ -253,10 +254,13 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
 
-				if (option.solid_sweep)
-					client_moveresize(c);
-				else
-					set_outline(c);
+				if (ev.xmotion.time - lastupdate > 3) {
+					lastupdate = ev.xmotion.time;
+					if (option.solid_sweep)
+						client_moveresize(c);
+					else
+						set_outline(c);
+				}
 
 				update_info_window(c);
 				break;
@@ -312,6 +316,7 @@ void client_move_drag(struct client *c, unsigned button) {
 		set_outline(c);
 	}
 
+	Time lastupdate=0;
 	for (;;) {
 		XEvent ev;
 		XMaskEvent(display.dpy, ButtonPressMask|ButtonReleaseMask|PointerMotionMask, &ev);
@@ -324,20 +329,23 @@ void client_move_drag(struct client *c, unsigned button) {
 				if (option.snap && !(ev.xmotion.state & altmask))
 					snap_client(c, monitor);
 
-				update_info_window(c);
-				if (option.solid_drag) {
-					XMoveWindow(display.dpy, c->parent,
-							c->x - c->border,
-							c->y - c->border);
-					send_config(c);
-				} else {
+				if (ev.xmotion.time - lastupdate > 3) {
+					lastupdate = ev.xmotion.time;
+					update_info_window(c);
+					if (option.solid_drag) {
+						XMoveWindow(display.dpy, c->parent,
+								c->x - c->border,
+								c->y - c->border);
+						send_config(c);
+					} else {
 #ifdef SHAPE_OUTLINE
-					XMoveWindow(display.dpy, c->parent,
-							c->x - c->border,
-							c->y - c->border);
+						XMoveWindow(display.dpy, c->parent,
+								c->x - c->border,
+								c->y - c->border);
 #else
-					set_outline(c);
+						set_outline(c);
 #endif
+					}
 				}
 				break;
 
