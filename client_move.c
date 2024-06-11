@@ -219,6 +219,7 @@ static void recalculate_sweep(struct client *c, int x1, int y1, int x2, int y2, 
 static int motion_predicate(Display *d, XEvent *ev, XPointer arg){
 	(void)d;
 	(void)arg;
+	LOG_XDEBUG("there exists a %s\n", xevent_string(ev->type));
 	if (ev->type == MotionNotify) return 1;
 	return 0;
 }

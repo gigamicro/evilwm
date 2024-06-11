@@ -137,7 +137,6 @@ void client_manage_new(Window w, struct screen *s) {
 		LOG_DEBUG("app %s/%s/%s\n",class->res_name,class->res_class,name);
 		for (struct list *iter = applications; iter; iter = iter->next) {
 			struct application *a = iter->data;
-			LOG_DEBUG("matching? %s/%s/%s\n",a->res_name,a->res_class,a->WM_NAME);
 			// match if either the parameter
 			//  doesn't exist,
 			//  is NULL & an empty string respectively (eg matching a null/null window with '/'), or 
@@ -145,7 +144,7 @@ void client_manage_new(Window w, struct screen *s) {
 			if ((!a->res_name  || (!class->res_name  && !*a->res_name ) || (class->res_name  && !strcmp(class->res_name,  a->res_name )))
 			 && (!a->res_class || (!class->res_class && !*a->res_class) || (class->res_class && !strcmp(class->res_class, a->res_class)))
 			 && (!a->WM_NAME   || (!name             && !*a->WM_NAME  ) || (name             &&  strstr(name,             a->WM_NAME  )))) {
-				LOG_DEBUG("Class match, using app settings\n");
+				LOG_DEBUG("matching %s/%s/%s, using app settings\n",a->res_name,a->res_class,a->WM_NAME);
 				// Override width or height?
 				if (a->geometry_mask & WidthValue)
 					c->width = a->width * c->width_inc;

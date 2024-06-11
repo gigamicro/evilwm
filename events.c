@@ -133,6 +133,7 @@ static void do_window_changes(int value_mask, XWindowChanges *wc, struct client 
 }
 
 static void handle_configure_notify(XConfigureEvent *e) {
+#ifdef XDEBUG
 	struct client *c = find_client(e->window);
 	if (!c) {
 		LOG_XDEBUG("handle_configure_notify() on unmanaged window\n");
@@ -144,6 +145,9 @@ static void handle_configure_notify(XConfigureEvent *e) {
 	LOG_XDEBUG("above=%lx\n", (unsigned long)e->above);
 	LOG_XDEBUG("override_redirect=%d\n", (int)e->override_redirect);
 	LOG_XLEAVE();
+#else
+	(void)e;
+#endif
 }
 
 #ifdef CONFIGREQ
@@ -203,20 +207,20 @@ static void handle_map_request(XMapRequestEvent *e) {
 static void handle_unmap_event(XUnmapEvent *e) {
 	struct client *c = find_client(e->window);
 
-	LOG_ENTER("handle_unmap_event(window=%lx)", (unsigned long)e->window);
+	LOG_XENTER("handle_unmap_event(window=%lx)", (unsigned long)e->window);
 	if (c) {
 		if (c->ignore_unmap) {
 			c->ignore_unmap--;
-			LOG_DEBUG("ignored (%d ignores remaining)\n", c->ignore_unmap);
+			LOG_XDEBUG("ignored (%d ignores remaining)\n", c->ignore_unmap);
 		} else {
-			LOG_DEBUG("flagging client for removal\n");
+			LOG_XDEBUG("flagging client for removal\n");
 			c->remove = 1;
 			need_client_tidy = 1;
 		}
 	} else {
-		LOG_DEBUG("unknown client!\n");
+		LOG_XDEBUG("unknown client!\n");
 	}
-	LOG_LEAVE();
+	LOG_XLEAVE();
 }
 
 static void handle_colormap_change(XColormapEvent *e) {
@@ -230,25 +234,26 @@ static void handle_colormap_change(XColormapEvent *e) {
 
 static void handle_property_change(XPropertyEvent *e) {
 	struct client *c = find_client(e->window);
-
-	if (c) {
+	if (!c) return;
 #ifdef DEBUG
-		XTextProperty wmname;
-		XGetWMName(display.dpy, e->window, &wmname);
-		LOG_ENTER("handle_property_change(window=%lx (\"%s\"), atom=%s)", (unsigned long)e->window, wmname.value, debug_atom_name(e->atom));
-		if (wmname.value)
-			XFree(wmname.value);
+#ifndef XDEBUG
+	if (e->atom!=XA_WM_NORMAL_HINTS && e->atom!=X_ATOM(_NET_WM_WINDOW_TYPE)) return;
+#endif
+	XTextProperty wmname;
+	XGetWMName(display.dpy, e->window, &wmname);
+	LOG_ENTER("handle_property_change(window=%lx (\"%s\"), atom=%s)", (unsigned long)e->window, wmname.value, debug_atom_name(e->atom));
+	if (wmname.value)
+		XFree(wmname.value);
 #endif
 
-		if (e->atom == XA_WM_NORMAL_HINTS) {
-			get_wm_normal_hints(c);
-			LOG_DEBUG("geometry=%dx%d+%d+%d\n", c->width, c->height, c->x, c->y);
-		} else if (e->atom == X_ATOM(_NET_WM_WINDOW_TYPE)) {
-			get_window_type(c);
-			if (is_visible(c)) client_show(c);
-		}
-		LOG_LEAVE();
+	if (e->atom == XA_WM_NORMAL_HINTS) {
+		get_wm_normal_hints(c);
+		LOG_DEBUG("geometry=%dx%d+%d+%d\n", c->width, c->height, c->x, c->y);
+	} else if (e->atom == X_ATOM(_NET_WM_WINDOW_TYPE)) {
+		get_window_type(c);
+		if (is_visible(c)) client_show(c);
 	}
+	LOG_LEAVE();
 }
 
 static void handle_enter_event(XCrossingEvent *e) {
@@ -455,6 +460,12 @@ void event_main_loop(void) {
 	// Main event loop
 	while (!end_event_loop) {
 		if (interruptibleXNextEvent(&ev.xevent)) {
+			if ( ev.xevent.type!=UnmapNotify && ev.xevent.type!=DestroyNotify && ev.xevent.type!=EnterNotify ) {
+				initialising = None;
+				removing = None;
+			}
+			LOG_XDEBUG("%s:",xevent_string(ev.xevent.type));
+
 			switch (ev.xevent.type) {
 			case KeyPress:
 				bind_handle_key(&ev.xevent.xkey);

@@ -71,8 +71,6 @@ int handle_xerror(Display *dsply, XErrorEvent *e) {
 	char buf[64];
 	if (  XGetErrorText( display.dpy, e->error_code, buf, sizeof(buf)/sizeof(buf[0]) )  )
 		buf[0]=0;
-	LOG_ENTER("handle_xerror(error=%d \x1b[31m%s\x1b[0m, request=%d/%d, resourceid=%lx)",
-		e->error_code, buf, e->request_code, e->minor_code, e->resourceid);
 	// Some parts of the code deliberately disable error checking.
 
 	// client_manage_new() sets initialising to non-None to test if a
@@ -80,19 +78,21 @@ int handle_xerror(Display *dsply, XErrorEvent *e) {
 	// indicate that by setting it back to None.
 
 	if (initialising != None && e->resourceid == initialising) {
-		LOG_DEBUG("error caught while initialising window=%lx\n", (unsigned long)initialising);
+		LOG_XDEBUG("error caught while initialising window=%lx\n", (unsigned long)initialising);
 		initialising = None;
-		LOG_LEAVE();
+		// LOG_LEAVE();
 		return 0;
 	}
 
 	// same in remove_client()
 	if (removing != None && e->resourceid == removing) {
-		LOG_DEBUG("error caught while removing window=%lx\n", (unsigned long)removing);
+		LOG_XDEBUG("error caught while removing window=%lx\n", (unsigned long)removing);
 		// removing = None;
-		LOG_LEAVE();
+		// LOG_LEAVE();
 		return 0;
 	}
+	LOG_ENTER("handle_xerror(error=%d \x1b[31m%s\x1b[0m, request=%d/%d, resourceid=%lx)",
+		e->error_code, buf, e->request_code, e->minor_code, e->resourceid);
 
 	// This error is generally raised when trying to start evilwm while
 	// another window manager is running.
