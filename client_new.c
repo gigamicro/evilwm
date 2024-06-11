@@ -59,7 +59,7 @@ void client_manage_new(Window w, struct screen *s) {
 	name = (char *)wmname.value;
 
 	// If 'initialising' is now set to None, that means doing the
-	// XFetchName raised BadWindow - the window has been removed before
+	// XGetWMName raised BadWindow - the window has been removed before
 	// we got a chance to grab the server. */
 
 	if (initialising == None) {
@@ -204,6 +204,7 @@ void client_manage_new(Window w, struct screen *s) {
 	// to be visible on this virtual desktop.  Otherwise, set it to
 	// IconicState (hidden).
 	if (is_visible(c)) {
+		LOG_DEBUG("client shown\n");
 		client_show(c);
 		client_raise(c);
 		// Don't focus windows that aren't on the same display as the
@@ -222,7 +223,8 @@ void client_manage_new(Window w, struct screen *s) {
 #endif
 		}
 	} else {
-		set_wm_state(c, IconicState);
+		LOG_DEBUG("client hidden\n");
+		client_hide(c);
 	}
 
 	// Ensure whichever vdesk it ended up on is reflected in the EWMH hints

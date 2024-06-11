@@ -296,25 +296,11 @@ void switch_vdesk(struct screen *s, unsigned v) {
 
 	LOG_ENTER("switch_vdesk(screen=%d, from=%d, to=%d)", s->screen, s->vdesk, v);
 
-#ifdef DEBUG
-	int nhidden = 0, nraised = 0;
-#endif
+	// hide everything on old vdesk
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *c = iter->data;
-		if (c->screen != s)
-			continue;
-		if (c->vdesk == s->vdesk) {
-			client_hide(c);
-#ifdef DEBUG
-			nhidden++;
-#endif
-		} else if (c->vdesk == v) {
-			if (!c->is_dock || s->docks_visible)
-				client_show(c);
-#ifdef DEBUG
-			nraised++;
-#endif
-		}
+		if (c->screen != s) continue;
+		if (is_visible(c)) client_hide(c);
 	}
 
 	// Store previous vdesk, so that user may toggle back to it
@@ -322,9 +308,16 @@ void switch_vdesk(struct screen *s, unsigned v) {
 
 	// Update current vdesk (including EWMH properties)
 	s->vdesk = v;
+
+	// show everything on vdesk
+	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
+		struct client *c = iter->data;
+		if (c->screen != s) continue;
+		if (is_visible(c)) client_show(c);
+	}
+
 	ewmh_set_net_current_desktop(s);
 
-	LOG_DEBUG("%d hidden, %d raised\n", nhidden, nraised);
 	LOG_LEAVE();
 }
 

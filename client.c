@@ -220,12 +220,12 @@ struct monitor *client_monitor(struct client *c, Bool *intersects) {
 // virtual desktops by hiding all clients not on the current vdesk.
 
 void client_hide(struct client *c) {
+	LOG_DEBUG("hiding window=%lx\n", (unsigned long)c->window);
 	c->ignore_unmap++;  // ignore unmap so we don't remove client
 	XUnmapWindow(display.dpy, c->parent);
 	set_wm_state(c, IconicState);
 	if (current == c) {
 		select_client(NULL);
-		LOG_DEBUG("client %lx (window=%lx) hidden\n", (unsigned long)c, (unsigned long)c->window);
 	}
 }
 
@@ -233,6 +233,7 @@ void client_hide(struct client *c) {
 // initial managing of client.
 
 void client_show(struct client *c) {
+	LOG_DEBUG("showing window=%lx\n",(unsigned long)c->window);
 	XMapWindow(display.dpy, c->parent);
 	set_wm_state(c, NormalState);
 }
@@ -368,14 +369,11 @@ void select_client(struct client *c) {
 
 void client_to_vdesk(struct client *c, unsigned vdesk) {
 	if (valid_vdesk(vdesk)) {
+		LOG_DEBUG("window=%lx to vdesk %u\n",(unsigned long)c->window,vdesk);
+		if (is_visible(c)) client_hide(c);
 		c->vdesk = vdesk;
-		if (c->vdesk == c->screen->vdesk || c->vdesk == VDESK_FIXED) {
-			client_show(c);
-		} else {
-			client_hide(c);
-		}
+		if (is_visible(c)) client_show(c);
 		ewmh_set_net_wm_desktop(c);
-		select_client(current);
 	}
 }
 

@@ -406,6 +406,7 @@ static void handle_client_message(XClientMessageEvent *e) {
 	if (e->message_type == X_ATOM(_NET_WM_DESKTOP)) {
 		// Only do this if it came from direct user action
 		if (e->data.l[1] == 2) {
+			LOG_DEBUG("Swapping desktop\n");
 			client_to_vdesk(c, e->data.l[0]);
 		}
 		LOG_LEAVE();
@@ -414,7 +415,7 @@ static void handle_client_message(XClientMessageEvent *e) {
 
 #ifdef CONFIGREQ
 	if (e->message_type == X_ATOM(_NET_WM_STATE)) {
-		if (c && c->ignore_configreq) {
+		if (c->ignore_configreq) {
 			LOG_DEBUG("Ignoring _NET_WM_STATE message due to 'manual' directive\n");
 			LOG_LEAVE();
 			return;
