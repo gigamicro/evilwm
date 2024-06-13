@@ -370,9 +370,13 @@ void select_client(struct client *c) {
 void client_to_vdesk(struct client *c, unsigned vdesk) {
 	if (valid_vdesk(vdesk)) {
 		LOG_DEBUG("window=%lx to vdesk %u\n",(unsigned long)c->window,vdesk);
-		if (is_visible(c)) client_hide(c);
+		_Bool was_visible = is_visible(c);
 		c->vdesk = vdesk;
-		if (is_visible(c)) client_show(c);
+		if (is_visible(c))
+			{ if (!was_visible) client_show(c); }
+		else
+			if (was_visible) client_hide(c);
+		if (current == c) select_client(c); // border color
 		ewmh_set_net_wm_desktop(c);
 	}
 }
