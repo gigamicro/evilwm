@@ -23,7 +23,7 @@ struct monitor;
 #define MAXIMISE_SCREEN (1<<2)  // maximise to screen, not monitor
 
 // Virtual desktop macros
-#define VDESK_NONE  (0xfffffffe)
+#define VDESK_NONE  (0xfffffffe) // used for app selection
 #define VDESK_FIXED (0xffffffff)
 #define VDESK_MAX   (option.vdesks - 1)
 #define valid_vdesk(v) ((v) == VDESK_FIXED || (v) < option.vdesks)

@@ -153,7 +153,6 @@ static void handle_configure_notify(XConfigureEvent *e) {
 #ifdef CONFIGREQ
 static void handle_configure_request(XConfigureRequestEvent *e) {
 	struct client *c = find_client(e->window);
-	LOG_DEBUG("Configure request\n");
 	if (c && c->ignore_configreq) {
 		LOG_DEBUG("Ignoring configure request due to 'manual' directive\n");
 		return;
@@ -260,7 +259,7 @@ static void handle_enter_event(XCrossingEvent *e) {
 	struct client *c = find_client(e->window);
 
 	if (c) {
-		if (!on_vdesk(c)) return;
+		if (!is_visible(c)) return;
 		select_client(c);
 		clients_tab_order = list_to_head(clients_tab_order, c);
 	}
