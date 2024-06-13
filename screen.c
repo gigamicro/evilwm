@@ -300,7 +300,7 @@ void switch_vdesk(struct screen *s, unsigned v) {
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *c = iter->data;
 		if (c->screen != s) continue;
-		if (is_visible(c)) client_hide(c);
+		if (is_visible(c) && !is_fixed(c)) client_hide(c);
 	}
 
 	// Store previous vdesk, so that user may toggle back to it
@@ -313,7 +313,7 @@ void switch_vdesk(struct screen *s, unsigned v) {
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *c = iter->data;
 		if (c->screen != s) continue;
-		if (is_visible(c)) client_show(c);
+		if (is_visible(c) && !is_fixed(c)) client_show(c);
 	}
 
 	ewmh_set_net_current_desktop(s);
