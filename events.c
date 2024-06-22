@@ -192,9 +192,11 @@ static void handle_map_request(XMapRequestEvent *e) {
 
 	LOG_ENTER("handle_map_request(window=%lx)", (unsigned long)e->window);
 	if (c) {
+#ifdef MAPREQUEST_SHOWEXISTING
 		if (!on_vdesk(c)) switch_vdesk(c->screen, c->vdesk);
 		client_show(c);
 		client_raise(c);
+#endif
 	} else {
 		XWindowAttributes attr;
 		XGetWindowAttributes(display.dpy, e->window, &attr);

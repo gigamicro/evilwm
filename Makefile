@@ -66,6 +66,9 @@ OPT_CPPFLAGS += -DSHAPE_OUTLINE
 #Uncomment to allow windows to move, resize, and maximize themselves
 OPT_CPPFLAGS += -DCONFIGREQ
 
+#allow nonvisible windows to become visible via map request
+# OPT_CPPFLAGS += -DMAPREQUEST_SHOWEXISTING
+
 # Uncomment to move pointer around on certain actions.
 #OPT_CPPFLAGS += -DWARP_POINTER
 # OPT_CPPFLAGS += -DRESIZE_WARP_POINTER
