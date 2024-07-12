@@ -38,13 +38,14 @@ some kind of bind to toggle mouse focus
 or mouse existence at all
 maybe trap mouse in current window unless alt is held?
 
-mmb underutilized in current layout - fs toggle? open? close?
-mmb on window border implications: "open in new tab", "selpaste", "close tab"
-
 mouse binds on root window
 
 drag/drop target on root window?
 (handle multiple-element)
+
+actually handle segfault
+
+on kbmove: do mouse warp to nearest edge only when outside - box? shape?
 
 ## Intermediate tasks
 
