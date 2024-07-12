@@ -102,7 +102,7 @@ specifies the X display to run on. Usually this can be inferred from the \f(CBDI
 specifies an alternative program to run when spawning a new terminal (defaults to xterm, or x-terminal-emulator in Debian). Separate arguments with whitespace, and escape needed whitespace with a backslash. Remember that special characters will also need to be protected from the shell.
 .TP
 \f(CB\-\-fn\fR \fIfontname\fR
-specify a font to use when resizing or displaying window titles.
+specify a font to use when resizing or displaying window titles (X Logical Font Description, with * and ? wildcards).
 .TP
 \f(CB\-\-fg\fR \fIcolour\fR
 .TQ
@@ -141,8 +141,8 @@ bind a key pressed with specified modifiers to a window manager function. \fIkey
 \f(CB\-\-bind\fR \fIbutton\fR=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[rB]\[...]\[rB]
 bind a mouse button to a window manager function. While modifiers can be specified, they will be ignored; the button on its own will trigger if pressed within a window\[aq]s frame, or with \[aq]mask2\[aq] held anywhere within a window. Function and flags is as with key binds above. Valid buttons are \[aq]button1\[aq]\[...]\[aq]button5\[aq].
 .TP
-\f(CB\-\-app\fR \fIname/class\fR
-match an application by instance name and class (for help in finding these, use the \fIxprop\fR tool to extract the \fIWM_CLASS\fR property).
+\f(CB\-\-app\fR \[lB]\fIname\fR\[rB]\[lB]/\[lB]\fIclass\fR\[rB]\[lB]/\[lB]\fItitle\fR\[rB]\[rB]\[rB]
+match an application by instance name and class (for help in finding these, use the \fIxprop\fR tool to extract the \fIWM_CLASS\fR property; the two strings are \fIname\fR and \fIclass\fR respectively, checked exactly), and by title (checked as substring, \fIWM_NAME\fR in \fIxprop\fR).
 .IP
 Subsequent \f(CB\-\-geometry\fR, \f(CB\-\-dock\fR, \f(CB\-\-vdesk\fR and \f(CB\-\-fixed\fR options will apply to this match.
 .TP
