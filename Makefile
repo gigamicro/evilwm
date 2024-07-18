@@ -77,7 +77,7 @@ OPT_CPPFLAGS += -DNEXT_WARP_POINTER
 # OPT_CPPFLAGS += -DUNMAN_FOCUS_WARP_POINTER # Warps the pointer into unmanaged windows that send _NET_ACTIVE_WINDOW
 
 # Uncomment to include whatever debugging messages I've left in this release.
-OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging
+# OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging
 # OPT_CPPFLAGS += -DXDEBUG  # show some X calls
 
 # OPT_CPPFLAGS += -DNDEBUG  # disable asserts
