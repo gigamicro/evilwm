@@ -117,14 +117,34 @@ width of window borders in pixels.
 \f(CB\-\-snap\fR \fIdistance\fR
 enable snap-to-border support. \fIdistance\fR is the proximity in pixels to snap to.
 .TP
+\f(CB\-\-kbpx\fR \fIdistance\fR
+modify keyboard move/resize distance, in pixels.
+.TP
 \f(CB\-\-wholescreen\fR
 ignore monitor geometry and use the whole screen dimensions. This is the old behaviour from before multi-monitor support was implemented, and may still be useful, eg when one large monitor is driven from multiple outputs.
 .TP
 \f(CB\-\-numvdesks\fR \fIvalue\fR
-number of virtual desktops to provide. Defaults to 8. Any extras will only be accessible by pagers or using Control+Alt+(Left/Right).
+number of virtual desktops to provide. Defaults to 8. Any extras will Control+Alt+(Left/Right). only be accessible by pagers or using
 .TP
-\f(CB\-\-nosoliddrag\fR
-draw a window outline while moving or resizing.
+\f(CB\-\-modvdesks\fR \fIvalue\fR
+vdesk loop modulus and distance for left/right relative vdesk. Relative movement up from n*\fIvalue\fR-1 or down from n*\fIvalue\fR will instead move down or up (respectively) by \fIvalue\fR-1. This is equivalent to having a two-dimensional vdesk array of num/mod (lr) x mod (ud). Defaults to 0. \fIvalue\fR being 0 is equivalent to it being the current value of \f(CB\-\-numvdesks\fR.
+.IP
+Example: \f(CB\-\-numvdesks 12 \-\-modvdesks 4\fR will give a 2x4 array with numbering
+.IP
+.EX
+3\ 7\ B
+2\ 6\ A
+1\ 5\ 9
+0\ 4\ 8
+.EE
+.TP
+\f(CB\-\-docks\fR \fIvalue\fR
+set to 0 to hide all docks initially.
+.TP
+\f(CB\-\-soliddrag\fR \fIvalue\fR
+.TQ
+\f(CB\-\-solidsweep\fR \fIvalue\fR
+set to 1 to draw a window outline while moving or resizing.
 .TP
 \f(CB\-\-mask1\fR \fImodifier\fR\[lB]+\fImodifier\fR\[rB]\[...]
 .TQ
@@ -135,24 +155,34 @@ override the default keyboard modifiers used to grab keys for window manager fun
 .IP
 \f(CBmask1\fR is used for most keyboard controls (default: control+alt), and \f(CBmask2\fR is used for mouse button controls and cycling windows (default: alt). \f(CBaltmask\fR is used to modify the behaviour of certain controls (default: shift). Modifiers may be separated with + signs. Valid modifiers are \[aq]shift\[aq], \[aq]control\[aq], \[aq]alt\[aq], \[aq]mod1\[aq]\[...]\[aq]mod5\[aq].
 .TP
-\f(CB\-\-bind\fR \fIkey\fR\[lB]+\fImodifier\fR\[rB]\[...]=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[rB]\[...]\[rB]
+\f(CB\-\-bind\fR \[lB]\fImodifier\fR+\[rB]\[...]\fIkey\fR=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[lB]+\fIflag\fR\[rB]\[...]\[rB]\[rB]
 bind a key pressed with specified modifiers to a window manager function. \fIkey\fR is an X11 keysym name, \fImodifiers\fR are as above, but may also include \[aq]mask1\[aq], \[aq]mask2\[aq] and \[aq]altmask\[aq] to refer to the globally-configured combinations. See FUNCTIONS for a list of available functions and the flags they recognise. If \fIfunction\fR is empty, a bind is removed.
 .TP
 \f(CB\-\-bind\fR \fIbutton\fR=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[rB]\[...]\[rB]
 bind a mouse button to a window manager function. While modifiers can be specified, they will be ignored; the button on its own will trigger if pressed within a window\[aq]s frame, or with \[aq]mask2\[aq] held anywhere within a window. Function and flags is as with key binds above. Valid buttons are \[aq]button1\[aq]\[...]\[aq]button5\[aq].
 .TP
+\f(CB\-\-nodefaultbinds\fR
+don\[aq]t use the original default bindings from compile time.
+.TP
 \f(CB\-\-app\fR \[lB]\fIname\fR\[rB]\[lB]/\[lB]\fIclass\fR\[rB]\[lB]/\[lB]\fItitle\fR\[rB]\[rB]\[rB]
 match an application by instance name and class (for help in finding these, use the \fIxprop\fR tool to extract the \fIWM_CLASS\fR property; the two strings are \fIname\fR and \fIclass\fR respectively, checked exactly), and by title (checked as substring, \fIWM_NAME\fR in \fIxprop\fR).
 .IP
+Ex: \f(CB\-\-app a/b/c\fR will match a window with WM_CLASS { "a", "b" } and a WM_NAME containing the letter c anywhere.
+Ex: \f(CB\-\-app a\fR will match a window with WM_CLASS\[lB]0\[rB] "a".
+Ex: \f(CB\-\-app /b\fR will match a window with either blank or missing WM_CLASS\[lB]0\[rB], and WM_CLASS\[lB]1\[rB] "b".
+Ex: \f(CB\-\-app //c\fR will match a window with completely blank/missing WM_CLASS and a WM_NAME containing the letter c anywhere.
 Subsequent \f(CB\-\-geometry\fR, \f(CB\-\-dock\fR, \f(CB\-\-vdesk\fR and \f(CB\-\-fixed\fR options will apply to this match.
 .TP
 \f(CB\-g\fR, \f(CB\-\-geometry\fR \fIgeometry\fR
 apply a geometry (using a standard X geometry string) to applications matching the last \f(CB\-\-app\fR.
 .TP
-\f(CB\-\-dock\fR
+\f(CB\-m\fR, \f(CB\-\-manual\fR
+specify that application should be entirely ignored when it asks to move.
+.TP
+\f(CB\-d\fR, \f(CB\-\-dock\fR
 specify that application should be considered to be a dock, even if it lacks the appropriate property.
 .TP
-\f(CB\-v\fR, \f(CB\-\-vdesk\fR \fIvdesk\fR
+\f(CB\-v\fR, \f(CB\-\-vdesk\fR \fIn\fR
 specify a default virtual desktop for applications matching the last \f(CB\-\-app\fR. Note that virtual desktops are numbered from zero.
 .TP
 \f(CB\-f\fR, \f(CB\-\-fixed\fR
@@ -161,178 +191,97 @@ specify that application is to start with a fixed client window.
 \f(CB\-h\fR, \f(CB\-\-help\fR
 show help
 .TP
+\f(CB\-\-writedefaults\fR
+show all option defaults, in a format that could be put in your \fI.evilwmrc\fR
+.TP
 \f(CB\-V\fR, \f(CB\-\-version\fR
 show program version
 .PP
 \fBevilwm\fR will also read options, one per line, from a file called \fI.evilwmrc\fR in the user\[aq]s home directory. Options listed in a configuration file should omit the leading dash(es). Options specified on the command line override those found in the configuration file.
-.H1 USAGE
+.H1 USAGE & FUNCTIONS
 .PP
-In \fBevilwm\fR, the focus follows the mouse pointer, and focus is not lost if you stray onto the root window. The current window border is shaded gold (unless it is fixed, in which case blue), with other windows left as a dark grey.
+In \fBevilwm\fR, the focus follows the mouse pointer, and is not lost if you stray onto the root window. The current window border is shaded gold (unless it is fixed, in which case blue), with other windows left as a dark grey.
 .PP
-You can use the mouse to manipulate windows either by click/dragging the single-pixel border (easier when they align with a screen edge), or by holding down Alt and doing so anywhere in the window. The controls are:
+The keyboard and mouse button controls can be configured with the \f(CB\-\-bind\fR option to a number of built-in functions. Typically, these functions respond to an additional set of flags that modify their behaviour: \f(CBup\fR/\f(CBu\fR, \f(CBdown\fR/\f(CBd\fR, \f(CBleft\fR/\f(CBl\fR, \f(CBright\fR/\f(CBr\fR, \f(CBtop\fR, \f(CBbottom\fR, any number, \f(CBrelative\fR/\f(CBrel\fR, \f(CBtoggle\fR, \f(CBvertical\fR/\f(CBv\fR, \f(CBhorizontal\fR/\f(CBh\fR.
 .TP
-Button 1
-Move window.
-.TP
-Button 2
-Resize window.
-.TP
-Button 3
-Lower window.
+\f(CBbind command\fR, default key
+Description.
 .PP
-Most keyboard controls are used by holding down Control and Alt, then pressing a key. Available functions are:
+You can use the mouse to manipulate windows either by click/dragging the single-pixel border (easier when they align with a screen edge), or by holding down \f(CBmask2\fR/Alt and doing so anywhere in the window. The \f(CBmask2\fR/Alt-based controls are:
 .TP
-Return
-Spawn new terminal.
+\f(CBmove\fR, Button 1
+Move window with mouse.
 .TP
-Escape
-Delete current window. Hold Shift as well to force kill a client.
+\f(CBresize\fR, Button 2
+Resize window between starting upper-left corner and mouse position.
 .TP
-Insert
-Lower current window.
+\f(CBlower\fR, Button 3
+Put window at back of render order.
 .TP
-H, J, K, L
-Move window left, down, up or right (16 pixels). Holding Shift resizes the window instead.
-.TP
-Y, U, B, N
-Move window to the top-left, top-right, bottom-left or bottom-right of the current monitor.
-.TP
-I
-Show information about current window.
-.TP
-Equals
-Maximise current window vertically on current monitor (toggle). Holding Shift toggles horizontal maximization.
-.TP
-X
-Maximise current window to current monitor (toggle).
-.TP
-D
-Toggle visible state of docks, eg pagers and launch bars.
+\f(CBnext\fR, Tab
+Classic Alt+Tab, switch to most recently selected window and keep switching to less recent windows on every consecutive press while the modifier key(s) are held
 .PP
-If compiled with virtual desktop support, these functions are also available:
+Most keyboard controls are used by holding down \f(CBmask1\fR/Control+Alt, then pressing a key. Available functions are:
 .TP
-F
+\f(CBspawn\fR, Return
+Spawn new terminal (or other process) with the command in \f(CB\-\-term\fR.
+.TP
+\f(CBdelete\fR, Escape
+.TQ
+\f(CBkill\fR, Shift+Escape
+Delete current window, nicely. Hold \f(CBaltmask\fR/Shift as well to force \f(CBkill\fR a client if it does not respond to \f(CBdelete\fR.
+.TP
+\f(CBlower\fR, Insert
+Lower current window to back of render order.
+.TP
+\f(CBraise\fR, (none)
+Raise current window.
+.TP
+\f(CBmove,relative+\fR, H, J, K, L
+.TQ
+\f(CBresize,relative+\fR, Shift+ H, J, K, L
+Move window left, down, up or right (\f(CB\-\-kbpx\fR/16 pixels). Holding \f(CBaltmask\fR/Shift resizes the window narrower, taller, shorter, or wider.
+.TP
+\f(CBmove,top+\fR/\f(CBmove,bottom+\fR, Y, U, B, N
+Move window to the top-left, top-right, bottom-left or bottom-right of its current monitor.
+.TP
+\f(CBinfo\fR, I
+Show extra information about the current window for as long as the key is held.
+.TP
+\f(CBresize,toggle+\fR, Equals
+Toggle maximization of current window to current monitor vertically, or horizontally when holding \f(CBaltmask\fR/Shift
+.TP
+\f(CBresize,toggle+v+h\fR, X
+Toggle maximization of current window to current monitor.
+.TP
+\f(CBdocks,toggle\fR, D
+Toggle visible state of windows claiming to be docks or marked as docks through \f(CB\-\-app \-d\fR, eg pagers and launch bars.
+.TP
+\f(CBbinds,toggle\fR, Compose
+Toggle all other bindings (stop listening to any bind other than \f(CBbinds,toggle\fR, \f(CBbinds, up\fR, or mouse actions on the border).
+.TP
+\f(CBfix,toggle\fR, F
 Fix or unfix current window. Fixed windows remain visible when you switch virtual desktop.
 .TP
-1\[em]8
+\f(CBvdesk,\fR, 1\[em]8
 Switch to specific virtual desktop (internally, desktops are numbered from zero, so this actually switches to desktops 0\[em]7; this only becomes important if you use application matching).
 .TP
-Left
-Switch to next lower numbered virtual desktop.
+\f(CBvdesk,relative+down\fR, Left
+Switch to next lower numbered virtual desktop, modulo \f(CBmodvdesks\fR.
 .TP
-Right
-Switch to next higher numbered virtual desktop.
+\f(CBvdesk,relative+up\fR, Right
+Switch to next higher numbered virtual desktop, modulo \f(CBmodvdesks\fR.
 .TP
-A
+\f(CBvdesk,relative+left\fR, Down
+Switch to virtual desktop \f(CBmodvdesks\fR higher, modulo \f(CBnumvdesks\fR.
+.TP
+\f(CBvdesk,relative+right\fR, Up
+Switch to virtual desktop \f(CBmodvdesks\fR lower, modulo \f(CBnumvdesks\fR.
+.TP
+\f(CBvdesk,toggle\fR, A
 Switch to the previously selected virtual desktop.
 .PP
-In addition to the above, Alt+Tab can be used to cycle through windows.
-.PP
 To make \fBevilwm\fR reread its config, send a HUP signal to the process. To make it quit, kill it, ie send a TERM signal.
-.H1 FUNCTIONS
-.PP
-The keyboard and mouse button controls can be configured with the \f(CB\-\-bind\fR option to a number of built-in functions. Typically, these functions respond to an additional set of flags that modify their behaviour.
-.TP
-\f(CBdelete\fR
-Delete a window. This is the co-operative way of closing applications, as it sends the client a signal indicating that they should shut down.
-.TP
-\f(CBdock\fR
-When called with the \f(CBtoggle\fR flag, toggles visibility of any window claiming to be a dock.
-.TP
-\f(CBfix\fR
-With the \f(CBtoggle\fR flag, toggle whether a window is fixed (visible on all virtual desktops) or not.
-.TP
-\f(CBinfo\fR
-Shows extra information about the current window for as long as the key is held.
-.TP
-\f(CBkill\fR
-Kill a window. A more forceful way of closing an application if it is not responding to delete requests.
-.TP
-\f(CBlower\fR
-Lower the current window.
-.TP
-\f(CBmove\fR
-When bound to a button, moves a window with the mouse.
-.IP
-When bound to a key, if the \f(CBrelative\fR flag is specified, moves a window in the direction indicated by other flags: \f(CBup\fR, \f(CBdown\fR, \f(CBleft\fR or \f(CBright\fR. Without the \f(CBrelative\fR flag, moves a window in the direction specified by other flag to the edge of the monitor.
-.TP
-\f(CBnext\fR
-Cycle to the next window.
-.TP
-\f(CBraise\fR
-.PP
-Raises the current window.
-.TP
-\f(CBresize\fR
-When bound to a button, resizes a window with the mouse.
-.IP
-When bound to a key, if the \f(CBrelative\fR flag is specified, modifies the width or height of the window as indicated by other flags: \f(CBup\fR (reduce height), \f(CBdown\fR (increase height), \f(CBleft\fR (reduce width) or \f(CBright\fR (increase width). If instead the \f(CBtoggle\fR flag is specified, maximises along axes specified by other flags: \f(CBhorizontal\fR, \f(CBvertical\fR or both.
-.TP
-\f(CBspawn\fR
-Start a terminal.
-.TP
-\f(CBvdesk\fR
-With the \f(CBtoggle\fR flag specified, switch to the previously visible vdesk. With the \f(CBrelative\fR flag set, either increase vdesk number (with \f(CBup\fR flag) or decrease it (with \f(CBdown\fR flag).
-.IP
-If neither flag is specified, a numerical argument indicates which vdesk to switch to.
-.H1 DEFAULT BINDS
-.PP
-These are the default lists of modifiers, button and keyboard binds. The built-in binds use the globally-configurable modifier combinations \[aq]mask1\[aq], \[aq]mask2\[aq] and \[aq]altmask\[aq], making a sweeping change to a different modifier combination easy.
-.PP
-Note that \[aq]mod1\[aq] typically refers to the Alt key.
-.H2 Modifiers
-.IP
-.EX
-mask1\ control+mod1
-mask2\ mod1
-altmask\ shift
-.EE
-.H2 Button binds
-.IP
-.EX
-bind\ button1=move
-bind\ button2=resize
-bind\ button3=lower
-.EE
-.H2 Keyboard binds
-.IP
-.EX
-bind\ mask1+Return=spawn
-bind\ mask1+Escape=delete
-bind\ mask1+altmask+Escape=kill
-bind\ mask1+Insert=lower
-bind\ mask1+KP_Insert=lower
-bind\ mask1+i=info
-bind\ mask2+Tab=next
-bind\ mask1+h=move,relative+left
-bind\ mask1+j=move,relative+down
-bind\ mask1+k=move,relative+up
-bind\ mask1+l=move,relative+right
-bind\ mask1+y=move,top+left
-bind\ mask1+u=move,top+right
-bind\ mask1+b=move,bottom+left
-bind\ mask1+n=move,bottom+right
-bind\ mask1+altmask+h=resize,relative+left
-bind\ mask1+altmask+j=resize,relative+down
-bind\ mask1+altmask+k=resize,relative+up
-bind\ mask1+altmask+l=resize,relative+right
-bind\ mask1+equal=resize,toggle+v
-bind\ mask1+altmask+equal=resize,toggle+h
-bind\ mask1+x=resize,toggle+v+h
-bind\ mask1+d=dock,toggle
-bind\ mask1+f=fix,toggle
-bind\ mask1+1=vdesk,0
-bind\ mask1+2=vdesk,1
-bind\ mask1+3=vdesk,2
-bind\ mask1+4=vdesk,3
-bind\ mask1+5=vdesk,4
-bind\ mask1+6=vdesk,5
-bind\ mask1+7=vdesk,6
-bind\ mask1+8=vdesk,7
-bind\ mask1+Left=vdesk,relative+down
-bind\ mask1+Right=vdesk,relative+up
-bind\ mask1+a=vdesk,toggle
-.EE
 .H1 FILES
 .PP
 \fI$HOME/.evilwmrc\fR
@@ -368,4 +317,4 @@ There\ is\ no\ warranty\ for\ this\ software.\ \ Have\ a\ nice\ day.
 .EE
 .H1 SEE ALSO
 .PP
-\fBxterm\fR (1), \fBxprop\fR (1)
+\fBxterm\fR (1), \fBxprop\fR (1), \fBxmodmap\fR (1), \fBxorg-xfontsel\fR (1)

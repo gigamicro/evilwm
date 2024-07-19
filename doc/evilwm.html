@@ -96,74 +96,82 @@ title bars).
 <dl class='compact'>
 
 <dt><code>--display</code> <var>display</var>
-
 <dd>specifies the X display to run on.  Usually this can be inferred from the
 <code>DISPLAY</code> environment variable.
 
 <dt><code>--term</code> <var>termprog</var>
-
 <dd>specifies an alternative program to run when spawning a new terminal
 (defaults to xterm, or x-terminal-emulator in Debian).  Separate arguments with
 whitespace, and escape needed whitespace with a backslash.  Remember that
 special characters will also need to be protected from the shell.
 
 <dt><code>--fn</code> <var>fontname</var>
-
 <dd>specify a font to use when resizing or displaying window titles
 (X Logical Font Description, with * and ? wildcards).
 
 <dt><code>--fg</code> <var>colour</var>
 <dt><code>--fc</code> <var>colour</var>
 <dt><code>--bg</code> <var>colour</var>
-
 <dd>frame colour of currently active, fixed active, and inactive windows
 respectively.  Either specify an X11 colour name like <code>goldenrod</code>,
 or a hex triplet like <code>#DAA520</code>.
 
 <dt><code>--bw</code> <var>borderwidth</var>
-
 <dd>width of window borders in pixels.
 
 <dt><code>--snap</code> <var>distance</var>
-
 <dd>enable snap-to-border support.  <var>distance</var> is the proximity in
 pixels to snap to.
 
-<dt><code>--wholescreen</code>
+<dt><code>--kbpx</code> <var>distance</var>
+<dd>modify keyboard move/resize distance, in pixels.
 
+<dt><code>--wholescreen</code>
 <dd>ignore monitor geometry and use the whole screen dimensions.  This is the
 old behaviour from before multi-monitor support was implemented, and may still
 be useful, eg when one large monitor is driven from multiple outputs.
 
 <dt><code>--numvdesks</code> <var>value</var>
-
 <dd>number of virtual desktops to provide.  Defaults to 8.  Any extras will
-only be accessible by pagers or using
 <kbd>Control</kbd>+<kbd>Alt</kbd>+(<kbd>Left</kbd>/<kbd>Right</kbd>).
+only be accessible by pagers or using
 
-<dt><code>--nosoliddrag</code>
+<dt><code>--modvdesks</code> <var>value</var>
+<dd>vdesk loop modulus and distance for left/right relative vdesk.
+Relative movement up from n*<var>value</var>-1 or down from n*<var>value</var>
+will instead move down or up (respectively) by <var>value</var>-1.
+This is equivalent to having a two-dimensional vdesk array of num/mod (lr) x mod (ud).
+Defaults to 0. <var>value</var> being 0 is equivalent to it being the current value of <code>--numvdesks</code>.
+<p>Example: <code>--numvdesks 12 --modvdesks 4</code> will give a 2x4 array with numbering
+</dd>
+<pre>
+3 7 B
+2 6 A
+1 5 9
+0 4 8
+</pre>
 
-<dd>draw a window outline while moving or resizing.
+<dt><code>--docks</code> <var>value</var>
+<dd>set to 0 to hide all docks initially.
 
-</dl>
+<dt><code>--soliddrag</code> <var>value</var>
+<dt><code>--solidsweep</code> <var>value</var>
+<dd>set to 1 to draw a window outline while moving or resizing.
 
-<dl class='compact'>
+</dl><dl class='compact'>
 
 <dt><code>--mask1</code> <var>modifier</var>[+<var>modifier</var>]…
 <dt><code>--mask2</code> <var>modifier</var>[+<var>modifier</var>]…
 <dt><code>--altmask</code> <var>modifier</var>[+<var>modifier</var>]…
-
 <dd>override the default keyboard modifiers used to grab keys for window
 manager functionality.
-
 <p><code>mask1</code> is used for most keyboard controls (default:
 control+alt), and <code>mask2</code> is used for mouse button controls and
 cycling windows (default: alt).  <code>altmask</code> is used to modify the
 behaviour of certain controls (default: shift).  Modifiers may be separated
 with + signs.  Valid modifiers are 'shift', 'control', 'alt', 'mod1'…'mod5'.
 
-<dt><code>--bind</code> <var>key</var>[+<var>modifier</var>]…=[<var>function</var>[,<var>flag</var>]…]
-
+<dt><code>--bind</code> [<var>modifier</var>+]…<var>key</var>=[<var>function</var>[,<var>flag</var>[+<var>flag</var>]…]]
 <dd>bind a key pressed with specified modifiers to a window manager function.
 <var>key</var> is an X11 keysym name, <var>modifiers</var> are as above, but
 may also include 'mask1', 'mask2' and 'altmask' to refer to the
@@ -172,44 +180,50 @@ list of available functions and the flags they recognise.  If
 <var>function</var> is empty, a bind is removed.
 
 <dt><code>--bind</code> <var>button</var>=[<var>function</var>[,<var>flag</var>]…]
-
 <dd>bind a mouse button to a window manager function.  While modifiers can be
 specified, they will be ignored; the button on its own will trigger if pressed
 within a window's frame, or with 'mask2' held anywhere within a window.
 Function and flags is as with key binds above.  Valid buttons are
 'button1'…'button5'.
 
+<dt><code>--nodefaultbinds</code>
+<dd>don't use the original default bindings from compile time.
+
 </dl>
 
 <dl class='compact'>
 
 <dt><code>--app</code> [<var>name</var>][/[<var>class</var>][/[<var>title</var>]]]
-
 <dd>match an application by instance name and class (for help in finding these,
 use the <em>xprop</em> tool to extract the <em>WM_CLASS</em> property;
 the two strings are <var>name</var> and <var>class</var> respectively, checked exactly),
 and by title (checked as substring, <em>WM_NAME</em> in <em>xprop</em>).
-
+<p>Ex: <code>--app a/b/c</code> will match a window with WM_CLASS { "a", "b" }
+and a WM_NAME containing the letter c anywhere.
+<p>Ex: <code>--app a</code> will match a window with WM_CLASS[0] "a".
+<p>Ex: <code>--app /b</code> will match a window with either blank or
+missing WM_CLASS[0], and WM_CLASS[1] "b".
+<p>Ex: <code>--app //c</code> will match a window with completely blank/missing WM_CLASS
+and a WM_NAME containing the letter c anywhere.
 <p>Subsequent <code>--geometry</code>, <code>--dock</code>,
 <code>--vdesk</code> and <code>--fixed</code> options will apply to this match.
 
 <dt><code>-g</code>, <code>--geometry</code> <var>geometry</var>
-
 <dd>apply a geometry (using a standard X geometry string) to applications
 matching the last <code>--app</code>.
 
-<dt><code>--dock</code>
+<dt><code>-m</code>, <code>--manual</code>
+<dd>specify that application should be entirely ignored when it asks to move.
 
+<dt><code>-d</code>, <code>--dock</code>
 <dd>specify that application should be considered to be a dock, even if it
 lacks the appropriate property.
 
-<dt><code>-v</code>, <code>--vdesk</code> <var>vdesk</var>
-
+<dt><code>-v</code>, <code>--vdesk</code> <var>n</var>
 <dd>specify a default virtual desktop for applications matching the last
 <code>--app</code>.  Note that virtual desktops are numbered from zero.
 
 <dt><code>-f</code>, <code>--fixed</code>
-
 <dd>specify that application is to start with a fixed client window.
 
 </dl>
@@ -217,11 +231,12 @@ lacks the appropriate property.
 <dl class='compact'>
 
 <dt><code>-h</code>, <code>--help</code>
-
 <dd>show help
 
-<dt><code>-V</code>, <code>--version</code>
+<dt><code>--writedefaults</code>
+<dd>show all option defaults, in a format that could be put in your <em>.evilwmrc</em>
 
+<dt><code>-V</code>, <code>--version</code>
 <dd>show program version
 
 </dl>
@@ -232,270 +247,120 @@ configuration file should omit the leading dash(es).  Options specified on the
 command line override those found in the configuration file.
 
 
-<h2 id='usage'>USAGE</h2>
+<h2 id='usage'>USAGE & FUNCTIONS</h2><div id='functions'/>
 
-<p>In <strong>evilwm</strong>, the focus follows the mouse pointer, and focus
-is not lost if you stray onto the root window.  The current window border is
+<p>In <strong>evilwm</strong>, the focus follows the mouse pointer, and is not
+lost if you stray onto the root window.  The current window border is
 shaded gold (unless it is fixed, in which case blue), with other windows left
 as a dark grey.
 
+<p>The keyboard and mouse button controls can be configured with the
+<code>--bind</code> option to a number of built-in functions.  Typically, these
+functions respond to an additional set of flags that modify their behaviour:
+<code>up</code>/<code>u</code>, <code>down</code>/<code>d</code>, <code>left</code>/<code>l</code>, <code>right</code>/<code>r</code>,
+<code>top</code>, <code>bottom</code>, any number, <code>relative</code>/<code>rel</code>,
+<code>toggle</code>, <code>vertical</code>/<code>v</code>, <code>horizontal</code>/<code>h</code>.
+
+<dl>
+
+<dt><code>bind command</code>, <kbd>default key</kbd>
+<dd>Description.
+
+</dl>
+
 <p>You can use the mouse to manipulate windows either by click/dragging the
 single-pixel border (easier when they align with a screen edge), or by holding
-down Alt and doing so anywhere in the window. The controls are:
+down <code>mask2</code>/<kbd>Alt</kbd> and doing so anywhere in the window. The <code>mask2</code>/<kbd>Alt</kbd>-based controls are:
 
 <dl>
 
-<dt><kbd>Button 1</kbd>
+<dt><code>move</code>, <kbd>Button 1</kbd>
+<dd>Move window with mouse.
 
-<dd>Move window.
+<dt><code>resize</code>, <kbd>Button 2</kbd>
+<dd>Resize window between starting upper-left corner and mouse position.
 
-<dt><kbd>Button 2</kbd>
+<dt><code>lower</code>, <kbd>Button 3</kbd>
+<dd>Put window at back of render order.
 
-<dd>Resize window.
-
-<dt><kbd>Button 3</kbd>
-
-<dd>Lower window.
+<dt><code>next</code>, <kbd>Tab</kbd>
+<dd>Classic Alt+Tab, switch to most recently selected window and keep switching to
+less recent windows on every consecutive press while the modifier key(s) are held
 
 </dl>
 
-<p>Most keyboard controls are used by holding down <kbd>Control</kbd> and
-<kbd>Alt</kbd>, then pressing a key. Available functions are:
+<p>Most keyboard controls are used by holding down <code>mask1</code>/<kbd>Control</kbd>+<kbd>Alt</kbd>, then pressing a key. Available functions are:
 
 <dl>
 
-<dt><kbd>Return</kbd>
+<dt><code>spawn</code>, <kbd>Return</kbd>
+<dd>Spawn new terminal (or other process) with the command in <code>--term</code>.
 
-<dd>Spawn new terminal.
+<dt><code>delete</code>, <kbd>Escape</kbd>
+<dt><code>kill</code>, <kbd>Shift</kbd>+<kbd>Escape</kbd>
+<dd>Delete current window, nicely. Hold <code>altmask</code>/<kbd>Shift</kbd> as well to force <code>kill</code> a
+client if it does not respond to <code>delete</code>.
 
-<dt><kbd>Escape</kbd>
+<dt><code>lower</code>, <kbd>Insert</kbd>
+<dd>Lower current window to back of render order.
 
-<dd>Delete current window.  Hold <kbd>Shift</kbd> as well to force kill a
-client.
+<dt><code>raise</code>, (none)
+<dd>Raise current window.
 
-<dt><kbd>Insert</kbd>
+<dt><code>move,relative+</code>, <kbd>H</kbd>, <kbd>J</kbd>, <kbd>K</kbd>, <kbd>L</kbd>
+<dt><code>resize,relative+</code>, <kbd>Shift</kbd>+ <kbd>H</kbd>, <kbd>J</kbd>, <kbd>K</kbd>, <kbd>L</kbd>
+<dd>Move window left, down, up or right (<code>--kbpx</code>/16 pixels).
+Holding <code>altmask</code>/<kbd>Shift</kbd> resizes the window narrower, taller, shorter, or wider.
 
-<dd>Lower current window.
-
-<dt><kbd>H</kbd>, <kbd>J</kbd>, <kbd>K</kbd>, <kbd>L</kbd>
-
-<dd>Move window left, down, up or right (16 pixels).  Holding <kbd>Shift</kbd>
-resizes the window instead.
-
-<dt><kbd>Y</kbd>, <kbd>U</kbd>, <kbd>B</kbd>, <kbd>N</kbd>
-
-<dd>Move window to the top-left, top-right, bottom-left or bottom-right of the
+<dt><code>move,top+</code>/<code>move,bottom+</code>, <kbd>Y</kbd>, <kbd>U</kbd>, <kbd>B</kbd>, <kbd>N</kbd>
+<dd>Move window to the top-left, top-right, bottom-left or bottom-right of its
 current monitor.
 
-<dt><kbd>I</kbd>
+<dt><code>info</code>, <kbd>I</kbd>
+<dd>Show extra information about the current window for as long as the key is
+held.
 
-<dd>Show information about current window.
+<dt><code>resize,toggle+</code>, <kbd>Equals</kbd>
+<dd>Toggle maximization of current window to current monitor vertically, or horizontally when holding <code>altmask</code>/<kbd>Shift</kbd>
 
-<dt><kbd>Equals</kbd>
+<dt><code>resize,toggle+v+h</code>, <kbd>X</kbd>
+<dd>Toggle maximization of current window to current monitor.
 
-<dd>Maximise current window vertically on current monitor (toggle).  Holding
-<kbd>Shift</kbd> toggles horizontal maximization.
+<dt><code>docks,toggle</code>, <kbd>D</kbd>
+<dd>Toggle visible state of windows claiming to be docks or marked as docks through <code>--app -d</code>, eg pagers and launch bars.
 
-<dt><kbd>X</kbd>
+<dt><code>binds,toggle</code>, <kbd>Compose</kbd>
+<dd>Toggle all other bindings (stop listening to any bind other than
+<code>binds,toggle</code>, <code>binds, up</code>, or mouse actions on the border).
 
-<dd>Maximise current window to current monitor (toggle).
-
-<dt><kbd>D</kbd>
-
-<dd>Toggle visible state of docks, eg pagers and launch bars.
-
-</dl>
-
-<p>If compiled with virtual desktop support, these functions are also
-available:
-
-<dl>
-
-<dt><kbd>F</kbd>
-
+<dt><code>fix,toggle</code>, <kbd>F</kbd>
 <dd>Fix or unfix current window.  Fixed windows remain visible when you switch
 virtual desktop.
 
-<dt><kbd>1</kbd>—<kbd>8</kbd>
-
+<dt><code>vdesk,</code>, <kbd>1</kbd>—<kbd>8</kbd>
 <dd>Switch to specific virtual desktop (internally, desktops are numbered from
 zero, so this actually switches to desktops 0—7; this only becomes important if
 you use application matching).
 
-<dt><kbd>Left</kbd>
+<dt><code>vdesk,relative+down</code>, <kbd>Left</kbd>
+<dd>Switch to next lower numbered virtual desktop, modulo <code>modvdesks</code>.
 
-<dd>Switch to next lower numbered virtual desktop.
+<dt><code>vdesk,relative+up</code>, <kbd>Right</kbd>
+<dd>Switch to next higher numbered virtual desktop, modulo <code>modvdesks</code>.
 
-<dt><kbd>Right</kbd>
+<dt><code>vdesk,relative+left</code>, <kbd>Down</kbd>
+<dd>Switch to virtual desktop <code>modvdesks</code> higher, modulo <code>numvdesks</code>.
 
-<dd>Switch to next higher numbered virtual desktop.
+<dt><code>vdesk,relative+right</code>, <kbd>Up</kbd>
+<dd>Switch to virtual desktop <code>modvdesks</code> lower, modulo <code>numvdesks</code>.
 
-<dt><kbd>A</kbd>
-
+<dt><code>vdesk,toggle</code>, <kbd>A</kbd>
 <dd>Switch to the previously selected virtual desktop.
 
 </dl>
 
-<p>In addition to the above, <kbd>Alt</kbd>+<kbd>Tab</kbd> can be used to cycle
-through windows.
-
 <p>To make <strong>evilwm</strong> reread its config, send a HUP signal to the
 process.  To make it quit, kill it, ie send a TERM signal.
-
-
-<h2 id='functions'>FUNCTIONS</h2>
-
-<p>The keyboard and mouse button controls can be configured with the
-<code>--bind</code> option to a number of built-in functions.  Typically, these
-functions respond to an additional set of flags that modify their behaviour.
-
-<dl class='compact'>
-
-<dt><code>delete</code>
-
-<dd>Delete a window.  This is the co-operative way of closing applications, as
-it sends the client a signal indicating that they should shut down.
-
-<dt><code>dock</code>
-
-<dd>When called with the <code>toggle</code> flag, toggles visibility of any
-window claiming to be a dock.
-
-<dt><code>fix</code>
-
-<dd>With the <code>toggle</code> flag, toggle whether a window is fixed
-(visible on all virtual desktops) or not.
-
-<dt><code>info</code>
-
-<dd>Shows extra information about the current window for as long as the key is
-held.
-
-<dt><code>kill</code>
-
-<dd>Kill a window.  A more forceful way of closing an application if it is not
-responding to delete requests.
-
-<dt><code>lower</code>
-
-<dd>Lower the current window.
-
-<dt><code>move</code>
-
-<dd>When bound to a button, moves a window with the mouse.
-
-<p>When bound to a key, if the <code>relative</code> flag is specified, moves a
-window in the direction indicated by other flags: <code>up</code>,
-<code>down</code>, <code>left</code> or <code>right</code>.  Without the
-<code>relative</code> flag, moves a window in the direction specified by other
-flag to the edge of the monitor.
-
-<dt><code>next</code>
-
-<dd>Cycle to the next window.
-
-<dt><code>raise</code>
-
-<p>Raises the current window.
-
-<dt><code>resize</code>
-
-<dd>When bound to a button, resizes a window with the mouse.
-
-<p>When bound to a key, if the <code>relative</code> flag is specified,
-modifies the width or height of the window as indicated by other flags:
-<code>up</code> (reduce height), <code>down</code> (increase height),
-<code>left</code> (reduce width) or <code>right</code> (increase width).  If
-instead the <code>toggle</code> flag is specified, maximises along axes
-specified by other flags:  <code>horizontal</code>, <code>vertical</code> or
-both.
-
-<dt><code>spawn</code>
-
-<dd>Start a terminal.
-
-<dt><code>vdesk</code>
-
-<dd>With the <code>toggle</code> flag specified, switch to the previously
-visible vdesk.  With the <code>relative</code> flag set, either increase vdesk
-number (with <code>up</code> flag) or decrease it (with <code>down</code>
-flag).
-
-<p>If neither flag is specified, a numerical argument indicates which vdesk to
-switch to.
-
-</dl>
-
-
-<h2>DEFAULT BINDS</h2>
-
-<p>These are the default lists of modifiers, button and keyboard binds.  The
-built-in binds use the globally-configurable modifier combinations 'mask1',
-'mask2' and 'altmask', making a sweeping change to a different modifier
-combination easy.
-
-<p>Note that 'mod1' typically refers to the <kbd>Alt</kbd> key.
-
-<h3>Modifiers</h3>
-
-<pre>
-mask1 control+mod1
-mask2 mod1
-altmask shift
-</pre>
-
-<h3>Button binds</h3>
-
-<pre>
-bind button1=move
-bind button2=resize
-bind button3=lower
-</pre>
-
-<h3>Keyboard binds</h3>
-
-<pre>
-bind mask1+Return=spawn
-bind mask1+Escape=delete
-bind mask1+altmask+Escape=kill
-bind mask1+Insert=lower
-bind mask1+KP_Insert=lower
-bind mask1+i=info
-bind mask2+Tab=next
-
-bind mask1+h=move,relative+left
-bind mask1+j=move,relative+down
-bind mask1+k=move,relative+up
-bind mask1+l=move,relative+right
-bind mask1+y=move,top+left
-bind mask1+u=move,top+right
-bind mask1+b=move,bottom+left
-bind mask1+n=move,bottom+right
-
-bind mask1+altmask+h=resize,relative+left
-bind mask1+altmask+j=resize,relative+down
-bind mask1+altmask+k=resize,relative+up
-bind mask1+altmask+l=resize,relative+right
-
-bind mask1+equal=resize,toggle+v
-bind mask1+altmask+equal=resize,toggle+h
-bind mask1+x=resize,toggle+v+h
-
-bind mask1+d=dock,toggle
-bind mask1+f=fix,toggle
-bind mask1+1=vdesk,0
-bind mask1+2=vdesk,1
-bind mask1+3=vdesk,2
-bind mask1+4=vdesk,3
-bind mask1+5=vdesk,4
-bind mask1+6=vdesk,5
-bind mask1+7=vdesk,6
-bind mask1+8=vdesk,7
-bind mask1+Left=vdesk,relative+down
-bind mask1+Right=vdesk,relative+up
-bind mask1+a=vdesk,toggle
-</pre>
-
 
 <h2 id='files'>FILES</h2>
 
@@ -546,7 +411,7 @@ There is no warranty for this software.  Have a nice day.
 
 <h2 id='seealso'>SEE ALSO</h2>
 
-<p><strong>xterm</strong> (1), <strong>xprop</strong> (1)
+<p><strong>xterm</strong> (1), <strong>xprop</strong> (1), <strong>xmodmap</strong> (1), <strong>xorg-xfontsel</strong> (1)
 
 
 </body>
