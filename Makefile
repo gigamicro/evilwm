@@ -82,7 +82,7 @@ OPT_CPPFLAGS += -DNEXT_WARP_POINTER
 
 # OPT_CPPFLAGS += -DNDEBUG  # disable asserts
 
-# Uncomment to map KEY_TOPLEFT to XK_z (suitable for quertz keyboards)
+# bind mask1+z=move,top+left
 #OPT_CPPFLAGS += -DQWERTZ_KEYMAP
 
 ############################################################################

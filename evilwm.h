@@ -9,6 +9,15 @@
 #define DEF_BG          "grey50"
 #define DEF_BW          1
 #define DEF_FC          "blue"
+#define DEF_VDESKS      8
+#define DEF_VDESKSMOD   0
+#define DEF_KBPX        16
+#define DEF_MASK1       "control+alt"
+#define DEF_MASK2       "alt"
+#define DEF_ALTMASK     "shift"
+#define DEF_SOLIDDRAG   1
+#define DEF_SOLIDSWEEP  0
+#define DEF_DOCKS       1
 #ifdef DEBIAN
 #define DEF_TERM        "x-terminal-emulator"
 #else

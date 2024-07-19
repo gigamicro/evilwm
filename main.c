@@ -54,126 +54,137 @@ static void set_app_manual(void);
 static void set_app_dock(void);
 static void set_app_vdesk(const char *arg);
 static void set_app_fixed(void);
-#ifdef SOLIDDRAG
 static void unset_solid_drag(void);
-#endif
 
 static struct xconfig_option evilwm_options[] = {
+	{ XCONFIG_STRING,   "display",      { .s = &option.display } },
+	{ XCONFIG_STR_LIST, "term",         { .sl = &option.term } },
 #ifdef FONT
 	{ XCONFIG_STRING,   "fn",           { .s = &option.font } },
 #endif
-	{ XCONFIG_STRING,   "display",      { .s = &option.display } },
-	{ XCONFIG_UINT,     "numvdesks",    { .u = &option.vdesks } },
-	{ XCONFIG_UINT,     "modvdesks",    { .u = &option.modvdesks } },
 	{ XCONFIG_STRING,   "fg",           { .s = &option.fg } },
-	{ XCONFIG_STRING,   "bg",           { .s = &option.bg } },
 	{ XCONFIG_STRING,   "fc",           { .s = &option.fc } },
+	{ XCONFIG_STRING,   "bg",           { .s = &option.bg } },
 	{ XCONFIG_INT,      "bw",           { .i = &option.bw } },
-	{ XCONFIG_STR_LIST, "term",         { .sl = &option.term } },
 	{ XCONFIG_INT,      "snap",         { .i = &option.snap } },
 	{ XCONFIG_INT,      "kbpx",         { .i = &option.kbpx } },
 	{ XCONFIG_BOOL,     "wholescreen",  { .i = &option.wholescreen } },
+	{ XCONFIG_UINT,     "numvdesks",    { .u = &option.vdesks } },
+	{ XCONFIG_UINT,     "modvdesks",    { .u = &option.modvdesks } },
+	{ XCONFIG_INT,      "docks",        { .i = &option.docks } },
+	{ XCONFIG_INT,     "soliddrag",     { .i = &option.solid_drag } },
+	{ XCONFIG_INT,     "solidsweep",    { .i = &option.solid_sweep } },
+	{ XCONFIG_CALL_0,   "nosoliddrag",  { .c0 = &unset_solid_drag } },
+	{ XCONFIG_CALL_1,   "bind",         { .c1 = &set_bind } },
+	{ XCONFIG_BOOL,    "nodefaultbinds",{ .i = &option.nodefaultbinds } },
 	{ XCONFIG_STRING,   "mask1",        { .s = &opt_grabmask1 } },
 	{ XCONFIG_STRING,   "mask2",        { .s = &opt_grabmask2 } },
 	{ XCONFIG_STRING,   "altmask",      { .s = &opt_altmask } },
-	{ XCONFIG_BOOL,    "nodefaultbinds",{ .i = &option.nodefaultbinds } },
-	{ XCONFIG_CALL_1,   "bind",         { .c1 = &set_bind } },
+
 	{ XCONFIG_CALL_1,   "app",          { .c1 = &set_app } },
 	{ XCONFIG_CALL_1,   "geometry",     { .c1 = &set_app_geometry } },
 	{ XCONFIG_CALL_1,   "g",            { .c1 = &set_app_geometry } },
 #ifdef CONFIGREQ
 	{ XCONFIG_CALL_0,   "manual",       { .c0 = &set_app_manual } },
+	{ XCONFIG_CALL_0,   "m",            { .c0 = &set_app_manual } },
 #endif
 	{ XCONFIG_CALL_0,   "dock",         { .c0 = &set_app_dock } },
-	{ XCONFIG_INT,      "docks",        { .i = &option.docks } },
+	{ XCONFIG_CALL_0,   "d",            { .c0 = &set_app_dock } },
 	{ XCONFIG_CALL_1,   "vdesk",        { .c1 = &set_app_vdesk } },
 	{ XCONFIG_CALL_1,   "v",            { .c1 = &set_app_vdesk } },
 	{ XCONFIG_CALL_0,   "fixed",        { .c0 = &set_app_fixed } },
 	{ XCONFIG_CALL_0,   "f",            { .c0 = &set_app_fixed } },
-	{ XCONFIG_CALL_0,   "s",            { .c0 = &set_app_fixed } },
-#ifdef SOLIDDRAG
-	{ XCONFIG_CALL_0,   "nosoliddrag",  { .c0 = &unset_solid_drag } },
-#endif
-	{ XCONFIG_BOOL,     "soliddrag",    { .i = &option.solid_drag } },
-	{ XCONFIG_BOOL,     "solidsweep",   { .i = &option.solid_sweep } },
-	{ XCONFIG_END, NULL, { .i = NULL } }
+	{ XCONFIG_CALL_0,   "s",            { .c0 = &set_app_fixed } }, // XXX?
+	{ XCONFIG_END, NULL, { NULL } }
 };
 
 static void handle_signal(int signo);
 static void handle_sigsegv(int signo);
 
-static void helptext(void) {
-	puts(
+static void helptext(void) { puts(
 "Usage: evilwm [OPTION]...\n"
 "evilwm is a minimalist window manager for X11.\n"
-"\n Options:\n"
+"\n"
+" Exiting options:\n"
+"  -h, --help      display this help and exit\n"
+"  --writedefaults output default options (inc. bindings) and exit\n"
+"  -V, --version   output version information and exit\n"
+"\n"
+" Options:\n"
 "  --display DISPLAY   X display [from environment]\n"
-"  --term PROGRAM      binary used to spawn terminal [" DEF_TERM "]\n"
+"  --term PROGRAM      command executed for --bind spawn [" DEF_TERM "]\n"
 #ifdef FONT
-"  --fn FONTNAME       font used to display text [" DEF_FONT "]\n"
+"  --fn FONTNAME       X LFD for font used to display text [" DEF_FONT "]\n"
 #endif
-"  --fg COLOUR         colour of active window frames [" DEF_FG "]\n"
-"  --fc COLOUR         colour of fixed window frames [" DEF_FC "]\n"
+"  --fg COLOUR         colour (name or #XXXXXX) of active window frames [" DEF_FG "]\n"
+"  --fc COLOUR         colour of active fixed window frames [" DEF_FC "]\n"
 "  --bg COLOUR         colour of inactive window frames [" DEF_BG "]\n"
 "  --bw PIXELS         window border width [" xstr(DEF_BW) "]\n"
 "  --snap PIXELS       snap distance when dragging windows [0; disabled]\n"
+"  --kbpx PIXELS       keyboard moveresize distance [" xstr(DEF_KBPX) "]\n"
 "  --wholescreen       ignore monitor geometries when maximising\n"
-"  --numvdesks N       total number of virtual desktops [8]\n"
-"  --modvdesks N       virtual desktop subdivision size [numvdesks]\n"
-#ifdef SOLIDDRAG
-"  --nosoliddrag       draw outline when moving or resizing\n"
-#endif
-"  --mask1 MASK        modifiers for most keyboard controls [control+alt]\n"
-"  --mask2 MASK        modifiers for mouse button controls [alt]\n"
-"  --altmask MASK      modifiers selecting alternate control behaviour\n"
+"  --numvdesks N       total number of virtual desktops [" xstr(DEF_VDESKS) "]\n"
+"  --modvdesks N       virtual desktop subdivision size; 0 means value of numvdesks [" xstr(DEF_VDESKSMOD) "]\n"
+"  --soliddrag N       nonzero to move the window directly rather than showing a placeholder [" xstr(DEF_SOLIDDRAG) "]\n"
+"  --solidsweep N      same but for resizing [" xstr(DEF_SOLIDSWEEP) "]\n"
+"  --nosoliddrag       alias for 'soliddrag 0'\n"
 "  --bind CTL[=FUNC]   bind (or unbind) input to window manager function\n"
-
-"\n Application matching options:\n"
-"  --app NAME/CLASS      match application by instance name & class\n"
-"    -g, --geometry GEOM   apply X geometry to matched application\n"
+"  --nodefaultbinds    don't use default bindings\n"
+"  --mask1 MASK        modifiers for most keyboard controls [" DEF_MASK1 "]\n"
+"  --mask2 MASK        modifiers for mouse button controls [" DEF_MASK2 "]\n"
+"  --altmask MASK      modifiers selecting alternate control behaviour [" DEF_ALTMASK "]\n"
+"\n"
+" Application matching options:\n"
+"  --app NAME/CLASS/WMNAME match application by WM_CLASS name & class + window title\n"
+"    -g, --geometry GEOM   apply X geometry (eg 100x160+50+80) to matched application\n"
 #ifdef CONFIGREQ
-"        --manual          disallow app from modifying its own geometry\n"
+"    -m, --manual          disallow app from modifying its own geometry\n"
 #endif
-"        --dock            treat matched app as a dock\n"
+"    -d, --dock            treat matched app as a dock\n"
 "    -v, --vdesk VDESK     move app to numbered vdesk (indexed from 0)\n"
 "    -f, --fixed           matched app should start fixed\n"
-
-"\n Other options:\n"
-"  -h, --help      display this help and exit\n"
-"  -V, --version   output version information and exit\n"
-
-"\nWhen binding a control, CTL contains a (case-sensitive) list of modifiers,\n"
+"\n"
+"When binding a control, CTL contains a (case-sensitive) list of modifiers,\n"
 "buttons or keys (using the X11 keysym name) and FUNC lists a function\n"
 "name and optional extra flags.  List entries can be separated with ','\n"
 "or '+'.  If FUNC is missing or empty, the control is unbound.  Modifiers are\n"
 "ignored when binding buttons.\n"
-
-"\nModifiers: mask1, mask2, altmask, shift, control, mod1 (alt), mod2..mod5\n"
+"\n"
+"Modifiers: mask1, mask2, altmask, shift, control, mod1 (alt), mod2..mod5\n"
 "Buttons: button1..button5\n"
 "Functions: delete, dock, fix, info, kill, lower, move, next, resize,\n"
 "           spawn, vdesk\n"
 "Flags: up, down, left, right, top, bottom, relative (rel), drag, toggle,\n"
 "       vertical (v), horizontal (h)\n"
-
-	);
-}
+);}
 
 static const char *default_options[] = {
 	"display",
 	"term " DEF_TERM,
 	"fn " DEF_FONT,
 	"fg " DEF_FG,
+	"fc " DEF_FC,
 	"bg " DEF_BG,
 	"bw " xstr(DEF_BW),
-	"fc " DEF_FC,
-	"numvdesks 8",
+	"snap 0",
+	"kbpx " xstr(DEF_KBPX),
 	"docks 1",
-	"kbpx 16",
-#ifdef SOLIDDRAG
-	"soliddrag",
-#endif
+	"#wholescreen",
+	"numvdesks " xstr(DEF_VDESKS),
+	"modvdesks " xstr(DEF_VDESKSMOD),
+	"soliddrag " xstr(DEF_SOLIDDRAG),
+	"solidsweep " xstr(DEF_SOLIDSWEEP),
+	"mask1 " DEF_MASK1,
+	"mask2 " DEF_MASK2,
+	"altmask " DEF_ALTMASK,
+	"#nodefaultbinds",
 };
 #define NUM_DEFAULT_OPTIONS (sizeof(default_options)/sizeof(default_options[0]))
+
+static void putdefaultopts(void) {
+	for(unsigned i = 0; i < NUM_DEFAULT_OPTIONS; i++)
+		puts(default_options[i]);
+}
 
 int main(int argc, char *argv[]) {
 	int argn = 1, ret;
@@ -220,12 +231,19 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
 			exit(1);
 		} else if (ret == XCONFIG_BAD_OPTION) {
-			if (0 == strcmp(argv[argn], "-h")
-			    || 0 == strcmp(argv[argn], "--help")) {
+			if(0){
+			} else if (0 == strcmp(argv[argn], "-h")
+			        || 0 == strcmp(argv[argn], "--help")) {
 				helptext();
 				exit(0);
+			} else if (0 == strcmp(argv[argn], "--writedefaults")) {
+				puts("### ~/.evilwmrc: EvilWM options file; reloads on SIGHUP ###");
+				putdefaultopts();
+				putdefaultbinds();
+				puts("#app Browser/firefox/Sharing Indicator\n #geometry 100x160+50+80\n #manual\n #dock\n #vdesk 1\n #fixed");
+				exit(0);
 			} else if (0 == strcmp(argv[argn], "-V")
-				   || 0 == strcmp(argv[argn], "--version")) {
+			        || 0 == strcmp(argv[argn], "--version")) {
 				LOG_INFO("evilwm version " VERSION "\n");
 				exit(0);
 			} else {
@@ -380,11 +398,9 @@ static void set_app_fixed(void) {
 	}
 }
 
-#ifdef SOLIDDRAG
 static void unset_solid_drag(void) {
 	option.solid_drag = 0;
 }
-#endif
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

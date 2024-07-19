@@ -29,6 +29,9 @@ extern struct name_to_modifier name_to_modifier[];
 #define grabmask2 (name_to_modifier[1].value)
 #define altmask   (name_to_modifier[2].value)
 
+// print default bindings to stdout
+void putdefaultbinds(void);
+
 // remove all non-func_binds() binds
 void stashbinds(struct screen *);
 // reinstate them

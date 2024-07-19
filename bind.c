@@ -41,11 +41,9 @@
 // Map modifier name to mask
 
 struct name_to_modifier name_to_modifier[] = {
-	// The order of the first three entries here is important, as they are
-	// referenced directly:
-	{ "mask1",      ControlMask|Mod1Mask },
-	{ "mask2",      Mod1Mask },
-	{ "altmask",    ShiftMask },
+	{ "mask1",      0 },
+	{ "mask2",      0 },
+	{ "altmask",    0 },
 	{ "shift",      ShiftMask },
 	{ "control",    ControlMask },
 	{ "ctrl",       ControlMask },
@@ -93,6 +91,7 @@ static struct function_def name_to_func[] = {
 	{ "delete", func_delete,    FL_CLIENT|0 },
 	{ "kill",   func_delete,    FL_CLIENT|1 },
 	{ "dock",   func_dock,      FL_SCREEN },
+	{ "docks",  func_dock,      FL_SCREEN },
 	{ "info",   func_info,      FL_CLIENT },
 	{ "lower",  func_lower,     FL_CLIENT },
 	{ "move",   func_move,      FL_CLIENT },
@@ -140,38 +139,47 @@ static struct {
 	const char *ctl;
 	const char *func;
 } control_builtins[] = {
-	// Move client
-	{ "mask1+k",                "move,relative+up" },
-	{ "mask1+j",                "move,relative+down" },
-	{ "mask1+h",                "move,relative+left" },
-	{ "mask1+l",                "move,relative+right" },
-#ifndef QWERTZ_KEYMAP
-	{ "mask1+y",                "move,top+left" },
-#else
-	{ "mask1+z",                "move,top+left" },
-#endif
-	{ "mask1+u",                "move,top+right" },
-	{ "mask1+b",                "move,bottom+left" },
-	{ "mask1+n",                "move,bottom+right" },
-
-	// Resize client
-	{ "mask1+altmask+k",        "resize,relative+up" },
-	{ "mask1+altmask+j",        "resize,relative+down" },
-	{ "mask1+altmask+h",        "resize,relative+left" },
-	{ "mask1+altmask+l",        "resize,relative+right" },
-	{ "mask1+x",                "resize,toggle+v+h" },
-	{ "mask1+equal",            "resize,toggle+v" },
-	{ "mask1+altmask+equal",    "resize,toggle+h" },
+	// Button controls
+	{ "button1",                "move" },
+	{ "button2",                "resize" },
+	{ "button3",                "lower" },
 
 	// Client misc
+	{ "mask1+Return",           "spawn" },
+	{ "mask2+Tab",              "next" },
 	{ "mask1+Escape",           "delete" },
 	{ "mask1+altmask+Escape",   "kill" },
 	{ "mask1+i",                "info" },
 	{ "mask1+Insert",           "lower" },
 	{ "mask1+KP_Insert",        "lower" },
-	{ "mask2+Tab",              "next" },
-	{ "mask1+Return",           "spawn" },
 	{ "mask1+f",                "fix,toggle" },
+
+	// Move client
+#ifdef QWERTZ_KEYMAP
+	{ "mask1+z",                "move,top+left" },
+#else
+	{ "mask1+y",                "move,top+left" },
+#endif
+	{ "mask1+u",                "move,top+right" },
+	{ "mask1+h",                "move,relative+left" },
+	{ "mask1+j",                "move,relative+down" },
+	{ "mask1+k",                "move,relative+up" },
+	{ "mask1+l",                "move,relative+right" },
+	{ "mask1+b",                "move,bottom+left" },
+	{ "mask1+n",                "move,bottom+right" },
+
+	// Resize client
+	{ "mask1+altmask+h",        "resize,relative+left" },
+	{ "mask1+altmask+j",        "resize,relative+down" },
+	{ "mask1+altmask+k",        "resize,relative+up" },
+	{ "mask1+altmask+l",        "resize,relative+right" },
+	{ "mask1+x",                "resize,toggle+v+h" },
+	{ "mask1+equal",            "resize,toggle+v" },
+	{ "mask1+altmask+equal",    "resize,toggle+h" },
+
+	// Screen misc
+	{ "mask1+d",                "docks,toggle" },
+	{ "mask1+Multi_key",        "binds,toggle" },
 
 	// Virtual desktops
 	{ "mask1+1",                "vdesk,0" },
@@ -187,18 +195,17 @@ static struct {
 	{ "mask1+Right",            "vdesk,relative+up" },
 	{ "mask1+Down",             "vdesk,relative+left" },
 	{ "mask1+Up",               "vdesk,relative+right" },
-
-	// Screen misc
-	{ "mask1+d",                "dock,toggle" },
-	{ "mask1+Multi_key",        "binds,down" },
-	{ "mask1+altmask+Multi_key","binds,up" },
-
-	// Button controls
-	{ "button1",                "move" },
-	{ "button2",                "resize" },
-	{ "button3",                "lower" },
 };
 #define NUM_CONTROL_BUILTINS (int)(sizeof(control_builtins) / sizeof(control_builtins[0]))
+
+void putdefaultbinds(void) {
+	for(unsigned i = 0; i < NUM_CONTROL_BUILTINS; i++) {
+		fputs("bind ", stdout);
+		fputs(control_builtins[i].ctl, stdout);
+		fputs("=", stdout);
+		puts(control_builtins[i].func);
+	}
+}
 
 struct bind {
 	// KeyPress or ButtonPress
