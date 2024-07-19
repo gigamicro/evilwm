@@ -100,6 +100,7 @@ static struct xconfig_option evilwm_options[] = {
 };
 
 static void handle_signal(int signo);
+static void handle_sigsegv(int signo);
 
 static void helptext(void) {
 	puts(
@@ -175,16 +176,23 @@ static const char *default_options[] = {
 #define NUM_DEFAULT_OPTIONS (sizeof(default_options)/sizeof(default_options[0]))
 
 int main(int argc, char *argv[]) {
-	struct sigaction act;
 	int argn = 1, ret;
 	Window old_current_window = None;
 
-	act.sa_handler = handle_signal;
+	struct sigaction act = {
+		.sa_handler = handle_signal,
+		.sa_flags = 0,
+	};
 	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
 	sigaction(SIGTERM, &act, NULL);
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGHUP, &act, NULL);
+	struct sigaction segact = {
+		.sa_handler = handle_sigsegv,
+		.sa_flags = act.sa_flags,
+		.sa_mask = act.sa_mask,
+	};
+	sigaction(SIGSEGV, &segact, NULL);
 
 	// Run until something signals to quit.
 	wm_exit = 0;
@@ -387,4 +395,18 @@ static void handle_signal(int signo) {
 		wm_exit = 1;
 	}
 	end_event_loop = 1;
+}
+
+static void handle_sigsegv(int signo) {
+	(void)signo;
+	LOG_ERROR("SEGFAULT!\n");
+	if(wm_exit != 1) {
+		wm_exit = 1;
+		end_event_loop = 1;
+		display_unmanage_clients();
+		XSync(display.dpy, True);
+		display_close();
+	}
+	else LOG_ERROR("ABORTING SEGFAULT HANDLING!\n");
+	exit(139);
 }

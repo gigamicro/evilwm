@@ -43,8 +43,6 @@ mouse binds on root window
 drag/drop target on root window?
 (handle multiple-element)
 
-actually handle segfault
-
 ## Intermediate tasks
 
 
