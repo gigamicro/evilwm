@@ -335,9 +335,9 @@ static void handle_client_message(XClientMessageEvent *e) {
 			//dummy:
 			Window root;
 			Window child;// that the pointer is in
-			int child_x; int child_y;
+			int window_x; int window_y;
 			unsigned int mask;//kb modifiers
-			if ( XQueryPointer(display.dpy, e->window, &root, &child, &root_x, &root_y, &child_x, &child_y, &mask)
+			if ( XQueryPointer(display.dpy, e->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask)
 				&& XGetWindowAttributes(display.dpy, e->window, &attr) ) {
 				int x = root_x - attr.x;
 				int y = root_y - attr.y;

@@ -45,8 +45,6 @@ drag/drop target on root window?
 
 actually handle segfault
 
-on kbmove: do mouse warp to nearest edge only when outside - box? shape?
-
 ## Intermediate tasks
 
 
