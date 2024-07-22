@@ -6,6 +6,7 @@ send-to-desktop
 
 'TODO:'
 'XXX'
+evilwm.html
 
 ability to disable focus-keeping on root window?
 
@@ -42,6 +43,8 @@ mouse binds on root window
 
 drag/drop target on root window?
 (handle multiple-element)
+
+generate helptext with options list, default values as calculated, and description list
 
 ## Intermediate tasks
 

@@ -90,7 +90,7 @@ struct function_def {
 static struct function_def name_to_func[] = {
 	{ "delete", func_delete,    FL_CLIENT|0 },
 	{ "kill",   func_delete,    FL_CLIENT|1 },
-	{ "dock",   func_dock,      FL_SCREEN },
+	{ "dock",   func_dock,      FL_SCREEN },//XXX
 	{ "docks",  func_dock,      FL_SCREEN },
 	{ "info",   func_info,      FL_CLIENT },
 	{ "lower",  func_lower,     FL_CLIENT },
@@ -107,16 +107,16 @@ static struct function_def name_to_func[] = {
 
 // Map flag name to flag
 
-struct name_to_flags {
+static struct {
 	const char *name;
 	unsigned flags;
-};
-
-static struct name_to_flags name_to_flags[] = {
+} name_to_flags[] = {
 	{ "up",             FL_UP },
 	{ "u",              FL_UP },
+	{ "on",             FL_UP },
 	{ "down",           FL_DOWN },
 	{ "d",              FL_DOWN },
+	{ "off",            FL_DOWN },
 	{ "left",           FL_LEFT },
 	{ "l",              FL_LEFT },
 	{ "right",          FL_RIGHT },
