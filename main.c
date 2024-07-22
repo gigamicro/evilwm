@@ -120,7 +120,7 @@ static void helptext(void) { puts(
 "  --fc COLOUR         colour of active fixed window frames [" DEF_FC "]\n"
 "  --bg COLOUR         colour of inactive window frames [" DEF_BG "]\n"
 "  --bw PIXELS         window border width [" xstr(DEF_BW) "]\n"
-"  --snap PIXELS       snap distance when dragging windows [0; disabled]\n"
+"  --snap PIXELS       snap distance when dragging windows [" xstr(DEF_SNAP) "]\n"
 "  --kbpx PIXELS       keyboard moveresize distance [" xstr(DEF_KBPX) "]\n"
 "  --wholescreen       ignore monitor geometries when maximising\n"
 "  --numvdesks N       total number of virtual desktops [" xstr(DEF_VDESKS) "]\n"
@@ -166,7 +166,7 @@ static const char *default_options[] = {
 	"fc " DEF_FC,
 	"bg " DEF_BG,
 	"bw " xstr(DEF_BW),
-	"snap 0",
+	"snap " xstr(DEF_SNAP),
 	"kbpx " xstr(DEF_KBPX),
 	"docks 1",
 	"#wholescreen",

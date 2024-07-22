@@ -11,6 +11,7 @@
 #define DEF_FC          "blue"
 #define DEF_VDESKS      8
 #define DEF_VDESKSMOD   0
+#define DEF_SNAP        0
 #define DEF_KBPX        16
 #define DEF_MASK1       "control+alt"
 #define DEF_MASK2       "alt"
