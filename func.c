@@ -264,5 +264,5 @@ void func_binds(void *sptr, XEvent *e, unsigned flags) {
 	if (flags & FL_TOGGLE) togglebinds(sptr);
 	else if (flags & FL_UP) unstashbinds(sptr);
 	else if (flags & FL_DOWN) stashbinds(sptr);
-	else LOG_DEBUG("func_binds invalid flags\n");
+	else {LOG_ERROR("func_binds invalid flags\n");}
 }
