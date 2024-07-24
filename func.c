@@ -127,7 +127,7 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	unsigned int mask;//kb modifiers
 	if (
 		!XQueryPointer(display.dpy, c->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask)
-		|| window_x<16 || window_y<16 ||window_x>c->width-16 || window_y>c->height-16
+		|| window_x<width_inc || window_y<height_inc ||window_x>c->width-width_inc || window_y>c->height-height_inc
 	) setmouse(c->window, c->width/2, c->height/2);
 #endif
 }
@@ -211,7 +211,7 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	unsigned int mask;//kb modifiers
 	if (
 		!XQueryPointer(display.dpy, c->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask)
-		|| window_x<16 || window_y<16 ||window_x>c->width-16 || window_y>c->height-16
+		|| window_x>c->width-width_inc || window_y>c->height-height_inc
 	) setmouse(c->window, c->width/2, c->height/2);
 #endif
 }
