@@ -1,4 +1,5 @@
 #!/bin/sh
 git diff --cached --name-only --diff-filter=ACM doc/evilwm.html | grep -m 1 '' || exit 0
 doc/h2m.sh || exit
+doc/man2txt.sh evilwm.1 README || exit
 git add evilwm.1
