@@ -62,12 +62,17 @@ void func_delete(void *sptr, XEvent *e, unsigned flags) {
 }
 
 void func_dock(void *sptr, XEvent *e, unsigned flags) {
-	if (!(flags & FL_SCREEN))
-		return;
-	struct screen *current_screen = sptr;
 	(void)e;
-	if (flags & FL_TOGGLE) {
-		set_docks_visible(current_screen, !current_screen->docks_visible);
+	if (flags & FL_SCREEN) {
+		struct screen *s = sptr;
+		if (flags & FL_TOGGLE) set_docks_visible(s, !s->docks_visible);
+		else if (flags & FL_UP) set_docks_visible(s, 1);
+		else if (flags & FL_DOWN) set_docks_visible(s, 0);
+	} else if (flags & FL_CLIENT) {
+		struct client *c = sptr;
+		if (flags & FL_TOGGLE) c->is_dock=!c->is_dock;
+		else if (flags & FL_UP) c->is_dock=1;
+		else if (flags & FL_DOWN) c->is_dock=0;
 	}
 }
 

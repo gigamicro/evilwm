@@ -90,7 +90,7 @@ struct function_def {
 static struct function_def name_to_func[] = {
 	{ "delete", func_delete,    FL_CLIENT|0 },
 	{ "kill",   func_delete,    FL_CLIENT|1 },
-	{ "dock",   func_dock,      FL_SCREEN },//XXX
+	{ "dock",   func_dock,      FL_CLIENT },
 	{ "docks",  func_dock,      FL_SCREEN },
 	{ "info",   func_info,      FL_CLIENT },
 	{ "lower",  func_lower,     FL_CLIENT },
