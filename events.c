@@ -309,6 +309,31 @@ static void handle_client_message(XClientMessageEvent *e) {
 	struct client *c;
 
 	LOG_ENTER("handle_client_message(window=%lx, format=%d, type=%s)", (unsigned long)e->window, e->format, debug_atom_name(e->message_type));
+#ifdef XDEBUG
+	switch (e->format) {
+		case 8:
+			LOG_DEBUG("b={ ");
+			for (int i=0;i<20;i++) {
+				LOG_DEBUG("%d, ",e->data.b[i]);
+			}
+			LOG_DEBUG("}\n");
+			break;
+		case 16:
+			LOG_DEBUG("s={ ");
+			for (int i=0;i<10;i++) {
+				LOG_DEBUG("%d, ",e->data.s[i]);
+			}
+			LOG_DEBUG("}\n");
+			break;
+		case 32:
+			LOG_DEBUG("l={ ");
+			for (int i=0;i<5;i++) {
+				LOG_DEBUG("%li, ",e->data.l[i]);
+			}
+			LOG_DEBUG("}\n");
+			break;
+	}
+#endif
 
 	if (e->message_type == X_ATOM(_NET_CURRENT_DESKTOP)) {
 		switch_vdesk(s, e->data.l[0]);
