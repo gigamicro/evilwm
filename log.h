@@ -44,10 +44,10 @@ const char *debug_atom_name(Atom a);
 
 #else
 
-# define LOG_ENTER(...)
-# define LOG_LEAVE(...)
-# define LOG_DEBUG(...)
-# define LOG_DEBUG_(...)
+# define LOG_ENTER(...) do {} while (0)
+# define LOG_LEAVE(...) do {} while (0)
+# define LOG_DEBUG(...) do {} while (0)
+# define LOG_DEBUG_(...) do {} while (0)
 
 #endif
 
@@ -69,10 +69,10 @@ const char *xevent_string(int event);
 
 #else
 
-# define LOG_XENTER(...)
-# define LOG_XLEAVE(...)
-# define LOG_XDEBUG(...)
-# define LOG_XDEBUG_(...)
+# define LOG_XENTER(...) do {} while (0)
+# define LOG_XLEAVE(...) do {} while (0)
+# define LOG_XDEBUG(...) do {} while (0)
+# define LOG_XDEBUG_(...) do {} while (0)
 
 # define debug_window_attributes(a)
 # define debug_wm_normal_hints(s)
