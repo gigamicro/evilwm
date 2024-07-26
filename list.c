@@ -13,23 +13,12 @@
 
 #include "list.h"
 
-// Insert new data before given position
-static struct list *list_insert_before(struct list *list, struct list *before, void *data) {
-	if (!before) return list_append(list,data);
-	struct list *elem = malloc(sizeof(struct list));
-	if (!elem) return list; // malloc fail
-	*elem = (struct list){ before, data };
-	if (!list) return elem; // new list
-	if (before == list) return elem; // prepend to list
-	// insert in list
-	*elem = *before;
-	*before = (struct list){ elem, data };
-	return list;
-}
-
 // Add new data to head of list
 struct list *list_prepend(struct list *list, void *data) {
-	return list_insert_before(list, list, data);
+	struct list *elem = malloc(sizeof(struct list));
+	if (!elem) return list; // malloc fail
+	*elem = (struct list){ list, data };
+	return elem; // prepend to or create list
 }
 
 // Add new data to tail of list
