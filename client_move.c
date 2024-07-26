@@ -501,7 +501,7 @@ void client_maximise(struct client *c, int action, int hv) {
 			0, 0,
 			DisplayWidth(display.dpy, c->screen->screen),
 			DisplayHeight(display.dpy, c->screen->screen),
-		-1};
+		.area=-1};
 		// monitor.area=monitor.width*monitor.height;
 	} else {
 		monitor = *client_monitor(c, NULL);

@@ -46,6 +46,12 @@ drag/drop target on root window?
 
 generate helptext with options list, default values as calculated, and description list
 
+figure out modvdesks incomplete cases eg num=8 mod=7,9,-1,6
+
+bring forward/backward based on overlapping visible windows only
+
+unmaximize windows to pointer (same logic as placement)
+
 ## Intermediate tasks
 
 

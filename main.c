@@ -94,7 +94,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_1,   "v",            { .c1 = &set_app_vdesk } },
 	{ XCONFIG_CALL_0,   "fixed",        { .c0 = &set_app_fixed } },
 	{ XCONFIG_CALL_0,   "f",            { .c0 = &set_app_fixed } },
-	{ XCONFIG_CALL_0,   "s",            { .c0 = &set_app_fixed } }, // XXX?
+	{ XCONFIG_CALL_0,   "s",            { .c0 = &set_app_fixed } }, // XXX? "sticky"
 	{ XCONFIG_END, NULL, { NULL } }
 };
 
