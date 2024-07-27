@@ -420,7 +420,6 @@ void client_show_info(struct client *c, XEvent *e) {
 #ifdef INFOBANNER
 	create_info_window(c);
 #else
-	XGrabServer(display.dpy);
 	init_outline(c);
 	set_outline(c);
 #endif

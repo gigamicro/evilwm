@@ -416,6 +416,8 @@ static void handle_signal(int signo) {
 static void handle_sigsegv(int signo) {
 	(void)signo;
 	LOG_ERROR("SEGFAULT!\n");
+	XUngrabPointer(display.dpy, CurrentTime);
+	XUngrabServer(display.dpy);
 	if(wm_exit != 1) {
 		wm_exit = 1;
 		end_event_loop = 1;
