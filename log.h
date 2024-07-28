@@ -23,8 +23,8 @@ extern int log_indent;
 # define LOG_INDENT() do { for (int ii = 0; ii < log_indent; ii++) fprintf(stderr, "   "); } while (0)
 #endif
 
-#define LOG_INFO(...) printf(__VA_ARGS__);
-#define LOG_ERROR(...) fprintf(stderr, __VA_ARGS__);
+#define LOG_INFO(...) printf(__VA_ARGS__)
+#define LOG_ERROR(...) fprintf(stderr, __VA_ARGS__)
 
 // Debug macros:
 //
