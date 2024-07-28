@@ -131,6 +131,14 @@ static int absmin(int a, int b) {
 		return a;
 	return b;
 }
+static _Bool bound(int a, int b, int min, int max) {
+	return !( (a<min&&b<min) || (a>max&&b>max) );
+	// false only when
+	//  b a   |------------------|
+	//  a b   |------------------|
+	//        |------------------|   a b
+	//        |------------------|   b a
+}
 
 // Snap a client to the edges of other clients (if on same screen, and visible)
 // or to the screen border.
@@ -175,7 +183,38 @@ static void snap_client(struct client *c, struct monitor *monitor) {
 // During a sweep (resize interaction), recalculate new dimensions for a window
 // based on mouse position relative to top-left corner.
 
-static void recalculate_sweep(struct client *c, int x1, int y1, int x2, int y2, _Bool force) {
+static void recalculate_sweep(struct client *c, int x1, int y1, int x2, int y2, _Bool force, struct monitor *monitor) {
+	if (!force && option.snap) {
+		// Snap cursor position to nearest border
+		int dx = option.snap;
+		int dy = option.snap;
+		for (struct list *iter = &(struct list){ // insert monitor as client
+			.next=clients_tab_order,
+			.data=&(struct client){
+				.x=monitor->x+c->border,
+				.y=monitor->y+c->border,
+				.width=monitor->width-c->border*2,
+				.height=monitor->height-c->border*2,
+				.screen=c->screen,
+				.vdesk=VDESK_FIXED,
+		0}}; iter; iter = iter->next) {
+			struct client *ci = iter->data;
+			if (ci == c) continue;
+			if (ci->screen != c->screen) continue;
+			if (!is_visible(ci)) continue;
+			if (bound(y1, y2, ci->y, ci->y+ci->height)) {
+				dx=absmin(dx, ci->x              - x2);
+				dx=absmin(dx, ci->x + ci->width  - x2);
+			}
+			if (bound(x1, x2, ci->x, ci->x+ci->width )) {
+				dy=absmin(dy, ci->y              - y2);
+				dy=absmin(dy, ci->y + ci->height - y2);
+			}
+		}
+		if (abs(dx) < option.snap) x2 += dx;
+		if (abs(dy) < option.snap) y2 += dy;
+	}
+
 	if (force || c->oldw == 0) {
 		c->oldw = 0;
 		c->width = abs(x1 - x2);
@@ -243,9 +282,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				if (ev.xmotion.root != c->screen->root)
 					break;
 				XUngrabServer(display.dpy);// outline
-				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
-				if (option.snap && !(ev.xmotion.state & altmask))
-					snap_client(c, monitor);
+				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask, monitor);
 
 				XEvent evc;
 				if (!XCheckIfEvent(display.dpy,&evc,motion_predicate,NULL)) {
@@ -266,9 +303,7 @@ void client_resize_sweep(struct client *c, unsigned button) {
 				remove_info_window();
 				XUngrabPointer(display.dpy, CurrentTime);
 
-				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask);
-				if (option.snap && !(ev.xmotion.state & altmask))
-					snap_client(c, monitor);
+				recalculate_sweep(c, old_cx, old_cy, ev.xmotion.x, ev.xmotion.y, ev.xmotion.state & altmask, monitor);
 				client_moveresizeraise(c);
 				// In case maximise state has changed:
 				ewmh_set_net_wm_state(c);
