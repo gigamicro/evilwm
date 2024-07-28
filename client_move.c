@@ -138,13 +138,17 @@ static int absmin(int a, int b) {
 
 static void snap_client(struct client *c, struct monitor *monitor) {
 	int dx, dy;
-	int dpy_width = monitor->width;
-	int dpy_height = monitor->height;
-
-	// Snap to other windows
-
 	dx = dy = option.snap;
-	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
+	for (struct list *iter = &(struct list){ // insert monitor as client
+		.next=clients_tab_order,
+		.data=&(struct client){
+			.x=monitor->x+c->border,
+			.y=monitor->y+c->border,
+			.width=monitor->width-c->border*2,
+			.height=monitor->height-c->border*2,
+			.screen=c->screen,
+			.vdesk=VDESK_FIXED,
+	0}}; iter; iter = iter->next) {
 		struct client *ci = iter->data;
 		if (ci == c) continue;
 		if (ci->screen != c->screen) continue;
@@ -166,22 +170,6 @@ static void snap_client(struct client *c, struct monitor *monitor) {
 		c->x += dx;
 	if (abs(dy) < option.snap)
 		c->y += dy;
-
-	// Snap to screen border
-
-	if (abs(c->x - c->border - monitor->x) < option.snap)
-		c->x = monitor->x + c->border;
-	if (abs(c->y - c->border - monitor->y) < option.snap)
-		c->y = monitor->y + c->border;
-	if (abs(c->x + c->width + c->border - monitor->x - dpy_width) < option.snap)
-		c->x = monitor->x + dpy_width - c->width - c->border;
-	if (abs(c->y + c->height + c->border - monitor->y - dpy_height) < option.snap)
-		c->y = monitor->y + dpy_height - c->height - c->border;
-
-	if (abs(c->x) == monitor->x + c->border && c->width == dpy_width)
-		c->x = monitor->x;
-	if (abs(c->y) == monitor->y + c->border && c->height == dpy_height)
-		c->y = monitor->y;
 }
 
 // During a sweep (resize interaction), recalculate new dimensions for a window
