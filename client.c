@@ -244,11 +244,11 @@ _Bool client_client(struct client *c, struct client *cc) {
 	int cy1 = c->y - c->border;
 	int cx2 = cx1 + c->width + c->border;
 	int cy2 = cy1 + c->height + c->border;
-	int ccx1 = cc->x - cc->border;             if ( ccx1 > cx2 ) return 1;
-	int ccy1 = cc->y - cc->border;             if ( ccy1 > cy2 ) return 1;
-	int ccx2 = ccx1 + cc->width  + cc->border; if ( cx1 > ccx2 ) return 1;
-	int ccy2 = ccy1 + cc->height + cc->border; if ( cy1 > ccy2 ) return 1;
-	return 0;
+	int ccx1 = cc->x - cc->border;             if ( ccx1 > cx2 ) return 0;
+	int ccy1 = cc->y - cc->border;             if ( ccy1 > cy2 ) return 0;
+	int ccx2 = ccx1 + cc->width  + cc->border; if ( cx1 > ccx2 ) return 0;
+	int ccy2 = ccy1 + cc->height + cc->border; if ( cy1 > ccy2 ) return 0;
+	return 1;
 }
 
 // Place 'under' directly under 'over'
@@ -286,28 +286,28 @@ void client_raise(struct client *c) {
 		LOG_ERROR("client_raise(): null client!\n");
 		return;
 	}
+#ifdef LOWERRAISE_OVERLAP
 	struct list *iter = clients_stacking_order;
 	while (iter && iter->data!=c) iter = iter->next;
-	if (!iter) {
-		LOG_XDEBUG("XLowerWindow(window=%lx,parent=%lx)\n", (unsigned long)c->window, (unsigned long)c->parent);
-		XLowerWindow(display.dpy, c->parent);
-		clients_stacking_order = list_to_head(clients_stacking_order, c);
-		ewmh_set_net_client_list_stacking(c->screen);
-		return;
+	if (!iter) { // list-/>c, must be added
+		iter = clients_stacking_order = list_prepend(clients_stacking_order, c);
 	}
 	struct list *cnode = iter;
 	struct list *last = iter;
 	while ((iter=iter->next)) {
-		struct client *cc = iter->data; // Note that we're checking `iter`
+		struct client *cc = iter->data;
 		if (!cc) continue; // skip null data
 		if (cc==c) LOG_DEBUG("duplicate node for window=%lx in clients_stacking_order\n", c->window);
 		if (!is_visible(cc)) continue; // wrong vdesk
-		if (client_client(c,cc)) continue;
+		if (!client_client(c,cc)) continue; // collide
 		last = iter;
 	}
 	// last is last/highest overlap
 	if (cnode==last) return; // already on top
-	client_under(c,last->next?last->next->data:NULL);
+	if (last->next) client_under(c,last->next->data);
+	else // tail
+#endif
+	client_under(c,NULL);
 }
 
 // Lower client
@@ -318,22 +318,32 @@ void client_lower(struct client *c) {
 		return;
 	}
 	struct list *iter = clients_stacking_order;
-	if (!iter) {
+	if (!iter) { // in an environment of no clients, raising is as lowering
 		LOG_ERROR("client_lower(): null list!\n");
-		client_under(c,NULL);
+		LOG_XDEBUG("XLowerWindow(window=%lx,parent=%lx)\n", (unsigned long)c->window, (unsigned long)c->parent);
+		XLowerWindow(display.dpy, c->parent);
+		clients_stacking_order = list_to_head(clients_stacking_order, c);
+		ewmh_set_net_client_list_stacking(c->screen);
 		return;
 	}
+#ifdef LOWERRAISE_OVERLAP
 	iter=&(struct list){ .next=iter, .data=NULL };
 	while ((iter=iter->next)) {
 		struct client *cc = iter->data;
 		if (!cc) continue; // skip null data
 		if (cc==c) return; // nothing underneath
 		if (!is_visible(cc)) continue; // wrong vdesk
-		if (client_client(c,cc)) continue;
+		if (!client_client(c,cc)) continue; // collide
 		break;
 	}
-	// iter is first/lowest overlap, unless 
-	client_under(c,iter?iter->data:clients_stacking_order->data);
+	// iter is first/lowest overlap
+	if (iter) client_under(c,iter->data);
+	else // no overlap & list-/>c
+		client_under(c,clients_stacking_order->data);
+#else
+	if (iter->data==c) return; // already at bottom
+	client_under(c,iter->data);
+#endif
 }
 
 // Set window state.  This is either NormalState (visible), IconicState

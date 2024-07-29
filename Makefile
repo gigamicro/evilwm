@@ -78,7 +78,10 @@ OPT_CPPFLAGS += -DNEXT_WARP_POINTER
 
 # Uncomment to raise on all moves/resizes
 #(move-dragging a window without moving the cursor will always raise)
-# OPT_CPPFLAGS += -DMOVERESIZE_RAISE
+OPT_CPPFLAGS += -DMOVERESIZE_RAISE
+
+# Uncomment to only raise/lower a window to the furthest overlapping client
+# OPT_CPPFLAGS += -DLOWERRAISE_OVERLAP
 
 # Uncomment to include whatever debugging messages I've left in this release.
 # OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging

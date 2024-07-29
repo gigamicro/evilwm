@@ -352,7 +352,9 @@ void client_move_drag(struct client *c, unsigned button) {
 		set_outline(c);
 	}
 
+#ifndef MOVERESIZE_RAISE
 	int moved = 0;
+#endif
 	for (;;) {
 		XEvent ev;
 		XMaskEvent(display.dpy, ButtonPressMask|ButtonReleaseMask|PointerMotionMask, &ev);
@@ -360,7 +362,9 @@ void client_move_drag(struct client *c, unsigned button) {
 			case MotionNotify:
 				if (ev.xmotion.root != c->screen->root)
 					break;
+#ifndef MOVERESIZE_RAISE
 				moved = 1;
+#endif
 				c->x = old_cx + (ev.xmotion.x - x1);
 				c->y = old_cy + (ev.xmotion.y - y1);
 				if (option.snap && !(ev.xmotion.state & altmask))
@@ -400,7 +404,9 @@ void client_move_drag(struct client *c, unsigned button) {
 					// drags, we need a final move/raise:
 					client_moveresizeraise(c);
 				}
+#ifndef MOVERESIZE_RAISE
 				if (!moved)  client_raise(c);
+#endif
 				return;
 
 			default:
