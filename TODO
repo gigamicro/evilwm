@@ -48,6 +48,10 @@ bring forward/backward based on overlapping visible windows only
 
 unmaximize windows to pointer (same logic as placement)
 
+make alloc_window_array only trigger when there's actually not enough space
+
+grab pointer on mask2 held; does this allow escaping game look binds?
+
 ## Intermediate tasks
 
 
