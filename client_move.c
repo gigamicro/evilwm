@@ -249,6 +249,10 @@ static int motion_predicate(Display *d, XEvent *ev, XPointer arg){
 	return 0;
 }
 
+#ifndef MOVERESIZE_RAISE
+#define client_moveresizeraise(...) client_moveresize(__VA_ARGS__)
+#endif
+
 // Handle user resizing a window with the mouse.
 void client_resize_sweep(struct client *c, unsigned button) {
 	// Ensure we can grab pointer events.
@@ -256,7 +260,9 @@ void client_resize_sweep(struct client *c, unsigned button) {
 		return;
 
 	// Sweeping always raises.
+#ifdef MOVERESIZE_RAISE
 	client_raise(c);
+#endif
 
 	int old_cx = c->x;
 	int old_cy = c->y;
@@ -326,8 +332,10 @@ void client_move_drag(struct client *c, unsigned button) {
 	if (!grab_pointer(c->screen->root, display.move_curs))
 		return;
 
+#ifdef MOVERESIZE_RAISE
 	// Dragging always raises.
 	client_raise(c);
+#endif
 
 	// Initial pointer and window positions; new coordinates calculated
 	// relative to these.
@@ -344,6 +352,7 @@ void client_move_drag(struct client *c, unsigned button) {
 		set_outline(c);
 	}
 
+	int moved = 0;
 	for (;;) {
 		XEvent ev;
 		XMaskEvent(display.dpy, ButtonPressMask|ButtonReleaseMask|PointerMotionMask, &ev);
@@ -351,6 +360,7 @@ void client_move_drag(struct client *c, unsigned button) {
 			case MotionNotify:
 				if (ev.xmotion.root != c->screen->root)
 					break;
+				moved = 1;
 				c->x = old_cx + (ev.xmotion.x - x1);
 				c->y = old_cy + (ev.xmotion.y - y1);
 				if (option.snap && !(ev.xmotion.state & altmask))
@@ -390,6 +400,7 @@ void client_move_drag(struct client *c, unsigned button) {
 					// drags, we need a final move/raise:
 					client_moveresizeraise(c);
 				}
+				if (!moved)  client_raise(c);
 				return;
 
 			default:
@@ -401,6 +412,7 @@ void client_move_drag(struct client *c, unsigned button) {
 #undef create_info_window
 #undef update_info_window
 #undef remove_info_window
+#undef client_moveresizeraise
 
 #ifdef GC_INVERT
 // Predicate function for use with XCheckIfEvent.

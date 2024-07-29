@@ -76,6 +76,10 @@ OPT_CPPFLAGS += -DKBMOVERESIZE_WARP_POINTER
 OPT_CPPFLAGS += -DNEXT_WARP_POINTER
 # OPT_CPPFLAGS += -DUNMAN_FOCUS_WARP_POINTER # Warps the pointer into unmanaged windows that send _NET_ACTIVE_WINDOW
 
+# Uncomment to raise on all moves/resizes
+#(move-dragging a window without moving the cursor will always raise)
+# OPT_CPPFLAGS += -DMOVERESIZE_RAISE
+
 # Uncomment to include whatever debugging messages I've left in this release.
 # OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging
 # OPT_CPPFLAGS += -DXDEBUG  # show some X calls
