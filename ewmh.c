@@ -72,14 +72,17 @@ void ewmh_set_net_client_list(struct screen *s) {
 void ewmh_set_net_client_list_stacking(struct screen *s) {
 	Window *windows = alloc_window_array();
 	int i = 0;
+	LOG_DEBUG("client_list_stacking: {");
 	if (windows) {
 		for (struct list *iter = clients_stacking_order; iter; iter = iter->next) {
 			struct client *c = iter->data;
 			if (c->screen == s) {
 				windows[i++] = c->window;
+				LOG_DEBUG_("%lx,",c->window/0x100000);
 			}
 		}
 	}
+	LOG_DEBUG_("}\n");
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST_STACKING),
 			XA_WINDOW, 32, PropModeReplace,
 			(unsigned char *)windows, i);

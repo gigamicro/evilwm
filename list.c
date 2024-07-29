@@ -35,8 +35,8 @@ struct list *list_append(struct list *list, void *data) {
 
 // Delete list element containing data
 struct list *list_delete(struct list *list, void *data) {
-	if (!data) return list;
-	if (list->data == data) {
+	if (!list) return list; // empty
+	if (list->data == data) { // first element match
 		struct list *elem = list;
 		list = elem->next;
 		free(elem);
@@ -92,11 +92,9 @@ struct list *list_find(struct list *list, void *data) {
 	}
 	return NULL;
 }
-// find the previous element to that
+// find the previous element to that, as ling as it isn't the head
 struct list *list_find_prev(struct list *list, void *data) {
-	if (list->data == data) return list_prepend(list,NULL); // XXX
-	for (struct list *elem = list; elem->next; elem = elem->next)
-		if (elem->next->data == data)
-			return elem;
-	return NULL;
+	while (list->next && list->next->data != data) list=list->next;
+	if (!list->next) return NULL;
+	return list;
 }

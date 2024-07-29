@@ -35,9 +35,9 @@
 #include "util.h"
 
 // Client tracking information
-struct list *clients_tab_order = NULL;
-struct list *clients_mapping_order = NULL;
-struct list *clients_stacking_order = NULL;
+struct list *clients_tab_order = NULL; // head is most recent
+struct list *clients_mapping_order = NULL; // head is eldest
+struct list *clients_stacking_order = NULL; // head is furthest back
 struct client *current = NULL;
 
 // Get WM_NORMAL_HINTS property.  Populates appropriate parts of the client
@@ -238,22 +238,102 @@ void client_show(struct client *c) {
 	set_wm_state(c, NormalState);
 }
 
-// Raise client.  Maintains clients_stacking_order list and EWMH hints.
-
-void client_raise(struct client *c) {
-	LOG_XDEBUG("XRaiseWindow(window=%lx,parent=%lx)\n", (unsigned long)c->window, (unsigned long)c->parent);
-	XRaiseWindow(display.dpy, c->parent);
-	clients_stacking_order = list_to_tail(clients_stacking_order, c);
-	ewmh_set_net_client_list_stacking(c->screen);
+// Test for overlap
+_Bool client_client(struct client *c, struct client *cc) {
+	int cx1 = c->x - c->border;
+	int cy1 = c->y - c->border;
+	int cx2 = cx1 + c->width + c->border;
+	int cy2 = cy1 + c->height + c->border;
+	int ccx1 = cc->x - cc->border;             if ( ccx1 > cx2 ) return 1;
+	int ccy1 = cc->y - cc->border;             if ( ccy1 > cy2 ) return 1;
+	int ccx2 = ccx1 + cc->width  + cc->border; if ( cx1 > ccx2 ) return 1;
+	int ccy2 = ccy1 + cc->height + cc->border; if ( cy1 > ccy2 ) return 1;
+	return 0;
 }
 
-// Lower client.  Maintains clients_stacking_order list and EWMH hints.
+// Place 'under' directly under 'over'
+// Maintains clients_stacking_order list and EWMH hints
+static void client_under(struct client *under, struct client *over) {
+	if (!under) {
+		LOG_ERROR("client_under(): null under!\n");
+		return;
+	}
+	if (!over) {
+		LOG_XDEBUG("XRaiseWindow(window=%lx,parent=%lx)\n", (unsigned long)under->window, (unsigned long)under->parent);
+		XRaiseWindow(display.dpy, under->parent);
+		clients_stacking_order=list_to_tail(clients_stacking_order,under);
+		ewmh_set_net_client_list_stacking(under->screen);
+		return;
+	}
+	LOG_XDEBUG("XRestackWindows({window=%lx,parent=%lx},{window=%lx,parent=%lx})\n",
+		(unsigned long)over->window, (unsigned long)over->parent,
+		(unsigned long)under->window, (unsigned long)under->parent);
+	XRestackWindows(display.dpy, (Window[]){ over->parent, under->parent }, 2);
+	clients_stacking_order = list_delete(clients_stacking_order, under);
+	if (clients_stacking_order->data == over) {
+		clients_stacking_order = list_prepend(clients_stacking_order, under);
+	} else {
+		struct list *pover = list_find_prev(clients_stacking_order, over);
+		pover->next = list_prepend(pover->next, under);
+	}
+	ewmh_set_net_client_list_stacking(under->screen);
+}
 
+// Raise client
+// Put the client directly under the client one above the highest overlapping client
+void client_raise(struct client *c) {
+	if (!c) {
+		LOG_ERROR("client_raise(): null client!\n");
+		return;
+	}
+	struct list *iter = clients_stacking_order;
+	while (iter && iter->data!=c) iter = iter->next;
+	if (!iter) {
+		LOG_XDEBUG("XLowerWindow(window=%lx,parent=%lx)\n", (unsigned long)c->window, (unsigned long)c->parent);
+		XLowerWindow(display.dpy, c->parent);
+		clients_stacking_order = list_to_head(clients_stacking_order, c);
+		ewmh_set_net_client_list_stacking(c->screen);
+		return;
+	}
+	struct list *cnode = iter;
+	struct list *last = iter;
+	while ((iter=iter->next)) {
+		struct client *cc = iter->data; // Note that we're checking `iter`
+		if (!cc) continue; // skip null data
+		if (cc==c) LOG_DEBUG("duplicate node for window=%lx in clients_stacking_order\n", c->window);
+		if (!is_visible(cc)) continue; // wrong vdesk
+		if (client_client(c,cc)) continue;
+		last = iter;
+	}
+	// last is last/highest overlap
+	if (cnode==last) return; // already on top
+	client_under(c,last->next?last->next->data:NULL);
+}
+
+// Lower client
+// Put the client directly under the furthest back overlapping client
 void client_lower(struct client *c) {
-	LOG_XDEBUG("XLowerWindow(window=%lx,parent=%lx)\n", (unsigned long)c->window, (unsigned long)c->parent);
-	XLowerWindow(display.dpy, c->parent);
-	clients_stacking_order = list_to_head(clients_stacking_order, c);
-	ewmh_set_net_client_list_stacking(c->screen);
+	if (!c) {
+		LOG_ERROR("client_lower(): null client!\n");
+		return;
+	}
+	struct list *iter = clients_stacking_order;
+	if (!iter) {
+		LOG_ERROR("client_lower(): null list!\n");
+		client_under(c,NULL);
+		return;
+	}
+	iter=&(struct list){ .next=iter, .data=NULL };
+	while ((iter=iter->next)) {
+		struct client *cc = iter->data;
+		if (!cc) continue; // skip null data
+		if (cc==c) return; // nothing underneath
+		if (!is_visible(cc)) continue; // wrong vdesk
+		if (client_client(c,cc)) continue;
+		break;
+	}
+	// iter is first/lowest overlap, unless 
+	client_under(c,iter?iter->data:clients_stacking_order->data);
 }
 
 // Set window state.  This is either NormalState (visible), IconicState

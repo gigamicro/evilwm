@@ -103,6 +103,7 @@ void client_select_next(void);
 
 struct client *find_client(Window w);
 struct monitor *client_monitor(struct client *c, Bool *intersects);
+_Bool client_client(struct client *c, struct client *cc);
 void client_hide(struct client *c);
 void client_show(struct client *c);
 void client_raise(struct client *c);
