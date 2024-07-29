@@ -189,9 +189,13 @@ void client_manage_new(Window w, struct screen *s) {
 	if (name)
 		XFree(name);
 
-	LOG_DEBUG("vdesk %u\n", c->vdesk);
-	LOG_DEBUG("is_dock %i\n", c->is_dock);
-	LOG_DEBUG("ignore_configreq %i\n", c->ignore_configreq);
+	LOG_DEBUG("%s","");
+	LOG_DEBUG_("vdesk %u, ", c->vdesk);
+	LOG_DEBUG_("is_dock %i, ", c->is_dock);
+#ifdef CONFIGREQ
+	LOG_DEBUG_("ignore_configreq %i, ", c->ignore_configreq);
+#endif
+	LOG_DEBUG_("\n");
 
 	// Set EWMH property on client advertising WM features
 	ewmh_set_allowed_actions(c);
@@ -204,11 +208,10 @@ void client_manage_new(Window w, struct screen *s) {
 	// to be visible on this virtual desktop.  Otherwise, set it to
 	// IconicState (hidden).
 	if (is_visible(c)) {
-		LOG_DEBUG("client shown\n");
 		client_show(c);
-		client_raise(c);
 		// Don't focus windows that aren't on the same display as the
 		// pointer.
+#if defined(NEWCLIENT_SELECT) || defined(WARP_POINTER) || defined(NEWCLIENT_DISCARDENTERS)
 		if (get_pointer_root_xy(c->window, NULL, NULL) &&
 		    !(window_type & (EWMH_WINDOW_TYPE_DOCK|EWMH_WINDOW_TYPE_NOTIFICATION))) {
 #ifdef NEWCLIENT_SELECT
@@ -222,8 +225,8 @@ void client_manage_new(Window w, struct screen *s) {
 			discard_enter_events(c);
 #endif
 		}
+#endif
 	} else {
-		LOG_DEBUG("client hidden\n");
 		client_hide(c);
 	}
 
