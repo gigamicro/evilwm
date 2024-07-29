@@ -82,6 +82,8 @@ OPT_CPPFLAGS += -DMOVERESIZE_RAISE
 
 # Uncomment to only raise/lower a window to the furthest overlapping client
 # OPT_CPPFLAGS += -DLOWERRAISE_OVERLAP
+# or this one for only visible clients
+OPT_CPPFLAGS += -DLOWERRAISE_VISIBLE
 
 # Uncomment to include whatever debugging messages I've left in this release.
 # OPT_CPPFLAGS += -DDEBUG   # miscellaneous debugging

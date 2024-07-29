@@ -286,7 +286,7 @@ void client_raise(struct client *c) {
 		LOG_ERROR("client_raise(): null client!\n");
 		return;
 	}
-#ifdef LOWERRAISE_OVERLAP
+#if defined(LOWERRAISE_OVERLAP) || defined(LOWERRAISE_VISIBLE)
 	struct list *iter = clients_stacking_order;
 	while (iter && iter->data!=c) iter = iter->next;
 	if (!iter) { // list-/>c, must be added
@@ -299,7 +299,9 @@ void client_raise(struct client *c) {
 		if (!cc) continue; // skip null data
 		if (cc==c) LOG_DEBUG("duplicate node for window=%lx in clients_stacking_order\n", c->window);
 		if (!is_visible(cc)) continue; // wrong vdesk
+#ifdef LOWERRAISE_OVERLAP
 		if (!client_client(c,cc)) continue; // collide
+#endif
 		last = iter;
 	}
 	// last is last/highest overlap
@@ -326,14 +328,16 @@ void client_lower(struct client *c) {
 		ewmh_set_net_client_list_stacking(c->screen);
 		return;
 	}
-#ifdef LOWERRAISE_OVERLAP
+#if defined(LOWERRAISE_OVERLAP) || defined(LOWERRAISE_VISIBLE)
 	iter=&(struct list){ .next=iter, .data=NULL };
 	while ((iter=iter->next)) {
 		struct client *cc = iter->data;
 		if (!cc) continue; // skip null data
 		if (cc==c) return; // nothing underneath
 		if (!is_visible(cc)) continue; // wrong vdesk
+#ifdef LOWERRAISE_OVERLAP
 		if (!client_client(c,cc)) continue; // collide
+#endif
 		break;
 	}
 	// iter is first/lowest overlap
