@@ -44,8 +44,9 @@ static void do_client_move(struct client *c) {
 	if (c->max_height && c->height > c->max_height) {
 		c->height = c->max_height;
 	}
+	client_moveresize(c);
 #ifdef MOVERESIZE_RAISE
-	client_moveresizeraise(c);
+	client_raise(c);
 #endif
 #ifdef WARP_POINTER
 	setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
