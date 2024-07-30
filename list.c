@@ -75,15 +75,16 @@ struct list *list_to_tail(struct list *list, void *data) {
 		elem = list;
 		list = list->next; // advance list by one
 		if (!list) return elem; // single element list
+		tail(list)->next = elem;
+		elem->next = NULL;
 	} else {
 		struct list *prev = list_find_prev(list,data);
 		if (!prev) return list_append(list, data); // wasn't in list
 		elem = prev->next;
 		prev->next = elem->next; // unthread elem
+		tail(prev)->next = elem;
+		elem->next = NULL;
 	}
-	// put elem at tail
-	tail(elem)->next = elem;
-	elem->next = NULL;
 	return list;
 }
 
