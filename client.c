@@ -269,7 +269,7 @@ static void client_under(struct client *under, struct client *over) {
 		(unsigned long)over->window, (unsigned long)over->parent,
 		(unsigned long)under->window, (unsigned long)under->parent);
 	XRestackWindows(display.dpy, (Window[]){ over->parent, under->parent }, 2);
-	clients_stacking_order = list_delete(clients_stacking_order, under);
+	clients_stacking_order = list_delete(clients_stacking_order, under); // XXX can this be omitted?
 	if (clients_stacking_order->data == over) {
 		clients_stacking_order = list_prepend(clients_stacking_order, under);
 	} else {
@@ -280,7 +280,7 @@ static void client_under(struct client *under, struct client *over) {
 }
 
 // Raise client
-// Put the client directly under the client one above the highest overlapping client
+// Put the client directly under the client one above the highest matching client
 void client_raise(struct client *c) {
 	if (!c) {
 		LOG_ERROR("client_raise(): null client!\n");
@@ -300,7 +300,7 @@ void client_raise(struct client *c) {
 		if (cc==c) LOG_DEBUG("duplicate node for window=%lx in clients_stacking_order\n", c->window);
 		if (!is_visible(cc)) continue; // wrong vdesk
 #ifdef LOWERRAISE_OVERLAP
-		if (!client_client(c,cc)) continue; // collide
+		if (!client_client(c,cc)) continue; // no collide
 #endif
 		last = iter;
 	}
@@ -313,7 +313,7 @@ void client_raise(struct client *c) {
 }
 
 // Lower client
-// Put the client directly under the furthest back overlapping client
+// Put the client directly under the furthest back matching client
 void client_lower(struct client *c) {
 	if (!c) {
 		LOG_ERROR("client_lower(): null client!\n");
@@ -336,7 +336,7 @@ void client_lower(struct client *c) {
 		if (cc==c) return; // nothing underneath
 		if (!is_visible(cc)) continue; // wrong vdesk
 #ifdef LOWERRAISE_OVERLAP
-		if (!client_client(c,cc)) continue; // collide
+		if (!client_client(c,cc)) continue; // no collide
 #endif
 		break;
 	}
