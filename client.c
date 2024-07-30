@@ -35,9 +35,9 @@
 #include "util.h"
 
 // Client tracking information
-struct list *clients_tab_order = NULL;
-struct list *clients_mapping_order = NULL;
-struct list *clients_stacking_order = NULL;
+struct list *clients_tab_order = NULL; // head is most recent
+struct list *clients_mapping_order = NULL; // head is eldest
+struct list *clients_stacking_order = NULL; // head is furthest back
 struct client *current = NULL;
 
 // Get WM_NORMAL_HINTS property.  Populates appropriate parts of the client
