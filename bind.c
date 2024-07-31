@@ -91,7 +91,7 @@ static struct function_def name_to_func[] = {
 	{ "delete", func_delete,    FL_CLIENT|0 },
 	{ "kill",   func_delete,    FL_CLIENT|1 },
 	{ "dock",   func_dock,      FL_CLIENT },
-	{ "docks",  func_dock,      FL_SCREEN },
+	{ "docks",  func_docks,      FL_SCREEN },
 	{ "info",   func_info,      FL_CLIENT },
 	{ "lower",  func_lower,     FL_CLIENT },
 	{ "move",   func_move,      FL_CLIENT },
@@ -100,7 +100,7 @@ static struct function_def name_to_func[] = {
 	{ "resize", func_resize,    FL_CLIENT },
 	{ "spawn",  func_spawn,     0 },
 	{ "vdesk",  func_vdesk,     FL_SCREEN },
-	{ "fix",    func_vdesk,     FL_CLIENT },
+	{ "fix",    func_fix,       FL_CLIENT },
 	{ "binds",  func_binds,     FL_SCREEN },
 };
 #define NUM_NAME_TO_FUNC (int)(sizeof(name_to_func) / sizeof(name_to_func[0]))

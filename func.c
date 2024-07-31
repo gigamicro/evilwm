@@ -63,17 +63,20 @@ void func_delete(void *sptr, XEvent *e, unsigned flags) {
 
 void func_dock(void *sptr, XEvent *e, unsigned flags) {
 	(void)e;
-	if (flags & FL_SCREEN) {
-		struct screen *s = sptr;
-		if (flags & FL_TOGGLE) set_docks_visible(s, !s->docks_visible);
-		else if (flags & FL_UP) set_docks_visible(s, 1);
-		else if (flags & FL_DOWN) set_docks_visible(s, 0);
-	} else if (flags & FL_CLIENT) {
-		struct client *c = sptr;
-		if (flags & FL_TOGGLE) c->is_dock=!c->is_dock;
-		else if (flags & FL_UP) c->is_dock=1;
-		else if (flags & FL_DOWN) c->is_dock=0;
-	}
+	if (!(flags & FL_CLIENT)) return;
+	struct client *c = sptr;
+	if (flags & FL_TOGGLE) c->is_dock=!c->is_dock;
+	else if (flags & FL_UP) c->is_dock=1;
+	else if (flags & FL_DOWN) c->is_dock=0;
+}
+
+void func_docks(void *sptr, XEvent *e, unsigned flags) {
+	(void)e;
+	if (!(flags & FL_SCREEN)) return;
+	struct screen *s = sptr;
+	if (flags & FL_TOGGLE) set_docks_visible(s, !s->docks_visible);
+	else if (flags & FL_UP) set_docks_visible(s, 1);
+	else if (flags & FL_DOWN) set_docks_visible(s, 0);
 }
 
 void func_info(void *sptr, XEvent *e, unsigned flags) {
@@ -228,38 +231,42 @@ void func_spawn(void *sptr, XEvent *e, unsigned flags) {
 	spawn((const char *const *)option.term);
 }
 
+void func_fix(void *sptr, XEvent *e, unsigned flags) {
+	(void)e;
+	if (!(flags & FL_CLIENT)) LOG_ERROR("func_fix client flag unset\n");
+	else if (flags & FL_TOGGLE) {
+		if (is_fixed((struct client *)sptr))
+			return func_fix(sptr, e, (flags &~FL_TOGGLE) | FL_DOWN);
+		else
+			return func_fix(sptr, e, (flags &~FL_TOGGLE) | FL_UP);
+	}
+	else if (flags & FL_UP  ) client_to_vdesk(sptr, VDESK_FIXED);
+	else if (flags & FL_DOWN) client_to_vdesk(sptr, ((struct client *)sptr)->screen->vdesk);
+	else LOG_ERROR("func_fix invalid flags\n");
+}
+
 void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 	(void)e;
-	if (flags & FL_CLIENT) {
-		struct client *c = sptr;
-		if (flags & FL_TOGGLE) {
-			if (is_fixed(c)) {
-				client_to_vdesk(c, c->screen->vdesk);
-			} else {
-				client_to_vdesk(c, VDESK_FIXED);
-			}
-		}
-	} else if (flags & FL_SCREEN) {
-		struct screen *scr = sptr;
-		if (flags & FL_TOGGLE) {
-			switch_vdesk(scr, scr->old_vdesk);
-		} else if (flags & FL_RELATIVE) {
-			unsigned mod = option.modvdesks?option.modvdesks:option.vdesks;// + 1;
-			unsigned v = scr->vdesk % mod;
-			unsigned h = scr->vdesk / mod;
-			unsigned v_max = mod;
-			unsigned h_max = option.vdesks / mod;
-			if (flags & FL_UP   ) v ++;
-			if (flags & FL_DOWN ) v += v_max-1;
-			v %= v_max;
-			if (flags & FL_LEFT ) h += h_max-1;
-			if (flags & FL_RIGHT) h ++;
-			h %= h_max;
-			switch_vdesk(scr, h * mod + v);
-		} else {
-			switch_vdesk(scr, flags & FL_VALUEMASK);
-		}
-	}
+	if (!(flags & FL_SCREEN)) return;
+	struct screen *scr = sptr;
+
+	if (flags & FL_TOGGLE) return switch_vdesk(scr, scr->old_vdesk);
+	if (!(flags & FL_RELATIVE)) return switch_vdesk(scr, flags & FL_VALUEMASK);
+
+	unsigned num = option.vdesks;
+	unsigned mod = option.modvdesks;
+	if (!mod) mod = num;
+	unsigned v = scr->vdesk % mod;
+	unsigned h = scr->vdesk / mod;
+	unsigned v_max = mod;
+	unsigned h_max = num / mod;
+	if (flags & FL_UP   ) v ++;
+	if (flags & FL_RIGHT) h ++;
+	if (flags & FL_DOWN ) v += v_max-1;
+	if (flags & FL_LEFT ) h += h_max-1;
+	v %= v_max;
+	h %= h_max;
+	switch_vdesk(scr, h * mod + v);
 }
 
 void func_binds(void *sptr, XEvent *e, unsigned flags) {
