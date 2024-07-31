@@ -56,22 +56,6 @@ struct name_to_modifier name_to_modifier[] = {
 };
 #define NUM_NAME_TO_MODIFIER (int)(sizeof(name_to_modifier) / sizeof(name_to_modifier[0]))
 
-// Map button name to identifier
-
-struct name_to_button {
-	const char *name;
-	unsigned button;
-};
-
-static struct name_to_button name_to_button[] = {
-	{ "button1",    Button1 },
-	{ "button2",    Button2 },
-	{ "button3",    Button3 },
-	{ "button4",    Button4 },
-	{ "button5",    Button5 },
-};
-#define NUM_NAME_TO_BUTTON (int)(sizeof(name_to_button) / sizeof(name_to_button[0]))
-
 // All bindable functions present the same call interface.  'sptr' should point
 // to a relevant data structure (controlled by flags FL_SCREEN or FL_CLIENT).
 
@@ -239,11 +223,8 @@ static struct name_to_modifier *modifier_by_name(const char *name) {
 }
 
 static unsigned button_by_name(const char *name) {
-	for (int i = 0; i < NUM_NAME_TO_BUTTON; i++) {
-		if (!strcmp(name_to_button[i].name, name)) {
-			return name_to_button[i].button;
-		}
-	}
+	const char *pre = "button";
+	if (strncmp(name,pre,strlen(pre))==0) return strtoul(name+strlen(pre),NULL,0);
 	return 0;
 }
 
