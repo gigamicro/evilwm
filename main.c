@@ -339,19 +339,11 @@ static void set_bind(const char *arg) {
 
 static void set_app(const char *arg) {
 	struct application *new = xmalloc(sizeof(struct application));
-	new->geometry_mask = 0;
-#ifdef CONFIGREQ
-	new->ignore_configreq = 0;
-#endif
-	new->is_dock = 0;
-	new->vdesk = VDESK_NONE;
-	new->res_name = NULL;
-	new->res_class = NULL;
-	new->WM_NAME = NULL;
+	*new=(struct application){0,.vdesk=VDESK_NONE};
 	applications = list_prepend(applications, new);
 	if (!*arg) return;
 	new->res_name = xstrdup(arg);
-
+	// a/b -> a\0b
 	new->res_class = strchr(new->res_name, '/');
 	if (!new->res_class) return;
 	*new->res_class++ = '\0';
