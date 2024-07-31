@@ -290,11 +290,10 @@ void screen_probe_monitors(struct screen *s) {
 // explicitly).  Fixed clients are always shown.
 
 void switch_vdesk(struct screen *s, unsigned v) {
-
 	if (!valid_vdesk(v)) return;
 	if (v == s->vdesk) return; // already there
 
-	LOG_ENTER("switch_vdesk(screen=%d, from=%d, to=%d)", s->screen, s->vdesk, v);
+	LOG_ENTER("switch_vdesk(screen=%d, from=%u, to=%u)", s->screen, s->vdesk, v);
 
 	// hide everything on old vdesk
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
