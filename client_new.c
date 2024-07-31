@@ -339,8 +339,6 @@ static void init_geometry(struct client *c) {
 
 	ewmh_set_net_frame_extents(c->window, c->border);
 
-	LOG_DEBUG("window started as %dx%d +%d+%d\n", c->width, c->height, c->x, c->y);
-
 	// If the window was already viewable (existed while window manager
 	// starts), that means the reparent to come would send an unmap request
 	// to the root window.  Set a flag to ignore this.

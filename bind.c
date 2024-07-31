@@ -47,8 +47,8 @@ struct name_to_modifier name_to_modifier[] = {
 	{ "shift",      ShiftMask },
 	{ "control",    ControlMask },
 	{ "ctrl",       ControlMask },
-	{ "alt",        Mod1Mask },
 	{ "mod1",       Mod1Mask },
+	{ "alt",        Mod1Mask },
 	{ "mod2",       Mod2Mask },
 	{ "mod3",       Mod3Mask },
 	{ "mod4",       Mod4Mask },
@@ -420,9 +420,9 @@ void bind_control(const char *ctlname, const char *func) {
 	if (!funcdup)
 		return;
 
-	for (char *tmp = strtok(funcdup, ",+"); tmp; tmp = strtok(NULL, ",+")) {
+	for (char *cur = strtok(funcdup, ",+"); cur; cur = strtok(NULL, ",+")) {
 		// function name?
-		struct function_def *fn = func_by_name(tmp);
+		struct function_def *fn = func_by_name(cur);
 		if (fn) {
 			newbind->func = fn->func;
 			newbind->flags = fn->flags;
@@ -430,14 +430,14 @@ void bind_control(const char *ctlname, const char *func) {
 		}
 
 		// a simple number?
-		if (*tmp >= '0' && *tmp <= '9') {
+		if (*cur >= '0' && *cur <= '9') {
 			newbind->flags &= ~FL_VALUEMASK;
-			newbind->flags |= strtol(tmp, NULL, 0) & FL_VALUEMASK;
+			newbind->flags |= strtol(cur, NULL, 0) & FL_VALUEMASK;
 			continue;
 		}
 
 		// treat it as a flag name then
-		newbind->flags |= flags_by_name(tmp);
+		newbind->flags |= flags_by_name(cur);
 	}
 
 	if (newbind->func) {
