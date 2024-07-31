@@ -37,15 +37,16 @@ static _Bool wm_exit;
 struct options option;
 
 static struct list *opt_bind = NULL;
-static char *opt_grabmask1 = NULL;
-static char *opt_grabmask2 = NULL;
-static char *opt_altmask = NULL;
 
 unsigned numlockmask = 0;
 
 struct list *applications = NULL;
 
 static void set_bind(const char *arg);
+static void set_mask(const char *arg);
+static void set_mask1(const char *arg);
+static void set_mask2(const char *arg);
+static void set_altmask(const char *arg);
 static void set_app(const char *arg);
 static void set_app_geometry(const char *arg);
 #ifdef CONFIGREQ
@@ -77,9 +78,10 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_0,   "nosoliddrag",  { .c0 = &unset_solid_drag } },
 	{ XCONFIG_CALL_1,   "bind",         { .c1 = &set_bind } },
 	{ XCONFIG_BOOL,    "nodefaultbinds",{ .i = &option.nodefaultbinds } },
-	{ XCONFIG_STRING,   "mask1",        { .s = &opt_grabmask1 } },
-	{ XCONFIG_STRING,   "mask2",        { .s = &opt_grabmask2 } },
-	{ XCONFIG_STRING,   "altmask",      { .s = &opt_altmask } },
+	{ XCONFIG_CALL_1,   "mask",         { .c1 = &set_mask } },
+	{ XCONFIG_CALL_1,   "mask1",        { .c1 = &set_mask1 } },
+	{ XCONFIG_CALL_1,   "mask2",        { .c1 = &set_mask2 } },
+	{ XCONFIG_CALL_1,   "altmask",      { .c1 = &set_altmask } },
 
 	{ XCONFIG_CALL_1,   "app",          { .c1 = &set_app } },
 	{ XCONFIG_CALL_1,   "geometry",     { .c1 = &set_app_geometry } },
@@ -255,9 +257,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		bind_modifier("mask1", opt_grabmask1);
-		bind_modifier("mask2", opt_grabmask2);
-		bind_modifier("altmask", opt_altmask);
+		// Do binds after main arg parsing so that masks are already set
+		// Also re-reverses the list so later binds override earlier ones?
 		bind_unset();
 		if (!option.nodefaultbinds) bind_defaults();
 		while (opt_bind) {
@@ -333,6 +334,16 @@ static void set_bind(const char *arg) {
 		return;
 	opt_bind = list_prepend(opt_bind, argdup);
 }
+
+static void set_mask(const char *arg) {
+	char *argdup = xstrdup(arg);
+	if (!argdup) return;
+	bind_modifier(strtok(argdup, "="), strtok(NULL, ""));
+	free(argdup);
+}
+static void set_mask1  (const char *arg) {bind_modifier("mask1",  arg);}
+static void set_mask2  (const char *arg) {bind_modifier("mask2",  arg);}
+static void set_altmask(const char *arg) {bind_modifier("altmask",arg);}
 
 static void set_app(const char *arg) {
 	struct application *new = xmalloc(sizeof(struct application));
