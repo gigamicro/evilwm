@@ -429,6 +429,8 @@ void bind_control(const char *ctlname, const char *func) {
 		return;
 
 	for (char *cur = strtok(funcdup, ",+"); cur; cur = strtok(NULL, ",+")) {
+		if (!*cur) LOG_ERROR("bind_controls(): nul token in funcstr\n");
+
 		// function name?
 		struct function_def *fn = func_by_name(cur);
 		if (fn) {
@@ -438,9 +440,11 @@ void bind_control(const char *ctlname, const char *func) {
 		}
 
 		// a simple number?
-		if (*cur >= '0' && *cur <= '9') {
+		char *strtolend;
+		long num = strtol(cur, &strtolend, 0);
+		if (!*strtolend) {
 			newbind->flags &= ~FL_VALUEMASK;
-			newbind->flags |= strtol(cur, NULL, 0) & FL_VALUEMASK;
+			newbind->flags |= num & FL_VALUEMASK;
 			continue;
 		}
 

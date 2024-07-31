@@ -259,7 +259,12 @@ void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 	struct screen *scr = sptr;
 
 	if (flags & FL_TOGGLE) return switch_vdesk(scr, scr->old_vdesk);
-	if (!(flags & FL_RELATIVE)) return switch_vdesk(scr, flags & FL_VALUEMASK);
+	if (!(flags & FL_RELATIVE)) {
+		if ((flags & FL_VALUEMASK) == (VDESK_FIXED & FL_VALUEMASK))
+			return switch_vdesk(scr, VDESK_FIXED);
+		else
+			return switch_vdesk(scr, flags & FL_VALUEMASK);
+	}
 
 	unsigned num = option.vdesks;
 	unsigned mod = option.modvdesks;
