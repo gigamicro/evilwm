@@ -41,8 +41,8 @@ void togglebinds(struct screen *);
 
 // Remove all binds
 void bind_unset(void);
-// Reset list of binds to the built-ins
-void bind_reset(void);
+// Add built-in binds
+void bind_defaults(void);
 
 // Alter modifier by name - only used for mask1, mask2, altmask
 void bind_modifier(const char *modname, const char *modspec);

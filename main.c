@@ -258,11 +258,8 @@ int main(int argc, char *argv[]) {
 		bind_modifier("mask1", opt_grabmask1);
 		bind_modifier("mask2", opt_grabmask2);
 		bind_modifier("altmask", opt_altmask);
-
-		if (option.nodefaultbinds)
-			bind_unset();
-		else
-			bind_reset();
+		bind_unset();
+		if (!option.nodefaultbinds) bind_defaults();
 		while (opt_bind) {
 			char *arg = opt_bind->data;
 			opt_bind = list_delete(opt_bind, arg);

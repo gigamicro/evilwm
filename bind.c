@@ -321,8 +321,7 @@ void bind_unset(void) {
 	}
 }
 
-void bind_reset(void) {
-	bind_unset();
+void bind_defaults(void) {
 	// then rebind what's configured
 	for (int i = 0; i < NUM_CONTROL_BUILTINS; i++) {
 		bind_control(control_builtins[i].ctl, control_builtins[i].func);
