@@ -99,14 +99,22 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	struct monitor *monitor = client_monitor(c, NULL);
-	int width_inc = (c->width_inc > 1) ? c->width_inc : option.kbpx;
-	int height_inc = (c->height_inc > 1) ? c->height_inc : option.kbpx;
-
-	if (e->type == ButtonPress) {
+	if (e->type == ButtonPress && !(flags & FL_RELATIVE)) {
 		XButtonEvent *xbutton = (XButtonEvent *)e;
 		client_move_drag(c, xbutton->button);
 		return;
+	}
+
+	struct monitor *monitor = client_monitor(c, NULL);
+	int width_inc = c->width_inc;
+	int height_inc = c->height_inc;
+	if (width_inc <=1) {
+		if (flags&FL_VALUEMASK) width_inc  = flags&FL_VALUEMASK;
+		else if (option.kbpx)   width_inc  = option.kbpx;
+	}
+	if (height_inc<=1) {
+		if (flags&FL_VALUEMASK) height_inc = flags&FL_VALUEMASK;
+		else if (option.kbpx)   height_inc = option.kbpx;
 	}
 
 	if (flags & FL_RELATIVE) {
@@ -172,7 +180,7 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	if (e->type == ButtonPress && !(flags & FL_TOGGLE)) {
+	if (e->type == ButtonPress && !(flags & FL_TOGGLE) && !(flags & FL_RELATIVE)) {
 		client_resize_sweep(c, e->xbutton.button);
 		return;
 	}
