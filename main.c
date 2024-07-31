@@ -107,7 +107,7 @@ static void helptext(void) { puts(
 "\n"
 " Exiting options:\n"
 "  -h, --help      display this help and exit\n"
-"  --writedefaults output default options (inc. bindings) and exit\n"
+"  -hh,--writedefaults output default options (inc. bindings) and exit\n"
 "  -V, --version   output version information and exit\n"
 "\n"
 " Options:\n"
@@ -128,11 +128,6 @@ static void helptext(void) { puts(
 "  --soliddrag N       nonzero to move the window directly rather than showing a placeholder [" xstr(DEF_SOLIDDRAG) "]\n"
 "  --solidsweep N      same but for resizing [" xstr(DEF_SOLIDSWEEP) "]\n"
 "  --nosoliddrag       alias for 'soliddrag 0'\n"
-"  --bind CTL[=FUNC]   bind (or unbind) input to window manager function\n"
-"  --nodefaultbinds    don't use default bindings\n"
-"  --mask1 MASK        modifiers for most keyboard controls [" DEF_MASK1 "]\n"
-"  --mask2 MASK        modifiers for mouse button controls [" DEF_MASK2 "]\n"
-"  --altmask MASK      modifiers selecting alternate control behaviour [" DEF_ALTMASK "]\n"
 "\n"
 " Application matching options:\n"
 "  --app NAME/CLASS/WMNAME match application by WM_CLASS name & class + window title\n"
@@ -144,6 +139,12 @@ static void helptext(void) { puts(
 "    -v, --vdesk VDESK     move app to numbered vdesk (indexed from 0)\n"
 "    -f, --fixed           matched app should start fixed\n"
 "\n"
+" Bind options:\n"
+"  --bind CTL[=FUNC]   bind (or unbind) input to window manager function\n"
+"  --nodefaultbinds    don't use default bindings\n"
+"  --mask1 MASK        modifiers for most keyboard controls [" DEF_MASK1 "]\n"
+"  --mask2 MASK        modifiers for mouse button controls [" DEF_MASK2 "]\n"
+"  --altmask MASK      modifiers selecting alternate control behaviour [" DEF_ALTMASK "]\n"
 "When binding a control, CTL contains a (case-sensitive) list of modifiers,\n"
 "buttons or keys (using the X11 keysym name) and FUNC lists a function\n"
 "name and optional extra flags.  List entries can be separated with ','\n"
@@ -154,8 +155,8 @@ static void helptext(void) { puts(
 "Buttons: button1..button5\n"
 "Functions: delete, dock, fix, info, kill, lower, move, next, resize,\n"
 "           spawn, vdesk\n"
-"Flags: up, down, left, right, top, bottom, relative (rel), drag, toggle,\n"
-"       vertical (v), horizontal (h)\n"
+"Flags: up (u,on), down (d,off), left (l), right (r), top, bottom,\n"
+"       relative (rel), toggle, vertical (v), horizontal (h)\n"
 );}
 
 static const char *default_options[] = {
@@ -236,7 +237,8 @@ int main(int argc, char *argv[]) {
 			        || 0 == strcmp(argv[argn], "--help")) {
 				helptext();
 				exit(0);
-			} else if (0 == strcmp(argv[argn], "--writedefaults")) {
+			} else if (0 == strcmp(argv[argn], "-hh")
+			        || 0 == strcmp(argv[argn], "--writedefaults")) {
 				puts("### ~/.evilwmrc: EvilWM options file; reloads on SIGHUP ###");
 				putdefaultopts();
 				putdefaultbinds();
