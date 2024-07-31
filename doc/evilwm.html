@@ -132,9 +132,9 @@ old behaviour from before multi-monitor support was implemented, and may still
 be useful, eg when one large monitor is driven from multiple outputs.
 
 <dt><code>--numvdesks</code> <var>value</var>
-<dd>number of virtual desktops to provide.  Defaults to 8.  Any extras will
-<kbd>Control</kbd>+<kbd>Alt</kbd>+(<kbd>Left</kbd>/<kbd>Right</kbd>).
-only be accessible by pagers or using
+<dd>number of virtual desktops to provide.
+Effective value for relative moves will be the greatest integer multiple of <code>--modvdesks</code> less than or equal to this value.
+Defaults to 8.
 
 <dt><code>--modvdesks</code> <var>value</var>
 <dd>vdesk loop modulus and distance for left/right relative vdesk.
@@ -169,25 +169,24 @@ manager functionality.
 control+alt), and <code>mask2</code> is used for mouse button controls and
 cycling windows (default: alt).  <code>altmask</code> is used to modify the
 behaviour of certain controls (default: shift).  Modifiers may be separated
-with + signs.  Valid modifiers are 'shift', 'control', 'alt', 'mod1'…'mod5'.
+with + signs.  Valid modifiers are 'shift', 'control'/'ctrl', 'mod1'/'alt', 'mod2'…'mod5'.
 
-<dt><code>--bind</code> [<var>modifier</var>+]…<var>key</var>=[<var>function</var>[,<var>flag</var>[+<var>flag</var>]…]]
-<dd>bind a key pressed with specified modifiers to a window manager function.
-<var>key</var> is an X11 keysym name, <var>modifiers</var> are as above, but
-may also include 'mask1', 'mask2' and 'altmask' to refer to the
-globally-configured combinations.  See <a href='#functions'>FUNCTIONS</a> for a
-list of available functions and the flags they recognise.  If
-<var>function</var> is empty, a bind is removed.
+<dt><code>--bind</code> [<var>modifier</var>+]…<var>key/button</var>=[<var>function</var>[,<var>flag</var>[+<var>flag</var>]…]]
+<dd>bind a key or mouse button pressed with specified modifiers to a window manager function.
+<var>key/button</var> is an X11 keysym name or 'buttonN', where N is a positive integer of decimal, 0xhexadecimal, or 0octal form,
+<var>modifiers</var> are as above, but may also include 'mask1', 'mask2' and 'altmask' to refer to configured mask variables.
+See <a href='#functions'>FUNCTIONS</a> for a list of available functions and the flags they recognise.
+If <var>function</var> is empty, a bind is removed.
 
 <dt><code>--bind</code> <var>button</var>=[<var>function</var>[,<var>flag</var>]…]
 <dd>bind a mouse button to a window manager function.  While modifiers can be
 specified, they will be ignored; the button on its own will trigger if pressed
 within a window's frame, or with 'mask2' held anywhere within a window.
-Function and flags is as with key binds above.  Valid buttons are
-'button1'…'button5'.
+Function and flags is as with key binds above.  
+Valid buttons are 
 
 <dt><code>--nodefaultbinds</code>
-<dd>don't use the original default bindings from compile time.
+<dd>don't use the original compiled-in default bindings.
 
 </dl>
 
@@ -233,7 +232,7 @@ lacks the appropriate property.
 <dt><code>-h</code>, <code>--help</code>
 <dd>show help
 
-<dt><code>--writedefaults</code>
+<dt><code>-hh</code>, <code>--writedefaults</code>
 <dd>show all option defaults, in a format that could be put in your <em>.evilwmrc</em>
 
 <dt><code>-V</code>, <code>--version</code>
