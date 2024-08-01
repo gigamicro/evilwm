@@ -530,8 +530,9 @@ void bind_handle_key(XKeyEvent *e) {
 		if (bind->type == KeyPress
 			&& XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0) != bind->control.key) continue;
 		if (bind->type == ButtonPress
-			&& e->keycode != bind->control.button) continue;
-		if ((e->state & KEY_STATE_MASK & ~numlockmask) != (bind->state & ~numlockmask)) continue;
+			&& ((XButtonEvent *)e)->button != bind->control.button) continue;
+		if ( ( (e->state?e->state:grabmask2) & KEY_STATE_MASK & ~numlockmask )
+			!= (bind->state & ~numlockmask)) continue;
 		void *sptr = NULL;
 		if (bind->flags & FL_CLIENT)
 			sptr = bind->type == KeyPress ? current : find_client(e->window);
