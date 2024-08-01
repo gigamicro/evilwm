@@ -52,6 +52,14 @@ make alloc_window_array only trigger when there's actually not enough space
 
 grab pointer on mask2 held; does this allow escaping game look binds?
 
+generalize masks to any string
+is there a standard string to kbstate function?
+modifier for no modifier (on button binds), or option to disable autocorrect for it
+--mask altmask=shift
+linked list of struct {unsigned state;char \*name;} ... or char\[], with the uint split, or just a fixed length char array (32? 32-sizeof uint?)
+what's up with the ~mask in the bind handler
+border click binds
+
 ## Intermediate tasks
 
 

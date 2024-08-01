@@ -32,8 +32,7 @@
 #include "util.h"
 #include "xalloc.h"
 
-// Configurable modifier bits.  For client operations, grabmask2 is always
-// allowed for button presses.
+// Configurable modifier bits.
 #define KEY_STATE_MASK ( ShiftMask | ControlMask | Mod1Mask | \
                          Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask )
 
@@ -44,14 +43,13 @@ struct name_to_modifier name_to_modifier[] = {
 	{ "mask2",      0 },
 	{ "altmask",    0 },
 	{ "shift",      ShiftMask },
-	{ "control",    ControlMask },
-	{ "ctrl",       ControlMask },
-	{ "mod1",       Mod1Mask },
-	{ "alt",        Mod1Mask },
-	{ "mod2",       Mod2Mask },
-	{ "mod3",       Mod3Mask },
-	{ "mod4",       Mod4Mask },
-	{ "mod5",       Mod5Mask }
+	// { "caps",       LockMask },
+	{ "control",    ControlMask }, { "ctrl",       ControlMask },
+	{ "mod1",       Mod1Mask }, { "alt",        Mod1Mask }, // alt/meta
+	{ "mod2",       Mod2Mask }, // numlock
+	{ "mod3",       Mod3Mask }, // iso shift5
+	{ "mod4",       Mod4Mask }, // super/hyper
+	{ "mod5",       Mod5Mask }, // iso shift3 (altgr)
 };
 #define NUM_NAME_TO_MODIFIER (int)(sizeof(name_to_modifier) / sizeof(name_to_modifier[0]))
 
@@ -419,6 +417,7 @@ void bind_control(const char *ctlname, const char *func) {
 	// empty function definition implies unbind.  already done, so return.
 	if (!func || !*func) {
 		free(newbind);
+		LOG_DEBUG("unbound %s\n",ctlname);
 		return;
 	}
 
