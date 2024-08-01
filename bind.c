@@ -499,11 +499,15 @@ static void grab_button(unsigned button, unsigned modifiers, Window w) {
 
 void bind_grab_for_screen(struct screen *s) {
 	XUngrabKey(display.dpy, AnyKey, AnyModifier, s->root);
+	XUngrabButton(display.dpy, AnyButton, AnyModifier, s->root);
 
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *b = l->data;
 		if (b->type == KeyPress) {
 			grab_keysym(b->control.key, b->state, s->root);
+		}
+		else if (b->type == ButtonPress && !(b->flags & FL_CLIENT)) {
+			grab_button(b->control.button, b->state, s->root);
 		}
 	}
 }
