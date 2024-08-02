@@ -524,9 +524,11 @@ void bind_grab_for_client(struct client *c) {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-// Handle keyboard events.
+// Handle keyboard & mousebutton events.
+// XButtonEvent & XKeyEvent are identical but for the unsigned button/keycode being named differently
 
-void bind_handle_key(XKeyEvent *e) {
+void bind_handle(XKeyEvent *e, int doagain) {
+	if (e->type != KeyPress && e->type != ButtonPress) return;
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *bind = l->data;
 		if (bind->type != e->type) continue;
@@ -534,26 +536,22 @@ void bind_handle_key(XKeyEvent *e) {
 			&& XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0) != bind->control.key) continue;
 		if (bind->type == ButtonPress
 			&& ((XButtonEvent *)e)->button != bind->control.button) continue;
-		if ( ( e->state & KEY_STATE_MASK & ~numlockmask )
-			!= (bind->state & ~numlockmask)
-		  && ( (e->state|grabmask2) & KEY_STATE_MASK & ~numlockmask )
-			!= (bind->state & ~numlockmask)
-			) continue;
+		if ( (e->state & KEY_STATE_MASK & ~numlockmask)
+			!= (bind->state & ~numlockmask) ) continue;
 		void *sptr = NULL;
 		if (bind->flags & FL_CLIENT)
 			sptr = bind->type == KeyPress ? current : find_client(e->window);
 		if (bind->flags & FL_SCREEN)
 			sptr = find_current_screen();
-		if (bind->flags&(FL_CLIENT|FL_SCREEN) && !sptr)
+		if (bind->flags & (FL_CLIENT|FL_SCREEN) && !sptr)
 			return;
 		bind->func(sptr, (XEvent *)e, bind->flags);
 		return;
 	}
+	if (doagain) {
+		e->state ^= grabmask2;
+		bind_handle(e, 0);
+		e->state ^= grabmask2;
+	}
 	LOG_DEBUG("Unfound bind!\n");
-}
-
-// Handle mousebutton events.
-
-void bind_handle_button(XButtonEvent *e) {
-	bind_handle_key((XKeyEvent *)e);
 }
