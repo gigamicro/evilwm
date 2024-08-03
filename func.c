@@ -106,16 +106,16 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	}
 
 	struct monitor *monitor = client_monitor(c, NULL);
-	int width_inc = c->width_inc;
-	int height_inc = c->height_inc;
-	if (width_inc <=1) {
-		if (flags&FL_VALUEMASK) width_inc  = flags&FL_VALUEMASK;
-		else if (option.kbpx)   width_inc  = option.kbpx;
-	}
-	if (height_inc<=1) {
-		if (flags&FL_VALUEMASK) height_inc = flags&FL_VALUEMASK;
-		else if (option.kbpx)   height_inc = option.kbpx;
-	}
+
+	int width_inc = 1;
+	if (flags&FL_VALUEMASK) width_inc  = flags&FL_VALUEMASK;
+	else if(c->width_inc >1)width_inc  = c->width_inc;
+	else if (option.kbpx)   width_inc  = option.kbpx;
+
+	int height_inc = 1;
+	if (flags&FL_VALUEMASK) height_inc = flags&FL_VALUEMASK;
+	else if(c->height_inc>1)height_inc = c->height_inc;
+	else if (option.kbpx)   height_inc = option.kbpx;
 
 	if (flags & FL_RELATIVE) {
 		if (flags & FL_RIGHT) c->x += width_inc;
@@ -124,9 +124,9 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 		if (flags & FL_UP   ) c->y -= height_inc;
 	} else {
 		if (flags & FL_RIGHT ) c->x = monitor->x + monitor->width  - c->width  - c->border;
-		if (flags & FL_LEFT  ) c->x = monitor->x +                               c->border;
+		if (flags & FL_LEFT  ) c->x = monitor->x                               + c->border;
 		if (flags & FL_BOTTOM) c->y = monitor->y + monitor->height - c->height - c->border;
-		if (flags & FL_TOP   ) c->y = monitor->y +                               c->border;
+		if (flags & FL_TOP   ) c->y = monitor->y                               + c->border;
 	}
 
 	do_client_move(c);
