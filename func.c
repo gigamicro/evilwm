@@ -156,6 +156,7 @@ void func_next(void *sptr, XEvent *e, unsigned flags) {
 	XKeyEvent *xkey = (XKeyEvent *)e;
 	client_select_next();
 	if (XGrabKeyboard(display.dpy, xkey->root, False, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess) {
+		(void)grab_pointer(xkey->root, display.disable_curs);
 		XEvent ev;
 		do {
 			XMaskEvent(display.dpy, KeyPressMask|KeyReleaseMask, &ev);
@@ -163,6 +164,7 @@ void func_next(void *sptr, XEvent *e, unsigned flags) {
 				client_select_next();
 		} while (ev.type == KeyPress || ev.xkey.keycode == xkey->keycode);
 		XUngrabKeyboard(display.dpy, CurrentTime);
+		XUngrabPointer(display.dpy, CurrentTime);
 	}
 	clients_tab_order = list_to_head(clients_tab_order, current);
 }
