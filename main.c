@@ -257,6 +257,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		applications = list_reverse(applications, NULL);
+
 		// Do binds after main arg parsing so that masks are already set
 		// Also re-reverses the list so later binds override earlier ones?
 		bind_unset();
