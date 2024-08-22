@@ -210,20 +210,15 @@ void ewmh_set_net_frame_extents(Window w, unsigned long border) {
 // window, in the same way that we test the client structure allocation.
 
 static void alloc_window_array(struct list *iter, unsigned count, struct screen *s) {
-	LOG_DEBUG("alloc_window_array(), ");
 	if (iter) while ((iter = iter->next)) if (((struct client *)iter->data)->screen==s) count++;
-	LOG_DEBUG_("count=%u",count);
 	count = (count + 127) & ~127; // Round to block of 128
-	LOG_DEBUG_("->%u",count);
 	if (window_array_n > count && window_array_n-count < 32){
-		LOG_DEBUG_("<%u-32, no realloc\n", window_array_n);
 		return; // fuzzy boundary
 	}
 	if (window_array_n==count) {
-		LOG_DEBUG_("==%u, no realloc\n", window_array_n);
 		return; // equal (can remove, since realloc probably checks anyway)
 	}
-	LOG_DEBUG_("alloc_window_array realloc from %u to %u\n",window_array_n,count);
+	LOG_DEBUG("alloc_window_array(): realloc from %u to %u\n",window_array_n,count);
 	window_array_n = count;
 	window_array = realloc(window_array, window_array_n * sizeof(Window));
 }
