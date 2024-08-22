@@ -27,7 +27,7 @@ extern struct name_to_modifier name_to_modifier[];
 // are not reconfigurable beyond changing the modifier bind.
 
 #define grabmask2 (name_to_modifier[1].value)
-#define altmask   (name_to_modifier[2].value)
+#define altmask   (name_to_modifier[2].value) // used in client_move
 
 // print default bindings to stdout
 void putdefaultbinds(void);

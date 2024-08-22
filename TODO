@@ -56,9 +56,14 @@ generalize masks to any string
 is there a standard string to kbstate function?
 modifier for no modifier (on button binds), or option to disable autocorrect for it
 --mask altmask=shift
-linked list of struct {unsigned state;char \*name;} ... or char\[], with the uint split, or just a fixed length char array (32? 32-sizeof uint?)
-what's up with the ~mask in the bind handler
-border click binds
+linked list
+
+make list.c use (struct list **list) to set the head
+
+multithread?
+actually, could just run the grabbing actions through some state (mask) and the regular event loop
+
+read {/etc,$XDG_CONFIG_HOME}/{evilwm.conf, evilwm.conf.d}
 
 ## Intermediate tasks
 

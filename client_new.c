@@ -67,7 +67,6 @@ void client_manage_new(Window w, struct screen *s) {
 		LOG_LEAVE();
 		return;
 	}
-	LOG_DEBUG("screen=%d\n", s->screen);
 
 	window_type = ewmh_get_net_wm_window_type(w);
 	// Don't manage DESKTOP type windows
