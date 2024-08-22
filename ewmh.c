@@ -25,7 +25,12 @@
 // Maintain a reasonably sized allocated block of memory for lists
 // of windows (for feeding to XChangeProperty in one hit).
 static Window *window_array = NULL;
-static Window *alloc_window_array(void);
+// stores allocated length of window_array
+static unsigned window_array_n = 0;
+// args: client list, screen for filter
+// returns: array length
+// reallocates window_array if needed
+static unsigned fill_window_array(struct list *, struct screen *);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -51,41 +56,20 @@ void ewmh_set_screen_workarea(struct screen *s) {
 // all client windows in the order they were mapped.
 
 void ewmh_set_net_client_list(struct screen *s) {
-	Window *windows = alloc_window_array();
-	int i = 0;
-	if (windows) {
-		for (struct list *iter = clients_mapping_order; iter; iter = iter->next) {
-			struct client *c = iter->data;
-			if (c->screen == s) {
-				windows[i++] = c->window;
-			}
-		}
-	}
+	unsigned i = fill_window_array(clients_mapping_order, s);
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST),
 			XA_WINDOW, 32, PropModeReplace,
-			(unsigned char *)windows, i);
+			(unsigned char *)window_array, i);
 }
 
 // Update the _NET_CLIENT_LIST_STACKING property for a screen.  Similar to
 // _NET_CLIENT_LIST, but in stacking order (bottom to top).
 
 void ewmh_set_net_client_list_stacking(struct screen *s) {
-	Window *windows = alloc_window_array();
-	int i = 0;
-	LOG_DEBUG("client_list_stacking: {");
-	if (windows) {
-		for (struct list *iter = clients_stacking_order; iter; iter = iter->next) {
-			struct client *c = iter->data;
-			if (c->screen == s) {
-				windows[i++] = c->window;
-				LOG_DEBUG_("%02lx,",c->window/0x100000);
-			}
-		}
-	}
-	LOG_DEBUG_("}\n");
+	unsigned i = fill_window_array(clients_stacking_order, s);
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST_STACKING),
 			XA_WINDOW, 32, PropModeReplace,
-			(unsigned char *)windows, i);
+			(unsigned char *)window_array, i);
 }
 
 // Update _NET_CURRENT_DESKTOP for screen to currently selected vdesk.
@@ -225,14 +209,36 @@ void ewmh_set_net_frame_extents(Window w, unsigned long border) {
 // XXX should test that this can be allocated before we commit to managing a
 // window, in the same way that we test the client structure allocation.
 
-static Window *alloc_window_array(void) {
-	unsigned count = 0;
-	for (struct list *iter = clients_mapping_order; iter; iter = iter->next) {
-		count++;
+static void alloc_window_array(struct list *iter, unsigned count, struct screen *s) {
+	LOG_DEBUG("alloc_window_array(), ");
+	if (iter) while ((iter = iter->next)) if (((struct client *)iter->data)->screen==s) count++;
+	LOG_DEBUG_("count=%u",count);
+	count = (count + 127) & ~127; // Round to block of 128
+	LOG_DEBUG_("->%u",count);
+	if (window_array_n > count && window_array_n-count < 32){
+		LOG_DEBUG_("<%u-32, no realloc\n", window_array_n);
+		return; // fuzzy boundary
 	}
-	if (count == 0) count++;
-	// Round up to next block of 128
-	count = (count + 127) & ~127;
-	window_array = realloc(window_array, count * sizeof(Window));
-	return window_array;
+	if (window_array_n==count) {
+		LOG_DEBUG_("==%u, no realloc\n", window_array_n);
+		return; // equal (can remove, since realloc probably checks anyway)
+	}
+	LOG_DEBUG_("alloc_window_array realloc from %u to %u\n",window_array_n,count);
+	window_array_n = count;
+	window_array = realloc(window_array, window_array_n * sizeof(Window));
+}
+
+// Fill/realloc said array as needed
+
+static unsigned fill_window_array(struct list *list, struct screen *s) {
+	unsigned i = 0;
+	for (struct list *iter = list; iter; iter = iter->next) {
+		struct client *c = iter->data;
+		if (c->screen != s) continue;
+		if (i+1 > window_array_n) alloc_window_array(iter,i+1,s);
+		window_array[i] = c->window;
+		i++;
+	}
+	alloc_window_array(NULL,i,s); // shrink if needed
+	return i;
 }
