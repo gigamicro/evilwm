@@ -67,26 +67,6 @@ read {/etc,$XDG_CONFIG_HOME}/{evilwm.conf, evilwm.conf.d}
 
 ## Intermediate tasks
 
-
-RandR-based multi-monitor support has now been implemented, but it would be
-nice if, when a client is moved due to removing a monitor, it could be moved
-back to its original position if the _same_ monitor is reattached.  Whether a
-monitor is the "same" is probably just down to whether it occupies the same
-geometry on the screen.
-
-eg
-screen 100x200  window 1x1+98+198
-screen 100x100  window 1x1+98+98
-screen 200x100  window 1x1+98+98
-screen 200x200  window 1x1+98+198
-
-also!
-screen 100x200  window 1x1+98+198
-screen 100x200  window 100x100+100+0 (max)
-screen 100x100  window 100x100 (max)
-screen 100x100  window 1x1+98+198 -> wrong
-
-
 what about making the list type something with trivial removal (iterators just skip null values) and append/prepend?
 periodically reallocated array?
 linkedlist with final null-null element?

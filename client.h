@@ -54,6 +54,9 @@ struct client {
 	// Old monitor offset as proportion of monitor geometry
 	double mon_offx, mon_offy;
 
+	// Keep track of monitor, and save most recent when it disappears
+	Atom mon_name; int mon_save;
+
 	// Flag set when we need to remove client from management
 	int remove;
 

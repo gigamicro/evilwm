@@ -323,6 +323,7 @@ void screen_probe_monitors(struct screen *s) {
 				s->monitors = new_monitors;
 				for (int i = 0; i < nmonitors; i++) {
 					LOG_XDEBUG("monitor %d: %dx%d+%d+%d\n", i, monitors[i].width, monitors[i].height, monitors[i].x, monitors[i].y);
+					s->monitors[i].name = monitors[i].name;
 					s->monitors[i].x = monitors[i].x;
 					s->monitors[i].y = monitors[i].y;
 					s->monitors[i].width = monitors[i].width;
@@ -385,19 +386,32 @@ void scan_clients_before_resize(struct screen *s) {
 
 		c->mon_offx = (double)(cx - m->x) / (double)mw;
 		c->mon_offy = (double)(cy - m->y) / (double)mh;
+		if (!c->mon_save) c->mon_name = m->name;
 	}
 }
 
 // Fix up maximised and non-intersecting clients after resize.
 
 void fix_screen_after_resize(struct screen *s) {
+	LOG_ENTER("fix_screen_after_resize(screen %i)",s->screen);
 	for (struct list *iter = clients_tab_order; iter; iter = iter->next) {
 		struct client *c = iter->data;
 		// only handle clients on the screen being resized
-		if (c->screen != s)
-			continue;
-		Bool intersects;
-		struct monitor *m = client_monitor(c, &intersects);
+		if (c->screen != s) continue;
+		// Check for either: the monitor with a matching name, or just the closest monitor
+		struct monitor *m = NULL;
+		if (c->mon_name!=None) {
+			for (int i = 0; i < c->screen->nmonitors; i++) {
+				if (c->mon_name != c->screen->monitors[i].name) continue;
+				m = &c->screen->monitors[i];
+				c->mon_save = 0;
+				break;
+			}
+			if (!m) c->mon_save = 1;
+		}
+		LOG_DEBUG("w%lx: m%lx %s\n",c->window,c->mon_name,m?"✓":"✗");
+		Bool intersects = 0;
+		if (!m) m = client_monitor(c, &intersects);
 
 		if (c->oldw) {
 			// horiz maximised: update width, update old x pos
@@ -422,6 +436,7 @@ void fix_screen_after_resize(struct screen *s) {
 		}
 		client_moveresize(c);
 	}
+	LOG_LEAVE();
 }
 
 #endif

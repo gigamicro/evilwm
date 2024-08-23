@@ -186,6 +186,10 @@ struct monitor *client_monitor(struct client *c, Bool *intersects) {
 				best = m;
 				continue;
 			}
+			// Break ties in favor of matching mon_name
+			else if (iarea_ratio == best_area_ratio
+				&& m->name == c->mon_name)
+				best = m;
 		}
 
 		// Otherwise, any previous intersection trumps distance.

@@ -90,13 +90,9 @@ void client_manage_new(Window w, struct screen *s) {
 	clients_mapping_order = list_append(clients_mapping_order, c);
 	clients_stacking_order = list_append(clients_stacking_order, c);
 
+	*c=(struct client){0};
 	c->screen = s;
 	c->window = w;
-	c->ignore_unmap = 0;
-	c->remove = 0;
-#ifdef CONFIGREQ
-	c->ignore_configreq = 0;
-#endif
 
 	// Ungrab the X server as soon as possible. Now that the client is
 	// malloc()ed and attached to the list, it is safe for any subsequent
