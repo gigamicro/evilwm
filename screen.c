@@ -233,58 +233,6 @@ void screen_deinit(struct screen *s) {
 	free(s->monitors);
 }
 
-// Get a list of monitors for the screen.  If Randr >= 1.5 is unavailable, or
-// the "wholescreen" option has been specified, assume a single monitor
-// covering the whole screen.
-
-void screen_probe_monitors(struct screen *s) {
-#if defined(RANDR) && (RANDR_MAJOR == 1) && (RANDR_MINOR >= 5)
-        if (display.have_randr && !option.wholescreen) {
-		int nmonitors;
-		XRRMonitorInfo *monitors;
-		// Populate list of active monitors
-		LOG_XENTER("XRRGetMonitors(screen=%d)", s->screen);
-		monitors = XRRGetMonitors(display.dpy, s->root, True, &nmonitors);
-		if (monitors) {
-			struct monitor *new_monitors = s->monitors;
-			if (nmonitors != s->nmonitors) {
-				// allocating in multiple of 4 should stop us
-				// having to reallocate at all in the most
-				// common uses
-				int n = (nmonitors | 3) + 1;
-				new_monitors = realloc(s->monitors, n * sizeof(struct monitor));
-			}
-			if (new_monitors) {
-				s->monitors = new_monitors;
-				for (int i = 0; i < nmonitors; i++) {
-					LOG_XDEBUG("monitor %d: %dx%d+%d+%d\n", i, monitors[i].width, monitors[i].height, monitors[i].x, monitors[i].y);
-					s->monitors[i].x = monitors[i].x;
-					s->monitors[i].y = monitors[i].y;
-					s->monitors[i].width = monitors[i].width;
-					s->monitors[i].height = monitors[i].height;
-					s->monitors[i].area = monitors[i].width * monitors[i].height;
-				}
-				s->nmonitors = nmonitors;
-			}
-			LOG_XLEAVE();
-			XRRFreeMonitors(monitors);
-			return;
-		}
-		LOG_XLEAVE();
-	}
-#endif
-
-	s->nmonitors = 1;
-	if (!s->monitors) {
-		s->monitors = xmalloc(sizeof(struct monitor));
-	}
-	s->monitors[0].x = 0;
-	s->monitors[0].y = 0;
-	s->monitors[0].width = DisplayWidth(display.dpy, s->screen);
-	s->monitors[0].height = DisplayHeight(display.dpy, s->screen);
-	s->monitors[0].area = s->monitors[0].width * s->monitors[0].height;
-}
-
 // Switch virtual desktop.  Hides clients on different vdesks, shows clients on
 // the selected one.  Docks are always shown (unless user has hidden them
 // explicitly).  Fixed clients are always shown.
@@ -348,6 +296,58 @@ void set_docks_visible(struct screen *s, int is_visible) {
 	}
 
 	LOG_LEAVE();
+}
+
+// Get a list of monitors for the screen.  If Randr >= 1.5 is unavailable, or
+// the "wholescreen" option has been specified, assume a single monitor
+// covering the whole screen.
+
+void screen_probe_monitors(struct screen *s) {
+#if defined(RANDR) && (RANDR_MAJOR == 1) && (RANDR_MINOR >= 5)
+        if (display.have_randr && !option.wholescreen) {
+		int nmonitors;
+		XRRMonitorInfo *monitors;
+		// Populate list of active monitors
+		LOG_XENTER("XRRGetMonitors(screen=%d)", s->screen);
+		monitors = XRRGetMonitors(display.dpy, s->root, True, &nmonitors);
+		if (monitors) {
+			struct monitor *new_monitors = s->monitors;
+			if (nmonitors != s->nmonitors) {
+				// allocating in multiple of 4 should stop us
+				// having to reallocate at all in the most
+				// common uses
+				int n = (nmonitors | 3) + 1;
+				new_monitors = realloc(s->monitors, n * sizeof(struct monitor));
+			}
+			if (new_monitors) {
+				s->monitors = new_monitors;
+				for (int i = 0; i < nmonitors; i++) {
+					LOG_XDEBUG("monitor %d: %dx%d+%d+%d\n", i, monitors[i].width, monitors[i].height, monitors[i].x, monitors[i].y);
+					s->monitors[i].x = monitors[i].x;
+					s->monitors[i].y = monitors[i].y;
+					s->monitors[i].width = monitors[i].width;
+					s->monitors[i].height = monitors[i].height;
+					s->monitors[i].area = monitors[i].width * monitors[i].height;
+				}
+				s->nmonitors = nmonitors;
+			}
+			LOG_XLEAVE();
+			XRRFreeMonitors(monitors);
+			return;
+		}
+		LOG_XLEAVE();
+	}
+#endif
+
+	s->nmonitors = 1;
+	if (!s->monitors) {
+		s->monitors = xmalloc(sizeof(struct monitor));
+	}
+	s->monitors[0].x = 0;
+	s->monitors[0].y = 0;
+	s->monitors[0].width = DisplayWidth(display.dpy, s->screen);
+	s->monitors[0].height = DisplayHeight(display.dpy, s->screen);
+	s->monitors[0].area = s->monitors[0].width * s->monitors[0].height;
 }
 
 #ifdef RANDR
