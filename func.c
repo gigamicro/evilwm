@@ -158,11 +158,14 @@ void func_next(void *sptr, XEvent *e, unsigned flags) {
 	if (XGrabKeyboard(display.dpy, xkey->root, False, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess) {
 		(void)grab_pointer(xkey->root, display.disable_curs);
 		XEvent ev;
-		do {
+		while (1) {
 			XMaskEvent(display.dpy, KeyPressMask|KeyReleaseMask, &ev);
-			if (ev.type == KeyPress && ev.xkey.keycode == xkey->keycode)
-				client_select_next();
-		} while (ev.type == KeyPress || ev.xkey.keycode == xkey->keycode);
+			if (ev.xkey.keycode != xkey->keycode) {
+				XPutBackEvent(display.dpy,&ev); // theoretically, this shouldn't move the event, since the XMaskEvent call should return immediately when it shows up
+				break;
+			}
+			if (ev.type == KeyPress) client_select_next();
+		}
 		XUngrabKeyboard(display.dpy, CurrentTime);
 		XUngrabPointer(display.dpy, CurrentTime);
 	}
