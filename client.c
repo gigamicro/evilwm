@@ -368,6 +368,33 @@ void select_client(struct client *c) {
 		ewmh_set_net_wm_state(c);
 }
 
+void client_point(struct client *c, int margin_l, int margin_u, int margin_r, int margin_d) {
+	// setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
+	int window_x; int window_y;
+	//dummy:
+	int root_x; int root_y;
+	Window root;
+	Window child;// that the pointer is in
+	unsigned int mask;//kb modifiers
+	if (!XQueryPointer(display.dpy, c->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask))
+		setmouse(c->window, c->width/2, c->height/2);
+	else {
+		int x = window_x; int y = window_y;
+
+		if (margin_l+margin_r>=c->width ) x = c->width /2;
+		else if (y < -c->border || y > c->height + c->border) {}
+		else if (margin_l && x < margin_l) x = margin_l;
+		else if (margin_r && x > c->width  - margin_r) x = c->width  - margin_r;
+
+		if (margin_u+margin_d>=c->height) y = c->height/2;
+		else if (x < -c->border || x > c->width + c->border) {}
+		else if (margin_u && y < margin_u) y = margin_u;
+		else if (margin_d && y > c->height - margin_d) y = c->height - margin_d;
+
+		if (x!=window_x || y!=window_y) setmouse(c->window, x, y);
+	}
+}
+
 // Move a client to a specific vdesk.  If that means it should no longer be
 // visible, hide it.
 

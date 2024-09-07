@@ -134,17 +134,12 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	discard_enter_events(c);
 #endif
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
-	// setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
-	int window_x; int window_y;
-	//dummy:
-	int root_x; int root_y;
-	Window root;
-	Window child;// that the pointer is in
-	unsigned int mask;//kb modifiers
-	if (
-		!XQueryPointer(display.dpy, c->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask)
-		|| window_x<width_inc || window_y<height_inc ||window_x>c->width-width_inc || window_y>c->height-height_inc
-	) setmouse(c->window, c->width/2, c->height/2);
+	client_point(c,
+		!(flags & FL_RELATIVE) ? c->width /2+1 : flags & FL_RIGHT ? width_inc : 0,
+		!(flags & FL_RELATIVE) ? c->height/2+1 : flags & (FL_BOTTOM|FL_DOWN) ? height_inc : 0,
+		!(flags & FL_RELATIVE) ? c->width /2   : flags & FL_LEFT ? width_inc : 0,
+		!(flags & FL_RELATIVE) ? c->height/2   : flags & (FL_TOP|FL_UP) ? height_inc : 0
+	);
 #endif
 }
 
@@ -223,17 +218,10 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	discard_enter_events(c);
 #endif
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
-	// setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
-	int window_x; int window_y;
-	//dummy:
-	int root_x; int root_y;
-	Window root;
-	Window child;// that the pointer is in
-	unsigned int mask;//kb modifiers
-	if (
-		!XQueryPointer(display.dpy, c->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask)
-		|| window_x>c->width-width_inc || window_y>c->height-height_inc
-	) setmouse(c->window, c->width/2, c->height/2);
+	client_point(c, 0, 0,
+		flags & FL_LEFT ? width_inc  : 0,
+		flags & FL_UP   ? height_inc : 0
+	);
 #endif
 }
 
