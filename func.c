@@ -66,17 +66,20 @@ void func_delete(void *sptr, XEvent *e, unsigned flags) {
 
 void func_dock(void *sptr, XEvent *e, unsigned flags) {
 	(void)e;
-	if (flags & FL_SCREEN) {
-		struct screen *s = sptr;
-		if (flags & FL_TOGGLE) set_docks_visible(s, !s->docks_visible);
-		else if (flags & FL_UP) set_docks_visible(s, 1);
-		else if (flags & FL_DOWN) set_docks_visible(s, 0);
-	} else if (flags & FL_CLIENT) {
-		struct client *c = sptr;
-		if (flags & FL_TOGGLE) c->is_dock=!c->is_dock;
-		else if (flags & FL_UP) c->is_dock=1;
-		else if (flags & FL_DOWN) c->is_dock=0;
-	}
+	if (!(flags & FL_CLIENT)) return;
+	struct client *c = sptr;
+	if (flags & FL_TOGGLE) c->is_dock=!c->is_dock;
+	else if (flags & FL_UP) c->is_dock=1;
+	else if (flags & FL_DOWN) c->is_dock=0;
+}
+
+void func_docks(void *sptr, XEvent *e, unsigned flags) {
+	(void)e;
+	if (!(flags & FL_SCREEN)) return;
+	struct screen *s = sptr;
+	if (flags & FL_TOGGLE) set_docks_visible(s, !s->docks_visible);
+	else if (flags & FL_UP) set_docks_visible(s, 1);
+	else if (flags & FL_DOWN) set_docks_visible(s, 0);
 }
 
 void func_info(void *sptr, XEvent *e, unsigned flags) {
@@ -99,15 +102,23 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	struct monitor *monitor = client_monitor(c, NULL);
-	int width_inc = (c->width_inc > 1) ? c->width_inc : option.kbpx;
-	int height_inc = (c->height_inc > 1) ? c->height_inc : option.kbpx;
-
-	if (e->type == ButtonPress) {
+	if (e->type == ButtonPress && !(flags & FL_RELATIVE)) {
 		XButtonEvent *xbutton = (XButtonEvent *)e;
 		client_move_drag(c, xbutton->button);
 		return;
 	}
+
+	struct monitor *monitor = client_monitor(c, NULL);
+
+	int width_inc = 1;
+	if (flags&FL_VALUEMASK) width_inc  = flags&FL_VALUEMASK;
+	else if(c->width_inc >1)width_inc  = c->width_inc;
+	else if (option.kbpx)   width_inc  = option.kbpx;
+
+	int height_inc = 1;
+	if (flags&FL_VALUEMASK) height_inc = flags&FL_VALUEMASK;
+	else if(c->height_inc>1)height_inc = c->height_inc;
+	else if (option.kbpx)   height_inc = option.kbpx;
 
 	if (flags & FL_RELATIVE) {
 		if (flags & FL_RIGHT) c->x += width_inc;
@@ -116,9 +127,9 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 		if (flags & FL_UP   ) c->y -= height_inc;
 	} else {
 		if (flags & FL_RIGHT ) c->x = monitor->x + monitor->width  - c->width  - c->border;
-		if (flags & FL_LEFT  ) c->x = monitor->x +                               c->border;
+		if (flags & FL_LEFT  ) c->x = monitor->x                               + c->border;
 		if (flags & FL_BOTTOM) c->y = monitor->y + monitor->height - c->height - c->border;
-		if (flags & FL_TOP   ) c->y = monitor->y +                               c->border;
+		if (flags & FL_TOP   ) c->y = monitor->y                               + c->border;
 	}
 
 	do_client_move(c);
@@ -148,13 +159,18 @@ void func_next(void *sptr, XEvent *e, unsigned flags) {
 	XKeyEvent *xkey = (XKeyEvent *)e;
 	client_select_next();
 	if (XGrabKeyboard(display.dpy, xkey->root, False, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess) {
+		(void)grab_pointer(xkey->root, display.disable_curs);
 		XEvent ev;
-		do {
+		while (1) {
 			XMaskEvent(display.dpy, KeyPressMask|KeyReleaseMask, &ev);
-			if (ev.type == KeyPress && ev.xkey.keycode == xkey->keycode)
-				client_select_next();
-		} while (ev.type == KeyPress || ev.xkey.keycode == xkey->keycode);
+			if (ev.xkey.keycode != xkey->keycode) {
+				XPutBackEvent(display.dpy,&ev); // theoretically, this shouldn't move the event, since the XMaskEvent call should return immediately when it shows up
+				break;
+			}
+			if (ev.type == KeyPress) client_select_next();
+		}
 		XUngrabKeyboard(display.dpy, CurrentTime);
+		XUngrabPointer(display.dpy, CurrentTime);
 	}
 	clients_tab_order = list_to_head(clients_tab_order, current);
 }
@@ -172,7 +188,7 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
-	if (e->type == ButtonPress && !(flags & FL_TOGGLE)) {
+	if (e->type == ButtonPress && !(flags & FL_TOGGLE) && !(flags & FL_RELATIVE)) {
 		client_resize_sweep(c, e->xbutton.button);
 		return;
 	}
@@ -231,38 +247,47 @@ void func_spawn(void *sptr, XEvent *e, unsigned flags) {
 	spawn((const char *const *)option.term);
 }
 
+void func_fix(void *sptr, XEvent *e, unsigned flags) {
+	(void)e;
+	if (!(flags & FL_CLIENT)) LOG_ERROR("func_fix client flag unset\n");
+	else if (flags & FL_TOGGLE) {
+		if (is_fixed((struct client *)sptr))
+			return func_fix(sptr, e, (flags &~FL_TOGGLE) | FL_DOWN);
+		else
+			return func_fix(sptr, e, (flags &~FL_TOGGLE) | FL_UP);
+	}
+	else if (flags & FL_UP  ) client_to_vdesk(sptr, VDESK_FIXED);
+	else if (flags & FL_DOWN) client_to_vdesk(sptr, ((struct client *)sptr)->screen->vdesk);
+	else LOG_ERROR("func_fix invalid flags\n");
+}
+
 void func_vdesk(void *sptr, XEvent *e, unsigned flags) {
 	(void)e;
-	if (flags & FL_CLIENT) {
-		struct client *c = sptr;
-		if (flags & FL_TOGGLE) {
-			if (is_fixed(c)) {
-				client_to_vdesk(c, c->screen->vdesk);
-			} else {
-				client_to_vdesk(c, VDESK_FIXED);
-			}
-		}
-	} else if (flags & FL_SCREEN) {
-		struct screen *scr = sptr;
-		if (flags & FL_TOGGLE) {
-			switch_vdesk(scr, scr->old_vdesk);
-		} else if (flags & FL_RELATIVE) {
-			unsigned mod = option.modvdesks?option.modvdesks:option.vdesks;// + 1;
-			unsigned v = scr->vdesk % mod;
-			unsigned h = scr->vdesk / mod;
-			unsigned v_max = mod;
-			unsigned h_max = option.vdesks / mod;
-			if (flags & FL_UP   ) v ++;
-			if (flags & FL_DOWN ) v += v_max-1;
-			v %= v_max;
-			if (flags & FL_LEFT ) h += h_max-1;
-			if (flags & FL_RIGHT) h ++;
-			h %= h_max;
-			switch_vdesk(scr, h * mod + v);
-		} else {
-			switch_vdesk(scr, flags & FL_VALUEMASK);
-		}
+	if (!(flags & FL_SCREEN)) return;
+	struct screen *scr = sptr;
+
+	if (flags & FL_TOGGLE) return switch_vdesk(scr, scr->old_vdesk);
+	if (!(flags & FL_RELATIVE)) {
+		if ((flags & FL_VALUEMASK) == (VDESK_FIXED & FL_VALUEMASK))
+			return switch_vdesk(scr, VDESK_FIXED);
+		else
+			return switch_vdesk(scr, flags & FL_VALUEMASK);
 	}
+
+	unsigned num = option.vdesks;
+	unsigned mod = option.modvdesks;
+	if (!mod) mod = num;
+	unsigned v = scr->vdesk % mod;
+	unsigned h = scr->vdesk / mod;
+	unsigned v_max = mod;
+	unsigned h_max = num / mod;
+	if (flags & FL_UP   ) v ++;
+	if (flags & FL_RIGHT) h ++;
+	if (flags & FL_DOWN ) v += v_max-1;
+	if (flags & FL_LEFT ) h += h_max-1;
+	v %= v_max;
+	h %= h_max;
+	switch_vdesk(scr, h * mod + v);
 }
 
 void func_binds(void *sptr, XEvent *e, unsigned flags) {

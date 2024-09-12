@@ -24,6 +24,7 @@ struct monitor {
 	int x, y;
 	int width, height;
 	int area;
+	Atom name;
 };
 
 struct screen {

@@ -88,6 +88,22 @@ struct list *list_to_tail(struct list *list, void *data) {
 	return list;
 }
 
+struct list *list_reverse(struct list *list, void *data) {
+	(void)data;
+	if (!list) return list;
+	if (!list->next) return list;
+	struct list *prev = NULL;
+	struct list *elem = list;
+	while (elem) {
+		struct list *
+		next=elem->next;
+		elem->next=prev;
+		prev=elem;
+		elem=next;
+	}
+	return prev;
+}
+
 // Find list element containing data
 struct list *list_find(struct list *list, void *data) {
 	while (list && list->data != data) list=list->next;

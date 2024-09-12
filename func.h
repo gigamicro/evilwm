@@ -32,6 +32,7 @@
 #include <X11/Xlib.h>
 void func_delete(void *, XEvent *, unsigned);
 void func_dock(void *, XEvent *, unsigned);
+void func_docks(void *, XEvent *, unsigned);
 void func_info(void *, XEvent *, unsigned);
 void func_lower(void *, XEvent *, unsigned);
 void func_move(void *, XEvent *, unsigned);
@@ -39,6 +40,7 @@ void func_next(void *, XEvent *, unsigned);
 void func_raise(void *, XEvent *, unsigned);
 void func_resize(void *, XEvent *, unsigned);
 void func_spawn(void *, XEvent *, unsigned);
+void func_fix(void *, XEvent *, unsigned);
 void func_vdesk(void *, XEvent *, unsigned);
 void func_binds(void *, XEvent *, unsigned);
 

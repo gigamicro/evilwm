@@ -495,10 +495,8 @@ void event_main_loop(void) {
 
 			switch (ev.xevent.type) {
 			case KeyPress:
-				bind_handle_key(&ev.xevent.xkey);
-				break;
 			case ButtonPress:
-				bind_handle_button(&ev.xevent.xbutton);
+				bind_handle(&ev.xevent.xkey, 1);
 				break;
 #ifdef CONFIGREQ
 			case ConfigureRequest:

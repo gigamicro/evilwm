@@ -124,7 +124,7 @@ modify keyboard move/resize distance, in pixels.
 ignore monitor geometry and use the whole screen dimensions. This is the old behaviour from before multi-monitor support was implemented, and may still be useful, eg when one large monitor is driven from multiple outputs.
 .TP
 \f(CB\-\-numvdesks\fR \fIvalue\fR
-number of virtual desktops to provide. Defaults to 8. Any extras will Control+Alt+(Left/Right). only be accessible by pagers or using
+number of virtual desktops to provide. Effective value for relative moves will be the greatest integer multiple of \f(CB\-\-modvdesks\fR less than or equal to this value. Defaults to 8.
 .TP
 \f(CB\-\-modvdesks\fR \fIvalue\fR
 vdesk loop modulus and distance for left/right relative vdesk. Relative movement up from n*\fIvalue\fR-1 or down from n*\fIvalue\fR will instead move down or up (respectively) by \fIvalue\fR-1. This is equivalent to having a two-dimensional vdesk array of num/mod (lr) x mod (ud). Defaults to 0. \fIvalue\fR being 0 is equivalent to it being the current value of \f(CB\-\-numvdesks\fR.
@@ -153,16 +153,16 @@ set to 1 to draw a window outline while moving or resizing.
 \f(CB\-\-altmask\fR \fImodifier\fR\[lB]+\fImodifier\fR\[rB]\[...]
 override the default keyboard modifiers used to grab keys for window manager functionality.
 .IP
-\f(CBmask1\fR is used for most keyboard controls (default: control+alt), and \f(CBmask2\fR is used for mouse button controls and cycling windows (default: alt). \f(CBaltmask\fR is used to modify the behaviour of certain controls (default: shift). Modifiers may be separated with + signs. Valid modifiers are \[aq]shift\[aq], \[aq]control\[aq], \[aq]alt\[aq], \[aq]mod1\[aq]\[...]\[aq]mod5\[aq].
+\f(CBmask1\fR is used for most keyboard controls (default: control+alt), and \f(CBmask2\fR is used for mouse button controls and cycling windows (default: alt). \f(CBaltmask\fR is used to modify the behaviour of certain controls (default: shift). Modifiers may be separated with + signs. Valid modifiers are \[aq]shift\[aq], \[aq]control\[aq]/\[aq]ctrl\[aq], \[aq]mod1\[aq]/\[aq]alt\[aq], \[aq]mod2\[aq]\[...]\[aq]mod5\[aq].
 .TP
-\f(CB\-\-bind\fR \[lB]\fImodifier\fR+\[rB]\[...]\fIkey\fR=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[lB]+\fIflag\fR\[rB]\[...]\[rB]\[rB]
-bind a key pressed with specified modifiers to a window manager function. \fIkey\fR is an X11 keysym name, \fImodifiers\fR are as above, but may also include \[aq]mask1\[aq], \[aq]mask2\[aq] and \[aq]altmask\[aq] to refer to the globally-configured combinations. See FUNCTIONS for a list of available functions and the flags they recognise. If \fIfunction\fR is empty, a bind is removed.
+\f(CB\-\-bind\fR \[lB]\fImodifier\fR+\[rB]\[...]\fIkey/button\fR=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[lB]+\fIflag\fR\[rB]\[...]\[rB]\[rB]
+bind a key or mouse button pressed with specified modifiers to a window manager function. \fIkey/button\fR is an X11 keysym name or \[aq]buttonN\[aq], where N is a positive integer of decimal, 0xhexadecimal, or 0octal form, \fImodifiers\fR are as above, but may also include \[aq]mask1\[aq], \[aq]mask2\[aq] and \[aq]altmask\[aq] to refer to configured mask variables. See FUNCTIONS for a list of available functions and the flags they recognise. If \fIfunction\fR is empty, a bind is removed.
 .TP
 \f(CB\-\-bind\fR \fIbutton\fR=\[lB]\fIfunction\fR\[lB],\fIflag\fR\[rB]\[...]\[rB]
-bind a mouse button to a window manager function. While modifiers can be specified, they will be ignored; the button on its own will trigger if pressed within a window\[aq]s frame, or with \[aq]mask2\[aq] held anywhere within a window. Function and flags is as with key binds above. Valid buttons are \[aq]button1\[aq]\[...]\[aq]button5\[aq].
+bind a mouse button to a window manager function. While modifiers can be specified, they will be ignored; the button on its own will trigger if pressed within a window\[aq]s frame, or with \[aq]mask2\[aq] held anywhere within a window. Function and flags is as with key binds above. Valid buttons are
 .TP
 \f(CB\-\-nodefaultbinds\fR
-don\[aq]t use the original default bindings from compile time.
+don\[aq]t use the original compiled-in default bindings.
 .TP
 \f(CB\-\-app\fR \[lB]\fIname\fR\[rB]\[lB]/\[lB]\fIclass\fR\[rB]\[lB]/\[lB]\fItitle\fR\[rB]\[rB]\[rB]
 match an application by instance name and class (for help in finding these, use the \fIxprop\fR tool to extract the \fIWM_CLASS\fR property; the two strings are \fIname\fR and \fIclass\fR respectively, checked exactly), and by title (checked as substring, \fIWM_NAME\fR in \fIxprop\fR).
@@ -191,7 +191,7 @@ specify that application is to start with a fixed client window.
 \f(CB\-h\fR, \f(CB\-\-help\fR
 show help
 .TP
-\f(CB\-\-writedefaults\fR
+\f(CB\-hh\fR, \f(CB\-\-writedefaults\fR
 show all option defaults, in a format that could be put in your \fI.evilwmrc\fR
 .TP
 \f(CB\-V\fR, \f(CB\-\-version\fR

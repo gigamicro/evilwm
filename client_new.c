@@ -67,8 +67,6 @@ void client_manage_new(Window w, struct screen *s) {
 		LOG_LEAVE();
 		return;
 	}
-	LOG_DEBUG("screen=%d\n", s->screen);
-	LOG_DEBUG("name=%s\n", name);
 
 	window_type = ewmh_get_net_wm_window_type(w);
 	// Don't manage DESKTOP type windows
@@ -92,13 +90,9 @@ void client_manage_new(Window w, struct screen *s) {
 	clients_mapping_order = list_append(clients_mapping_order, c);
 	clients_stacking_order = list_append(clients_stacking_order, c);
 
+	*c=(struct client){0};
 	c->screen = s;
 	c->window = w;
-	c->ignore_unmap = 0;
-	c->remove = 0;
-#ifdef CONFIGREQ
-	c->ignore_configreq = 0;
-#endif
 
 	// Ungrab the X server as soon as possible. Now that the client is
 	// malloc()ed and attached to the list, it is safe for any subsequent
@@ -338,8 +332,6 @@ static void init_geometry(struct client *c) {
 		send_config(c);
 
 	ewmh_set_net_frame_extents(c->window, c->border);
-
-	LOG_DEBUG("window started as %dx%d +%d+%d\n", c->width, c->height, c->x, c->y);
 
 	// If the window was already viewable (existed while window manager
 	// starts), that means the reparent to come would send an unmap request

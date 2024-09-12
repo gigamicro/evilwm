@@ -14,12 +14,18 @@ struct list {
 	void *data;
 };
 
+struct list_meta {
+	struct list *head;
+	struct list *tail;
+};
+
 // Each of these return the new pointer to the head of the list:
 struct list *list_prepend(struct list *list, void *data);
 struct list *list_append(struct list *list, void *data);
 struct list *list_delete(struct list *list, void *data);
 struct list *list_to_head(struct list *list, void *data);
 struct list *list_to_tail(struct list *list, void *data);
+struct list *list_reverse(struct list *list, void *);
 
 // Returns element in list:
 struct list *list_find(struct list *list, void *data);

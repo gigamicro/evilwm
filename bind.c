@@ -32,11 +32,9 @@
 #include "util.h"
 #include "xalloc.h"
 
-// Configurable modifier bits.  For client operations, grabmask2 is always
-// allowed for button presses.
+// Configurable modifier bits.
 #define KEY_STATE_MASK ( ShiftMask | ControlMask | Mod1Mask | \
                          Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask )
-#define BUTTON_STATE_MASK ( KEY_STATE_MASK & ~grabmask2 )
 
 // Map modifier name to mask
 
@@ -45,32 +43,15 @@ struct name_to_modifier name_to_modifier[] = {
 	{ "mask2",      0 },
 	{ "altmask",    0 },
 	{ "shift",      ShiftMask },
-	{ "control",    ControlMask },
-	{ "ctrl",       ControlMask },
-	{ "alt",        Mod1Mask },
-	{ "mod1",       Mod1Mask },
-	{ "mod2",       Mod2Mask },
-	{ "mod3",       Mod3Mask },
-	{ "mod4",       Mod4Mask },
-	{ "mod5",       Mod5Mask }
+	// { "caps",       LockMask },
+	{ "control",    ControlMask }, { "ctrl",       ControlMask },
+	{ "mod1",       Mod1Mask }, { "alt",        Mod1Mask }, // alt/meta
+	{ "mod2",       Mod2Mask }, // numlock
+	{ "mod3",       Mod3Mask }, // iso shift5
+	{ "mod4",       Mod4Mask }, // super/hyper
+	{ "mod5",       Mod5Mask }, // iso shift3 (altgr)
 };
 #define NUM_NAME_TO_MODIFIER (int)(sizeof(name_to_modifier) / sizeof(name_to_modifier[0]))
-
-// Map button name to identifier
-
-struct name_to_button {
-	const char *name;
-	unsigned button;
-};
-
-static struct name_to_button name_to_button[] = {
-	{ "button1",    Button1 },
-	{ "button2",    Button2 },
-	{ "button3",    Button3 },
-	{ "button4",    Button4 },
-	{ "button5",    Button5 },
-};
-#define NUM_NAME_TO_BUTTON (int)(sizeof(name_to_button) / sizeof(name_to_button[0]))
 
 // All bindable functions present the same call interface.  'sptr' should point
 // to a relevant data structure (controlled by flags FL_SCREEN or FL_CLIENT).
@@ -91,7 +72,7 @@ static struct function_def name_to_func[] = {
 	{ "delete", func_delete,    FL_CLIENT|0 },
 	{ "kill",   func_delete,    FL_CLIENT|1 },
 	{ "dock",   func_dock,      FL_CLIENT },
-	{ "docks",  func_dock,      FL_SCREEN },
+	{ "docks",  func_docks,     FL_SCREEN },
 	{ "info",   func_info,      FL_CLIENT },
 	{ "lower",  func_lower,     FL_CLIENT },
 	{ "move",   func_move,      FL_CLIENT },
@@ -100,7 +81,7 @@ static struct function_def name_to_func[] = {
 	{ "resize", func_resize,    FL_CLIENT },
 	{ "spawn",  func_spawn,     0 },
 	{ "vdesk",  func_vdesk,     FL_SCREEN },
-	{ "fix",    func_vdesk,     FL_CLIENT },
+	{ "fix",    func_fix,       FL_CLIENT },
 	{ "binds",  func_binds,     FL_SCREEN },
 };
 #define NUM_NAME_TO_FUNC (int)(sizeof(name_to_func) / sizeof(name_to_func[0]))
@@ -140,13 +121,14 @@ static struct {
 	const char *func;
 } control_builtins[] = {
 	// Button controls
-	{ "button1",                "move" },
-	{ "button2",                "resize" },
-	{ "button3",                "lower" },
+	{ "mask2+button1",                "move" },
+	{ "mask2+button2",                "resize" },
+	{ "mask2+button3",                "lower" },
+	// TODO: button4-9 scroll u/d, hscroll l/r or r/l, bk/fw
 
 	// Client misc
-	{ "mask1+Return",           "spawn" },
 	{ "mask2+Tab",              "next" },
+	{ "mask1+Return",           "spawn" },
 	{ "mask1+Escape",           "delete" },
 	{ "mask1+altmask+Escape",   "kill" },
 	{ "mask1+i",                "info" },
@@ -212,7 +194,7 @@ struct bind {
 	int type;
 	// Bound key or button
 	union {
-		KeySym key;
+		KeySym key; // (ulong)
 		unsigned button;
 	} control;
 	// Modifier state
@@ -239,11 +221,8 @@ static struct name_to_modifier *modifier_by_name(const char *name) {
 }
 
 static unsigned button_by_name(const char *name) {
-	for (int i = 0; i < NUM_NAME_TO_BUTTON; i++) {
-		if (!strcmp(name_to_button[i].name, name)) {
-			return name_to_button[i].button;
-		}
-	}
+	const char *pre = "button";
+	if (strncmp(name,pre,strlen(pre))==0) return strtoul(name+strlen(pre),NULL,0);
 	return 0;
 }
 
@@ -262,6 +241,7 @@ static unsigned flags_by_name(const char *name) {
 			return name_to_flags[i].flags;
 		}
 	}
+	LOG_ERROR("Flag '%s' unknown\n",name);
 	return 0;
 }
 
@@ -285,8 +265,8 @@ void stashbinds(struct screen *s) {
 			//ungrab buttons on all clients
 			for (struct list *lc = clients_tab_order; lc; lc = lc->next) {
 				struct client *c = lc->data;
-				XUngrabButton(display.dpy, b->control.button, grabmask2, c->parent);
-				XUngrabButton(display.dpy, b->control.button, grabmask2|altmask, c->parent);
+				if (c->screen != s) continue;
+				XUngrabButton(display.dpy, b->control.button, b->state, c->parent);
 			}
 		} else {
 			LOG_DEBUG(".");
@@ -320,6 +300,7 @@ void unstashbinds(struct screen *s) {
 	// go through and grab buttons on clients
 	for (struct list *l = clients_tab_order; l; l = l->next) {
 		struct client *c = l->data;
+		if (c->screen != s) continue;
 		bind_grab_for_client(c);
 	}
 }
@@ -330,6 +311,7 @@ void togglebinds(struct screen *s) {
 
 void bind_unset(void) {
 	// unbind _all_ controls
+	// note, does not ungrab keysyms & buttons
 	while (controls) {
 		struct bind *b = controls->data;
 		controls = list_delete(controls, b);
@@ -337,14 +319,14 @@ void bind_unset(void) {
 	}
 }
 
-void bind_reset(void) {
-	bind_unset();
+void bind_defaults(void) {
 	// then rebind what's configured
 	for (int i = 0; i < NUM_CONTROL_BUILTINS; i++) {
 		bind_control(control_builtins[i].ctl, control_builtins[i].func);
 	}
 }
 
+// set value of name_to_modifier with name modname to the state represented in modstr
 void bind_modifier(const char *modname, const char *modstr) {
 	if (!modstr)
 		return;
@@ -376,9 +358,10 @@ void bind_control(const char *ctlname, const char *func) {
 	struct bind *newbind = xmalloc(sizeof(*newbind));
 	*newbind = (struct bind){0};
 
-	for (char *tmp = strtok(ctldup, ",+"); tmp; tmp = strtok(NULL, ",+")) {
+	// newbind->control & ->state
+	for (char *toksv=NULL, *tok=strtok_r(ctldup,",+",&toksv); tok; tok=strtok_r(NULL,",+",&toksv)) {
 		// is this a modifier?
-		struct name_to_modifier *m = modifier_by_name(tmp);
+		struct name_to_modifier *m = modifier_by_name(tok);
 		if (m) {
 			newbind->state |= m->value;
 			continue;
@@ -389,7 +372,7 @@ void bind_control(const char *ctlname, const char *func) {
 			continue;
 
 		// maybe it's a button?
-		unsigned b = button_by_name(tmp);
+		unsigned b = button_by_name(tok);
 		if (b) {
 			newbind->type = ButtonPress;
 			newbind->control.button = b;
@@ -397,39 +380,44 @@ void bind_control(const char *ctlname, const char *func) {
 		}
 
 		// ok, see if it's recognised as a key name
-		KeySym k = XStringToKeysym(tmp);
+		KeySym k = XStringToKeysym(tok);
 		if (k != NoSymbol) {
 			newbind->type = KeyPress;
 			newbind->control.key = k;
 			continue;
 		}
+		LOG_ERROR("Errant token '%s' in bind %s=%s\n",tok,ctlname,func);
 	}
 	free(ctldup);
 
 	// No known control type?  Abort.
 	if (!newbind->type) {
+		LOG_DEBUG("typeless bind %s\n",ctlname);
 		free(newbind);
 		return;
 	}
 
+	if (newbind->type == ButtonPress && !newbind->state)
+		newbind->state = grabmask2;
+
 	// always unbind any existing matching control
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *b = l->data;
-		if (newbind->type == KeyPress && b->state == newbind->state && b->control.key == newbind->control.key) {
+		if (b->state != newbind->state) continue;
+		if (b->type != newbind->type) continue;
+		if ((newbind->type == KeyPress    && b->control.key    == newbind->control.key)
+		 || (newbind->type == ButtonPress && b->control.button == newbind->control.button)) {
 			controls = list_delete(controls, b);
 			free(b);
-			break;
-		}
-		if (newbind->type == ButtonPress && b->state == newbind->state && b->control.button == newbind->control.button) {
-			controls = list_delete(controls, b);
-			free(b);
+			LOG_DEBUG("Dupe %s bind deleted\n",ctlname);
 			break;
 		}
 	}
 
 	// empty function definition implies unbind.  already done, so return.
-	if (!func || *func == 0) {
+	if (!func || !*func) {
 		free(newbind);
+		LOG_DEBUG("unbound %s\n",ctlname);
 		return;
 	}
 
@@ -439,9 +427,11 @@ void bind_control(const char *ctlname, const char *func) {
 	if (!funcdup)
 		return;
 
-	for (char *tmp = strtok(funcdup, ",+"); tmp; tmp = strtok(NULL, ",+")) {
+	for (char *cur = strtok(funcdup, ",+"); cur; cur = strtok(NULL, ",+")) {
+		if (!*cur) LOG_ERROR("bind_controls(): nul token in funcstr\n");
+
 		// function name?
-		struct function_def *fn = func_by_name(tmp);
+		struct function_def *fn = func_by_name(cur);
 		if (fn) {
 			newbind->func = fn->func;
 			newbind->flags = fn->flags;
@@ -449,20 +439,27 @@ void bind_control(const char *ctlname, const char *func) {
 		}
 
 		// a simple number?
-		if (*tmp >= '0' && *tmp <= '9') {
+		char *strtolend;
+		long num = strtol(cur, &strtolend, 0);
+		if (!*strtolend) {
 			newbind->flags &= ~FL_VALUEMASK;
-			newbind->flags |= strtol(tmp, NULL, 0) & FL_VALUEMASK;
+			newbind->flags |= num & FL_VALUEMASK;
 			continue;
 		}
 
 		// treat it as a flag name then
-		newbind->flags |= flags_by_name(tmp);
+		newbind->flags |= flags_by_name(cur);
+	}
+
+	if (newbind->flags&FL_CLIENT && newbind->flags&FL_SCREEN) {
+		LOG_ERROR("Bind func '%s' has both screen and client flags!\n", func);
 	}
 
 	if (newbind->func) {
 		controls = list_prepend(controls, newbind);
 	} else {
 		free(newbind);
+		LOG_DEBUG("Bind dropped!\n");
 	}
 
 	free(funcdup);
@@ -500,73 +497,65 @@ static void grab_button(unsigned button, unsigned modifiers, Window w) {
 }
 
 void bind_grab_for_screen(struct screen *s) {
-	// Release any previous grabs
 	XUngrabKey(display.dpy, AnyKey, AnyModifier, s->root);
+	XUngrabButton(display.dpy, AnyButton, AnyModifier, s->root);
 
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *b = l->data;
 		if (b->type == KeyPress) {
 			grab_keysym(b->control.key, b->state, s->root);
 		}
+		else if (b->type == ButtonPress && !(b->flags & FL_CLIENT)) {
+			grab_button(b->control.button, b->state, s->root);
+		}
 	}
 }
 
 void bind_grab_for_client(struct client *c) {
-	// Button binds way less configurable than key binds for now.
-	// Modifiers in the bind are ignored, and we ONLY use 'mask2' and
-	// 'mask2+altmask'.
+	XUngrabButton(display.dpy, AnyButton, AnyModifier, c->parent);
 
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *b = l->data;
 		if (b->type == ButtonPress) {
-			grab_button(b->control.button, grabmask2, c->parent);
-			grab_button(b->control.button, grabmask2|altmask, c->parent);
+			grab_button(b->control.button, b->state, c->parent);
 		}
 	}
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-// Handle keyboard events.
+// Handle keyboard & mousebutton events.
+// XButtonEvent & XKeyEvent are identical but for the unsigned button/keycode being named differently
 
-void bind_handle_key(XKeyEvent *e) {
-	KeySym key = XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0);
-
+void bind_handle(XKeyEvent *e, int doagain) {
+	if (e->type != KeyPress && e->type != ButtonPress) return;
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *bind = l->data;
-		if (bind->type == KeyPress && key == bind->control.key && (e->state & KEY_STATE_MASK & ~numlockmask) == (bind->state & ~numlockmask)) {
-			void *sptr = NULL;
-			if (bind->flags & FL_CLIENT) {
-				sptr = current;
-				if (!sptr)
-					return;
-			} else if (bind->flags & FL_SCREEN) {
-				sptr = find_current_screen();
-				if (!sptr)
-					return;
-			}
-			bind->func(sptr, (XEvent *)e, bind->flags);
-			break;
-		}
+		if (bind->type != e->type) continue;
+		if (bind->type == KeyPress
+			&& XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0) != bind->control.key) continue;
+		if (bind->type == ButtonPress
+			&& ((XButtonEvent *)e)->button != bind->control.button) continue;
+		if ( (e->state & KEY_STATE_MASK & ~numlockmask)
+			!= (bind->state & ~numlockmask) ) continue;
+		void *sptr = NULL;
+		if (bind->flags & FL_CLIENT)
+			sptr = bind->type == KeyPress ? current : find_client(e->window);
+		if (bind->flags & FL_SCREEN)
+			sptr = find_current_screen();
+		if (bind->flags & (FL_CLIENT|FL_SCREEN) && !sptr)
+			return;
+		bind->func(sptr, (XEvent *)e, bind->flags);
+		return;
 	}
-}
-
-// Handle mousebutton events.
-
-void bind_handle_button(XButtonEvent *e) {
-	for (struct list *l = controls; l; l = l->next) {
-		struct bind *bind = l->data;
-		if (bind->type == ButtonPress && e->button == bind->control.button && (e->state & BUTTON_STATE_MASK & ~numlockmask) == (bind->state & ~numlockmask)) {
-			void *sptr = NULL;
-			if (bind->flags & FL_CLIENT) {
-				sptr = find_client(e->window);
-			} else if (bind->flags & FL_SCREEN) {
-				sptr = find_current_screen();
-			}
-			if (!sptr)
-				return;
-			bind->func(sptr, (XEvent *)e, bind->flags);
-			break;
-		}
+	if (doagain) {
+		e->state ^= grabmask2;
+		bind_handle(e, 0);
+		e->state ^= grabmask2;
 	}
+	else LOG_ERROR("Unfound bind! (%s = %lx, state = %x)\n",
+		e->type==ButtonPress ? "button" : "key",
+		e->type==ButtonPress ? ((XButtonEvent *)e)->button : XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0),
+		e->state
+	);
 }

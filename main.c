@@ -37,15 +37,16 @@ static _Bool wm_exit;
 struct options option;
 
 static struct list *opt_bind = NULL;
-static char *opt_grabmask1 = NULL;
-static char *opt_grabmask2 = NULL;
-static char *opt_altmask = NULL;
 
 unsigned numlockmask = 0;
 
 struct list *applications = NULL;
 
 static void set_bind(const char *arg);
+static void set_mask(const char *arg);
+static void set_mask1(const char *arg);
+static void set_mask2(const char *arg);
+static void set_altmask(const char *arg);
 static void set_app(const char *arg);
 static void set_app_geometry(const char *arg);
 #ifdef CONFIGREQ
@@ -77,9 +78,10 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_CALL_0,   "nosoliddrag",  { .c0 = &unset_solid_drag } },
 	{ XCONFIG_CALL_1,   "bind",         { .c1 = &set_bind } },
 	{ XCONFIG_BOOL,    "nodefaultbinds",{ .i = &option.nodefaultbinds } },
-	{ XCONFIG_STRING,   "mask1",        { .s = &opt_grabmask1 } },
-	{ XCONFIG_STRING,   "mask2",        { .s = &opt_grabmask2 } },
-	{ XCONFIG_STRING,   "altmask",      { .s = &opt_altmask } },
+	{ XCONFIG_CALL_1,   "mask",         { .c1 = &set_mask } },
+	{ XCONFIG_CALL_1,   "mask1",        { .c1 = &set_mask1 } },
+	{ XCONFIG_CALL_1,   "mask2",        { .c1 = &set_mask2 } },
+	{ XCONFIG_CALL_1,   "altmask",      { .c1 = &set_altmask } },
 
 	{ XCONFIG_CALL_1,   "app",          { .c1 = &set_app } },
 	{ XCONFIG_CALL_1,   "geometry",     { .c1 = &set_app_geometry } },
@@ -107,7 +109,7 @@ static void helptext(void) { puts(
 "\n"
 " Exiting options:\n"
 "  -h, --help      display this help and exit\n"
-"  --writedefaults output default options (inc. bindings) and exit\n"
+"  -hh,--writedefaults output default options (inc. bindings) and exit\n"
 "  -V, --version   output version information and exit\n"
 "\n"
 " Options:\n"
@@ -128,11 +130,6 @@ static void helptext(void) { puts(
 "  --soliddrag N       nonzero to move the window directly rather than showing a placeholder [" xstr(DEF_SOLIDDRAG) "]\n"
 "  --solidsweep N      same but for resizing [" xstr(DEF_SOLIDSWEEP) "]\n"
 "  --nosoliddrag       alias for 'soliddrag 0'\n"
-"  --bind CTL[=FUNC]   bind (or unbind) input to window manager function\n"
-"  --nodefaultbinds    don't use default bindings\n"
-"  --mask1 MASK        modifiers for most keyboard controls [" DEF_MASK1 "]\n"
-"  --mask2 MASK        modifiers for mouse button controls [" DEF_MASK2 "]\n"
-"  --altmask MASK      modifiers selecting alternate control behaviour [" DEF_ALTMASK "]\n"
 "\n"
 " Application matching options:\n"
 "  --app NAME/CLASS/WMNAME match application by WM_CLASS name & class + window title\n"
@@ -144,6 +141,12 @@ static void helptext(void) { puts(
 "    -v, --vdesk VDESK     move app to numbered vdesk (indexed from 0)\n"
 "    -f, --fixed           matched app should start fixed\n"
 "\n"
+" Bind options:\n"
+"  --bind CTL[=FUNC]   bind (or unbind) input to window manager function\n"
+"  --nodefaultbinds    don't use default bindings\n"
+"  --mask1 MASK        modifiers for most keyboard controls [" DEF_MASK1 "]\n"
+"  --mask2 MASK        modifiers for mouse button controls [" DEF_MASK2 "]\n"
+"  --altmask MASK      modifiers selecting alternate control behaviour [" DEF_ALTMASK "]\n"
 "When binding a control, CTL contains a (case-sensitive) list of modifiers,\n"
 "buttons or keys (using the X11 keysym name) and FUNC lists a function\n"
 "name and optional extra flags.  List entries can be separated with ','\n"
@@ -154,8 +157,8 @@ static void helptext(void) { puts(
 "Buttons: button1..button5\n"
 "Functions: delete, dock, fix, info, kill, lower, move, next, resize,\n"
 "           spawn, vdesk\n"
-"Flags: up, down, left, right, top, bottom, relative (rel), drag, toggle,\n"
-"       vertical (v), horizontal (h)\n"
+"Flags: up (u,on), down (d,off), left (l), right (r), top, bottom,\n"
+"       relative (rel), toggle, vertical (v), horizontal (h)\n"
 );}
 
 static const char *default_options[] = {
@@ -236,7 +239,8 @@ int main(int argc, char *argv[]) {
 			        || 0 == strcmp(argv[argn], "--help")) {
 				helptext();
 				exit(0);
-			} else if (0 == strcmp(argv[argn], "--writedefaults")) {
+			} else if (0 == strcmp(argv[argn], "-hh")
+			        || 0 == strcmp(argv[argn], "--writedefaults")) {
 				puts("### ~/.evilwmrc: EvilWM options file; reloads on SIGHUP ###");
 				putdefaultopts();
 				putdefaultbinds();
@@ -253,14 +257,12 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		bind_modifier("mask1", opt_grabmask1);
-		bind_modifier("mask2", opt_grabmask2);
-		bind_modifier("altmask", opt_altmask);
+		applications = list_reverse(applications, NULL);
 
-		if (option.nodefaultbinds)
-			bind_unset();
-		else
-			bind_reset();
+		// Do binds after main arg parsing so that masks are already set
+		// Also re-reverses the list so later binds override earlier ones?
+		bind_unset();
+		if (!option.nodefaultbinds) bind_defaults();
 		while (opt_bind) {
 			char *arg = opt_bind->data;
 			opt_bind = list_delete(opt_bind, arg);
@@ -335,21 +337,23 @@ static void set_bind(const char *arg) {
 	opt_bind = list_prepend(opt_bind, argdup);
 }
 
+static void set_mask(const char *arg) {
+	char *argdup = xstrdup(arg);
+	if (!argdup) return;
+	bind_modifier(strtok(argdup, "="), strtok(NULL, ""));
+	free(argdup);
+}
+static void set_mask1  (const char *arg) {bind_modifier("mask1",  arg);}
+static void set_mask2  (const char *arg) {bind_modifier("mask2",  arg);}
+static void set_altmask(const char *arg) {bind_modifier("altmask",arg);}
+
 static void set_app(const char *arg) {
 	struct application *new = xmalloc(sizeof(struct application));
-	new->geometry_mask = 0;
-#ifdef CONFIGREQ
-	new->ignore_configreq = 0;
-#endif
-	new->is_dock = 0;
-	new->vdesk = VDESK_NONE;
-	new->res_name = NULL;
-	new->res_class = NULL;
-	new->WM_NAME = NULL;
+	*new=(struct application){0,.vdesk=VDESK_NONE};
 	applications = list_prepend(applications, new);
 	if (!*arg) return;
 	new->res_name = xstrdup(arg);
-
+	// a/b -> a\0b
 	new->res_class = strchr(new->res_name, '/');
 	if (!new->res_class) return;
 	*new->res_class++ = '\0';

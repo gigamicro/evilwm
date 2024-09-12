@@ -154,6 +154,7 @@ void display_open(void) {
 	// Cursors used for different actions
 	display.move_curs = XCreateFontCursor(display.dpy, XC_fleur);
 	display.resize_curs = XCreateFontCursor(display.dpy, XC_plus);
+	display.disable_curs = XCreateFontCursor(display.dpy, XC_dot);
 
 	// Find out which modifier is NumLock - for every grab, we need to also
 	// grab the combination where this is set.

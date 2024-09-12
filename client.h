@@ -25,7 +25,6 @@ struct monitor;
 // Virtual desktop macros
 #define VDESK_NONE  (0xfffffffe) // used for app selection
 #define VDESK_FIXED (0xffffffff)
-#define VDESK_MAX   (option.vdesks - 1)
 #define valid_vdesk(v) ((v) == VDESK_FIXED || (v) < option.vdesks)
 
 struct client {
@@ -55,6 +54,9 @@ struct client {
 	// Old monitor offset as proportion of monitor geometry
 	double mon_offx, mon_offy;
 
+	// Keep track of monitor, and save most recent when it disappears
+	Atom mon_name; int mon_save;
+
 	// Flag set when we need to remove client from management
 	int remove;
 
@@ -78,7 +80,7 @@ extern struct list *clients_stacking_order;
 extern struct client *current;
 
 #define is_fixed(c) ((c)->vdesk == VDESK_FIXED)
-#define on_vdesk(c) (is_fixed(c)||(c)->vdesk==(c)->screen->vdesk)
+#define on_vdesk(c) (is_fixed(c)||(c)->screen->vdesk==VDESK_FIXED||(c)->vdesk==(c)->screen->vdesk)
 #define is_visible(c) ( (!(c)->is_dock || (c)->screen->docks_visible) && on_vdesk(c) )
 
 // client_new.c: newly manage a window

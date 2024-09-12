@@ -27,7 +27,7 @@ extern struct name_to_modifier name_to_modifier[];
 // are not reconfigurable beyond changing the modifier bind.
 
 #define grabmask2 (name_to_modifier[1].value)
-#define altmask   (name_to_modifier[2].value)
+#define altmask   (name_to_modifier[2].value) // used in client_move
 
 // print default bindings to stdout
 void putdefaultbinds(void);
@@ -41,8 +41,8 @@ void togglebinds(struct screen *);
 
 // Remove all binds
 void bind_unset(void);
-// Reset list of binds to the built-ins
-void bind_reset(void);
+// Add built-in binds
+void bind_defaults(void);
 
 // Alter modifier by name - only used for mask1, mask2, altmask
 void bind_modifier(const char *modname, const char *modspec);
@@ -56,7 +56,6 @@ void bind_grab_for_screen(struct screen *s);
 // Apply grabs relevant to client
 void bind_grab_for_client(struct client *c);
 
-void bind_handle_key(XKeyEvent *e);
-void bind_handle_button(XButtonEvent *e);
+void bind_handle(XKeyEvent *e, int doagain);
 
 #endif

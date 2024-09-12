@@ -90,6 +90,7 @@ struct display {
 	// Cursors
 	Cursor move_curs;
 	Cursor resize_curs;
+	Cursor disable_curs;
 
 	// Extensions
 #ifdef SHAPE
