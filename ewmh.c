@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <math.h>
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -56,6 +57,7 @@ void ewmh_set_screen_workarea(struct screen *s) {
 // all client windows in the order they were mapped.
 
 void ewmh_set_net_client_list(struct screen *s) {
+	LOG_DEBUG("clients_mapping_order: ");
 	unsigned i = fill_window_array(clients_mapping_order, s);
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST),
 			XA_WINDOW, 32, PropModeReplace,
@@ -66,6 +68,7 @@ void ewmh_set_net_client_list(struct screen *s) {
 // _NET_CLIENT_LIST, but in stacking order (bottom to top).
 
 void ewmh_set_net_client_list_stacking(struct screen *s) {
+	LOG_DEBUG("clients_stacking_order: ");
 	unsigned i = fill_window_array(clients_stacking_order, s);
 	XChangeProperty(display.dpy, s->root, X_ATOM(_NET_CLIENT_LIST_STACKING),
 			XA_WINDOW, 32, PropModeReplace,
@@ -211,13 +214,13 @@ void ewmh_set_net_frame_extents(Window w, unsigned long border) {
 
 static void alloc_window_array(struct list *iter, unsigned count, struct screen *s) {
 	if (iter) while ((iter = iter->next)) if (((struct client *)iter->data)->screen==s) count++;
-	count = (count + 127) & ~127; // Round to block of 128
-	if (window_array_n > count && window_array_n-count < 32){
+	count = 1<<(1+(int)log2(count-1)); // least greater power of two
+	if (window_array_n > count && window_array_n >>2 < count)
 		return; // fuzzy boundary
-	}
-	if (window_array_n==count) {
+	if (count<16)
+		count=16; // min
+	if (window_array_n==count)
 		return; // equal (can remove, since realloc probably checks anyway)
-	}
 	LOG_DEBUG("alloc_window_array(): realloc from %u to %u\n",window_array_n,count);
 	window_array_n = count;
 	window_array = realloc(window_array, window_array_n * sizeof(Window));
@@ -227,7 +230,7 @@ static void alloc_window_array(struct list *iter, unsigned count, struct screen 
 
 static unsigned fill_window_array(struct list *list, struct screen *s) {
 	unsigned i = 0;
-	LOG_DEBUG("client_list_stacking: {");
+	LOG_DEBUG_("{");
 	for (struct list *iter = list; iter; iter = iter->next) {
 		struct client *c = iter->data;
 		if (c->screen != s) continue;
@@ -236,7 +239,7 @@ static unsigned fill_window_array(struct list *list, struct screen *s) {
 		LOG_DEBUG_("%lx,",c->window/0x100000);
 		i++;
 	}
-	LOG_DEBUG_("}\n");
+	LOG_DEBUG_("}, %u items, array[%u]\n", i, window_array_n);
 	alloc_window_array(NULL,i,s); // shrink if needed
 	return i;
 }
