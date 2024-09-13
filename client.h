@@ -112,6 +112,7 @@ void client_raise(struct client *c);
 void client_lower(struct client *c);
 void client_gravitate(struct client *c, int bw);
 void select_client(struct client *c);
+void client_point(struct client *c, int margin_l, int margin_u, int margin_r, int margin_d);
 void client_to_vdesk(struct client *c, unsigned vdesk);
 void remove_client(struct client *c);
 
