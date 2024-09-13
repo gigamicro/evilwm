@@ -440,24 +440,18 @@ void client_gravitate(struct client *c, int bw) {
 
 void select_client(struct client *c) {
 	struct client *old_current = current;
-	if (current)
+	if (old_current)
 		XSetWindowBorder(display.dpy, current->parent, current->screen->bg.pixel);
 	if (c) {
-		unsigned long bpixel;
-		if (is_fixed(c))
-			bpixel = c->screen->fc.pixel;
-		else
-			bpixel = c->screen->fg.pixel;
-		XSetWindowBorder(display.dpy, c->parent, bpixel);
+		XSetWindowBorder(display.dpy, c->parent, is_fixed(c) ? c->screen->fc.pixel : c->screen->fg.pixel);
 		XInstallColormap(display.dpy, c->cmap);
 		XSetInputFocus(display.dpy, c->window, RevertToPointerRoot, CurrentTime);
 	}
+
 	current = c;
-	// Update _NET_WM_STATE_FOCUSED for old current and _NET_ACTIVE_WINDOW
-	// on its screen root.
+
 	if (old_current)
 		ewmh_set_net_wm_state(old_current);
-	// Now do same for new current.
 	if (c)
 		ewmh_set_net_wm_state(c);
 }
@@ -546,12 +540,7 @@ void remove_client(struct client *c) {
 	}
 
 	// Deselect if this client were previously selected
-	if (current == c) {
-		current = NULL;
-		// Remove _NET_WM_STATE_FOCUSED from client window and
-		// _NET_ACTIVE_WINDOW from screen if necessary.
-		ewmh_set_net_wm_state(c);
-	}
+	if (current == c) select_client(NULL);
 	free(c);
 
 #ifdef DEBUG

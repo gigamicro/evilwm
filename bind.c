@@ -553,9 +553,10 @@ void bind_handle(XKeyEvent *e, int doagain) {
 		bind_handle(e, 0);
 		e->state ^= grabmask2;
 	}
-	else LOG_ERROR("Unfound bind! (%s = %lx, state = %x)\n",
+	else LOG_ERROR("Unfound bind! (%s = %lx %s, state = %x)\n",
 		e->type==ButtonPress ? "button" : "key",
 		e->type==ButtonPress ? ((XButtonEvent *)e)->button : XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0),
+		e->type==ButtonPress ? "" : XKeysymToString(XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0)),
 		e->state
 	);
 }
