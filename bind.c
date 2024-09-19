@@ -527,7 +527,7 @@ void bind_grab_for_client(struct client *c) {
 // Handle keyboard & mousebutton events.
 // XButtonEvent & XKeyEvent are identical but for the unsigned button/keycode being named differently
 
-void bind_handle(XKeyEvent *e, int doagain) {
+void bind_handle(XKeyEvent *e) {
 	if (e->type != KeyPress && e->type != ButtonPress) return;
 	for (struct list *l = controls; l; l = l->next) {
 		struct bind *bind = l->data;
@@ -536,6 +536,8 @@ void bind_handle(XKeyEvent *e, int doagain) {
 			&& XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0) != bind->control.key) continue;
 		if (bind->type == ButtonPress
 			&& ((XButtonEvent *)e)->button != bind->control.button) continue;
+		if (bind->type == ButtonPress
+			&& !e->subwindow) e->state |= grabmask2; // TODO: replace with mask specific to borders
 		if ( (e->state & KEY_STATE_MASK & ~numlockmask)
 			!= (bind->state & ~numlockmask) ) continue;
 		void *sptr = NULL;
@@ -548,12 +550,7 @@ void bind_handle(XKeyEvent *e, int doagain) {
 		bind->func(sptr, (XEvent *)e, bind->flags);
 		return;
 	}
-	if (doagain) {
-		e->state ^= grabmask2;
-		bind_handle(e, 0);
-		e->state ^= grabmask2;
-	}
-	else LOG_ERROR("Unfound bind! (%s = %lx %s, state = %x)\n",
+	LOG_ERROR("Unfound bind! (%s = %lx %s, state = %x)\n",
 		e->type==ButtonPress ? "button" : "key",
 		e->type==ButtonPress ? ((XButtonEvent *)e)->button : XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0),
 		e->type==ButtonPress ? "" : XKeysymToString(XkbKeycodeToKeysym(display.dpy, e->keycode, 0, 0)),

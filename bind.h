@@ -56,6 +56,6 @@ void bind_grab_for_screen(struct screen *s);
 // Apply grabs relevant to client
 void bind_grab_for_client(struct client *c);
 
-void bind_handle(XKeyEvent *e, int doagain);
+void bind_handle(XKeyEvent *e);
 
 #endif
