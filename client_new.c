@@ -93,21 +93,12 @@ void client_manage_new(Window w, struct screen *s) {
 	*c=(struct client){0};
 	c->screen = s;
 	c->window = w;
-
-	// Ungrab the X server as soon as possible. Now that the client is
-	// malloc()ed and attached to the list, it is safe for any subsequent
-	// X calls to raise an X error and thus flag it for removal.
-
-	//initialising = None;
-
 	update_window_type_flags(c, window_type);
 	init_geometry(c);
 
 #ifdef DEBUG
 	{
-		int i = 0;
-		for (struct list *iter = clients_tab_order; iter; iter = iter->next)
-			i++;
+		int i = 0; for (struct list *iter = clients_tab_order; iter; iter = iter->next) i++;
 		LOG_DEBUG("new window %dx%d+%d+%d, wincount=%d\n", c->width, c->height, c->x, c->y, i);
 	}
 #endif

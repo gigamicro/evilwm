@@ -33,6 +33,9 @@ static unsigned window_array_n = 0;
 // reallocates window_array if needed
 static unsigned fill_window_array(struct list *, struct screen *);
 
+#define save_DEBUG DEBUG
+// #undef DEBUG
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Update various properties that reflect the screen geometry.
@@ -236,10 +239,14 @@ static unsigned fill_window_array(struct list *list, struct screen *s) {
 		if (c->screen != s) continue;
 		if (i+1 > window_array_n) alloc_window_array(iter,i+1,s);
 		window_array[i] = c->window;
-		LOG_DEBUG_("%lx,",c->window/0x100000);
+		LOG_DEBUG_("%lxw%lx,",c->window/0x100000,c->window&0xFFFFF);
 		i++;
 	}
 	LOG_DEBUG_("}, %u items, array[%u]\n", i, window_array_n);
 	alloc_window_array(NULL,i,s); // shrink if needed
 	return i;
 }
+
+#undef DEBUG
+#define DEBUG save_DEBUG
+#undef save_DEBUG

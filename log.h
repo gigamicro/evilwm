@@ -56,7 +56,7 @@ const char *debug_atom_name(Atom a);
 #ifdef XDEBUG
 
 # define LOG_XENTER(...) do { LOG_INDENT(); log_indent++; fprintf(stderr, __VA_ARGS__); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__); } while (0)
-# define LOG_XLEAVE(...) do { if (log_indent > 0) log_indent--; } while (0)
+# define LOG_XLEAVE() do { if (log_indent > 0) log_indent--; } while (0)
 # define LOG_XDEBUG(...) do { LOG_INDENT(); fprintf(stderr, __VA_ARGS__); } while (0)
 # define LOG_XDEBUG_(...) fprintf(stderr, __VA_ARGS__)
 

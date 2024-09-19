@@ -1,7 +1,5 @@
 # evilwm TODO
 
-## Simpler tasks
-
 send-to-desktop
 
 'TODO:'
@@ -65,10 +63,20 @@ actually, could just run the grabbing actions through some state (mask) and the 
 
 read {/etc,$XDG_CONFIG_HOME}/{evilwm.conf, evilwm.conf.d}
 
-## Intermediate tasks
+fix undef CONFIGREQ
+
+fix window init not rounding to amount in alacritty - fixed on client end, might still want to fix here
 
 what about making the list type something with trivial removal (iterators just skip null values) and append/prepend?
 periodically reallocated array?
 linkedlist with final null-null element?
 linkedlist with pointers from data?
 ... 3x doubly linked list in struct client?
+
+get that multiple command for `spawn` thing sorted, want to be able to use either alacritty-msg or alacritty at will (though what should the difference be?)
+
+setting for effect of border on modifiers
+
+fix fullscreening second-lowest window breaking ordering
+
+fix alt-tab etc grabbing keys we don't need

@@ -305,11 +305,10 @@ void set_docks_visible(struct screen *s, int is_visible) {
 void screen_probe_monitors(struct screen *s) {
 #if defined(RANDR) && (RANDR_MAJOR == 1) && (RANDR_MINOR >= 5)
         if (display.have_randr && !option.wholescreen) {
-		int nmonitors;
-		XRRMonitorInfo *monitors;
 		// Populate list of active monitors
 		LOG_XENTER("XRRGetMonitors(screen=%d)", s->screen);
-		monitors = XRRGetMonitors(display.dpy, s->root, True, &nmonitors);
+		int nmonitors;
+		XRRMonitorInfo *monitors = XRRGetMonitors(display.dpy, s->root, True, &nmonitors);
 		if (monitors) {
 			struct monitor *new_monitors = s->monitors;
 			if (nmonitors != s->nmonitors) {
