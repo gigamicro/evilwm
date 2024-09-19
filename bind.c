@@ -124,7 +124,12 @@ static struct {
 	{ "mask2+button1",                "move" },
 	{ "mask2+button2",                "resize" },
 	{ "mask2+button3",                "lower" },
-	// TODO: button4-9 scroll u/d, hscroll l/r or r/l, bk/fw
+	{ "mask2+button4",                "move,relative+up" },
+	{ "mask2+button5",                "move,relative+down" },
+	{ "mask2+button6",                "move,relative+left" },
+	{ "mask2+button7",                "move,relative+right" },
+	{ "mask2+button8",                "vdesk,relative+down" },
+	{ "mask2+button9",                "vdesk,relative+up" },
 
 	// Client misc
 	{ "mask2+Tab",              "next" },
