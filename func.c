@@ -97,14 +97,14 @@ void func_lower(void *sptr, XEvent *e, unsigned flags) {
 	client_lower(c);
 }
 
+Time last_kbmove = 0;
 void func_move(void *sptr, XEvent *e, unsigned flags) {
 	struct client *c = sptr;
 	if (!(flags & FL_CLIENT) || !c)
 		return;
 
 	if (e->type == ButtonPress && !(flags & FL_RELATIVE)) {
-		XButtonEvent *xbutton = (XButtonEvent *)e;
-		client_move_drag(c, xbutton->button);
+		client_move_drag(c, e->xbutton.button);
 		return;
 	}
 
@@ -119,6 +119,13 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	if (flags&FL_VALUEMASK) height_inc = flags&FL_VALUEMASK;
 	else if(c->height_inc>1)height_inc = c->height_inc;
 	else if (option.kbpx)   height_inc = option.kbpx;
+
+	Time t = e->xbutton.time;
+	if (last_kbmove + 250 > t) {
+		width_inc  *= 2;
+		height_inc *= 2;
+	}
+	last_kbmove=t;
 
 	if (flags & FL_RELATIVE) {
 		if (flags & FL_RIGHT) c->x += width_inc;
