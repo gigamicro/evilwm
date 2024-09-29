@@ -251,6 +251,7 @@ static void init_geometry(struct client *c) {
 	// emulator quit.
 	c->old_border = attr.border_width;
 	c->cmap = attr.colormap;
+	if(c->cmap) LOG_DEBUG("colormap 0x%lx\n",c->cmap);
 
 	// Default to no unmaximised width/height.
 	c->oldw = c->oldh = 0;
