@@ -13,6 +13,7 @@
 #define DEF_VDESKSMOD   0
 #define DEF_SNAP        0
 #define DEF_KBPX        16
+#define DEF_QUICKMOVE   2.0
 #define DEF_MASK1       "control+alt"
 #define DEF_MASK2       "alt"
 #define DEF_ALTMASK     "shift"
@@ -55,6 +56,8 @@ struct options {
 
 	// Default keyboard movement distance
 	int kbpx;
+	// multiplier when consecutive within 250ms
+	double quickmove;
 
 	// Whole screen flag (ignore monitor information)
 	int wholescreen;

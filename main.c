@@ -69,6 +69,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_INT,      "bw",           { .i = &option.bw } },
 	{ XCONFIG_INT,      "snap",         { .i = &option.snap } },
 	{ XCONFIG_INT,      "kbpx",         { .i = &option.kbpx } },
+	{ XCONFIG_DOUBLE,   "quickmove",    { .d = &option.quickmove } },
 	{ XCONFIG_BOOL,     "wholescreen",  { .i = &option.wholescreen } },
 	{ XCONFIG_UINT,     "numvdesks",    { .u = &option.vdesks } },
 	{ XCONFIG_UINT,     "modvdesks",    { .u = &option.modvdesks } },
@@ -124,6 +125,7 @@ static void helptext(void) { puts(
 "  --bw PIXELS         window border width [" xstr(DEF_BW) "]\n"
 "  --snap PIXELS       snap distance when dragging windows [" xstr(DEF_SNAP) "]\n"
 "  --kbpx PIXELS       keyboard moveresize distance [" xstr(DEF_KBPX) "]\n"
+"  --quickmove N.N     multiply kbpx by this much when repeated within 250ms [" xstr(DEF_QUICKMOVE) "]\n"
 "  --wholescreen       ignore monitor geometries when maximising\n"
 "  --numvdesks N       total number of virtual desktops [" xstr(DEF_VDESKS) "]\n"
 "  --modvdesks N       virtual desktop subdivision size; 0 means value of numvdesks [" xstr(DEF_VDESKSMOD) "]\n"
@@ -171,6 +173,7 @@ static const char *default_options[] = {
 	"bw " xstr(DEF_BW),
 	"snap " xstr(DEF_SNAP),
 	"kbpx " xstr(DEF_KBPX),
+	"quickmove " xstr(DEF_QUICKMOVE),
 	"docks 1",
 	"#wholescreen",
 	"numvdesks " xstr(DEF_VDESKS),
@@ -422,7 +425,7 @@ static void handle_sigsegv(int signo) {
 	LOG_ERROR("SEGFAULT!\n");
 	XUngrabPointer(display.dpy, CurrentTime);
 	XUngrabServer(display.dpy);
-	if(wm_exit != 1) {
+	if (wm_exit != 1) {
 		wm_exit = 1;
 		end_event_loop = 1;
 		display_unmanage_clients();

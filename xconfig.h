@@ -22,6 +22,7 @@ enum xconfig_option_type {
 	XCONFIG_BOOL,  // int
 	XCONFIG_INT,  // int
 	XCONFIG_UINT,  // unsigned
+	XCONFIG_DOUBLE,  // double
 	XCONFIG_STRING,  // char *
 	XCONFIG_STR_LIST,  // char **
 	XCONFIG_CALL_0,  // void (*)(void)
@@ -39,6 +40,7 @@ struct xconfig_option {
 	union {
 		int *i;
 		unsigned *u;
+		double *d;
 		char **s;
 		char ***sl;
 		void (*c0)(void);

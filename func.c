@@ -122,8 +122,8 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 
 	Time t = e->xbutton.time;
 	if (last_kbmove + 250 > t) {
-		width_inc  *= 2;
-		height_inc *= 2;
+		width_inc  *= option.quickmove;
+		height_inc *= option.quickmove;
 	}
 	last_kbmove=t;
 
