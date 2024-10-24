@@ -77,6 +77,23 @@ get that multiple command for `spawn` thing sorted, want to be able to use eithe
 
 setting for effect of border on modifiers
 
-fix fullscreening second-lowest window breaking ordering
+fix fullscreening second-lowest window? breaking ordering
+Actually Fix Window Self Raising Doing That
 
 fix alt-tab etc grabbing keys we don't need
+
+list_extendtail
+
+bind to cycle all clients back, like alt-tab
+send to back + select front
+
+cursor position as percent of window dims
+
+make windows lower when they would intercept the cursor
+make non-root edges limit window movement
+
+use delta-time to accelerate kbmove
+
+fix our parent windows' errors on removal not getting caught
+
+use xorg's stacking list, use xorg's kbfocus
