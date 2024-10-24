@@ -44,6 +44,7 @@ typedef struct {
 // Error handler interaction
 extern volatile Window initialising;
 extern volatile Window removing;
+extern volatile Window removing_parent;
 
 // Spawn a subprocess (usually xterm or similar)
 void spawn(const char *const cmd[]);

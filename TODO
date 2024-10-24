@@ -91,6 +91,4 @@ cursor position as percent of window dims
 
 use delta-time to accelerate kbmove
 
-fix our parent windows' errors on removal not getting caught
-
 use xorg's stacking list, use xorg's kbfocus

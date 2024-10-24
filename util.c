@@ -33,6 +33,7 @@
 // Error handler interaction
 volatile Window initialising = None;
 volatile Window removing = None;
+volatile Window removing_parent = None;
 
 // Spawn a subprocess by fork()ing twice so we don't have to worry about
 // SIGCHLDs.
@@ -71,13 +72,19 @@ int handle_xerror(Display *dsply, XErrorEvent *e) {
 	char buf[64];
 	if (  XGetErrorText( display.dpy, e->error_code, buf, sizeof(buf)/sizeof(buf[0]) )  )
 		buf[0]=0;
+
+	if(e->resourceid==0){
+		LOG_ERROR("0 resourceid on xerror!\n");
+		return 0;
+	}
+
 	// Some parts of the code deliberately disable error checking.
 
 	// client_manage_new() sets initialising to non-None to test if a
 	// window still exists.  If we end up here, the test failed, so
 	// indicate that by setting it back to None.
 
-	if (initialising != None && e->resourceid == initialising) {
+	if (e->resourceid == initialising) {
 		LOG_XDEBUG("error caught while initialising window=%lx\n", (unsigned long)initialising);
 		initialising = None;
 		// LOG_LEAVE();
@@ -85,7 +92,7 @@ int handle_xerror(Display *dsply, XErrorEvent *e) {
 	}
 
 	// same in remove_client()
-	if (removing != None && e->resourceid == removing) {
+	if (e->resourceid == removing || e->resourceid == removing_parent) {
 		LOG_XDEBUG("error caught while removing window=%lx\n", (unsigned long)removing);
 		// removing = None;
 		// LOG_LEAVE();

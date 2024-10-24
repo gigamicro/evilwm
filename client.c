@@ -510,6 +510,7 @@ void remove_client(struct client *c) {
 	// have been deleted from the server, so anything we try to do to it
 	// here would raise one.
 	removing = c->window;
+	removing_parent = c->parent;
 
 	// ICCCM 4.1.3.1
 	// "When the window is withdrawn, the window manager will either change
