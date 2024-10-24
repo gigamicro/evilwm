@@ -89,9 +89,6 @@ send to back + select front
 
 cursor position as percent of window dims
 
-make windows lower when they would intercept the cursor
-make non-root edges limit window movement
-
 use delta-time to accelerate kbmove
 
 fix our parent windows' errors on removal not getting caught

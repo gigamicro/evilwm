@@ -140,9 +140,6 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 	}
 
 	do_client_move(c);
-#if !defined(MOVERESIZE_DISCARDENTERS) && defined(KBMOVERESIZE_DISCARDENTERS)
-	discard_enter_events(c);
-#endif
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
 	client_point(c,
 		!(flags & FL_RELATIVE) ? c->width /2+1 : flags & FL_RIGHT ? width_inc : 0,
@@ -150,6 +147,18 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 		!(flags & FL_RELATIVE) ? c->width /2   : flags & FL_LEFT ? width_inc : 0,
 		!(flags & FL_RELATIVE) ? c->height/2   : flags & (FL_TOP|FL_UP) ? height_inc : 0
 	);
+#endif
+	Window child;
+	int cx; int cy;  Window root;  int rx; int ry;  unsigned mask; //dummy
+	while (XQueryPointer(display.dpy, c->screen->root, &root, &child, &rx, &ry, &cx, &cy, &mask)
+		&& child != c->parent && child != None) {
+		struct client *pointerclient = find_client(child);
+		LOG_DEBUG("making room for window=%lx, lowering window=%lx\n",c->window,pointerclient->window);
+		client_under(c,pointerclient);
+		client_under(pointerclient,c);
+	}
+#if !defined(MOVERESIZE_DISCARDENTERS) && defined(KBMOVERESIZE_DISCARDENTERS)
+	discard_enter_events(c);
 #endif
 }
 

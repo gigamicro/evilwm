@@ -257,7 +257,7 @@ _Bool client_client(struct client *c, struct client *cc) {
 
 // Place 'under' directly under 'over'
 // Maintains clients_stacking_order list and EWMH hints
-static void client_under(struct client *under, struct client *over) {
+void client_under(struct client *under, struct client *over) {
 	if (!under) {
 		LOG_ERROR("client_under(): null under!\n");
 		return;

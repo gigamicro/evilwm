@@ -108,6 +108,7 @@ struct monitor *client_monitor(struct client *c, Bool *intersects);
 _Bool client_client(struct client *c, struct client *cc);
 void client_hide(struct client *c);
 void client_show(struct client *c);
+void client_under(struct client *c, struct client *underthis);
 void client_raise(struct client *c);
 void client_lower(struct client *c);
 void client_gravitate(struct client *c, int bw);
