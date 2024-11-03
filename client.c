@@ -229,7 +229,7 @@ void client_hide(struct client *c) {
 	XUnmapWindow(display.dpy, c->parent);
 	set_wm_state(c, IconicState);
 	if (current == c) {
-		select_client(NULL);
+		client_select(NULL);
 	}
 }
 
@@ -438,7 +438,7 @@ void client_gravitate(struct client *c, int bw) {
 // previously-selected), installs any colourmap, sets input focus and updates
 // EWMH properties.
 
-void select_client(struct client *c) {
+void client_select(struct client *c) {
 	struct client *old_current = current;
 	if (old_current)
 		XSetWindowBorder(display.dpy, current->parent, current->screen->bg.pixel);
@@ -495,7 +495,7 @@ void client_to_vdesk(struct client *c, unsigned vdesk) {
 			{ if (!was_visible) client_show(c); }
 		else
 			if (was_visible) client_hide(c);
-		if (current == c) select_client(c); // border color
+		if (current == c) client_select(c); // border color
 		ewmh_set_net_wm_desktop(c);
 	}
 }
@@ -503,8 +503,8 @@ void client_to_vdesk(struct client *c, unsigned vdesk) {
 // Stop managing a client.  Undoes any transformations that were made when
 // managing it.
 
-void remove_client(struct client *c) {
-	LOG_ENTER("remove_client(window=%lx, %s)", (unsigned long)c->window, c->remove ? "withdrawing" : "wm quitting");
+void client_remove(struct client *c) {
+	LOG_ENTER("client_remove(window=%lx, %s)", (unsigned long)c->window, c->remove ? "withdrawing" : "wm quitting");
 
 	// Flag to ignore any X errors we trigger.  The window may well already
 	// have been deleted from the server, so anything we try to do to it
@@ -568,7 +568,7 @@ void remove_client(struct client *c) {
 	}
 
 	// Deselect if this client were previously selected
-	if (current == c) select_client(NULL);
+	if (current == c) client_select(NULL);
 	free(c);
 
 #ifdef DEBUG

@@ -91,7 +91,7 @@ int handle_xerror(Display *dsply, XErrorEvent *e) {
 		return 0;
 	}
 
-	// same in remove_client()
+	// same in client_remove()
 	if (e->resourceid == removing || e->resourceid == removing_parent) {
 		LOG_XDEBUG("error caught while removing window=%lx\n", (unsigned long)removing);
 		// removing = None;

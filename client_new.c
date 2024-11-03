@@ -200,7 +200,7 @@ void client_manage_new(Window w, struct screen *s) {
 		if (get_pointer_root_xy(c->window, NULL, NULL) &&
 		    !(window_type & (EWMH_WINDOW_TYPE_DOCK|EWMH_WINDOW_TYPE_NOTIFICATION))) {
 #ifdef NEWCLIENT_SELECT
-			select_client(c);
+			client_select(c);
 #endif
 #ifdef WARP_POINTER
 			setmouse(c->window, c->width + c->border - 1,

@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
 		if (old_current_window != None) {
 			struct client *c = find_client(old_current_window);
 			if (c)
-				select_client(c);
+				client_select(c);
 		}
 
 		////////////////////////////////////////

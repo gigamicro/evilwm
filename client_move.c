@@ -637,12 +637,12 @@ void client_select_next(void) {
 	if (!c) return;
 	client_raise(c);
 	client_intersect(c);
+	client_select(c);
 #ifdef NEXT_WARP_POINTER
 	setmouse(c->window, c->width/2, c->height/2);
 #elif defined(WARP_POINTER)
 	setmouse(c->window, c->width+c->border-1, c->height+c->border-1);
 #endif
-	select_client(c);
 #ifdef NEXT_DISCARDENTERS
 	discard_enter_events(c);
 #endif

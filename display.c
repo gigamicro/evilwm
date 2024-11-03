@@ -258,5 +258,5 @@ void display_manage_clients(void) {
 
 void display_unmanage_clients(void) {
 	while (clients_stacking_order)
-		remove_client(clients_stacking_order->data);
+		client_remove(clients_stacking_order->data);
 }

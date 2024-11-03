@@ -262,7 +262,7 @@ static void handle_enter_event(XCrossingEvent *e) {
 
 	if (c) {
 		if (!is_visible(c)) return;
-		select_client(c);
+		client_select(c);
 		clients_tab_order = list_to_head(clients_tab_order, c);
 	}
 }
@@ -314,23 +314,23 @@ static void handle_client_message(XClientMessageEvent *e) {
 		case 8:
 			LOG_DEBUG("b={ ");
 			for (int i=0;i<20;i++) {
-				LOG_DEBUG("%d, ",e->data.b[i]);
+				LOG_DEBUG_("%d, ",e->data.b[i]);
 			}
-			LOG_DEBUG("}\n");
+			LOG_DEBUG_("}\n");
 			break;
 		case 16:
 			LOG_DEBUG("s={ ");
 			for (int i=0;i<10;i++) {
-				LOG_DEBUG("%d, ",e->data.s[i]);
+				LOG_DEBUG_("%d, ",e->data.s[i]);
 			}
-			LOG_DEBUG("}\n");
+			LOG_DEBUG_("}\n");
 			break;
 		case 32:
 			LOG_DEBUG("l={ ");
 			for (int i=0;i<5;i++) {
-				LOG_DEBUG("%li, ",e->data.l[i]);
+				LOG_DEBUG_("%li, ",e->data.l[i]);
 			}
-			LOG_DEBUG("}\n");
+			LOG_DEBUG_("}\n");
 			break;
 	}
 #endif
@@ -384,7 +384,7 @@ static void handle_client_message(XClientMessageEvent *e) {
 	if (e->message_type == X_ATOM(_NET_ACTIVE_WINDOW)) {
 		// Only do this if it came from direct user action
 		if (e->data.l[0] == 2 && c->screen == s)
-			select_client(c);
+			client_select(c);
 		LOG_LEAVE();
 		return;
 	}
@@ -556,7 +556,7 @@ void event_main_loop(void) {
 				struct client *c = iter->data;
 				niter = iter->next;
 				if (c->remove)
-					remove_client(c);
+					client_remove(c);
 			}
 		}
 	}
