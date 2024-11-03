@@ -46,26 +46,28 @@ OPTIONS
               modify keyboard move/resize distance, in pixels.
 
        --quickmove multiplier
-              multiply keyboard move distance when there was a kbmove  in  the
-              last 250ms.
+       --quickmovems milliseconds
+              multiply keyboard move distance by multiplier when there  was  a
+              kbmove  in  the  last  milliseconds  ms. Defaults to 1.0 and 250
+              respectively.
 
        --wholescreen
-              ignore  monitor  geometry  and  use the whole screen dimensions.
-              This is the old behaviour from before multi-monitor support  was
-              implemented,  and may still be useful, eg when one large monitor
+              ignore monitor geometry and use  the  whole  screen  dimensions.
+              This  is the old behaviour from before multi-monitor support was
+              implemented, and may still be useful, eg when one large  monitor
               is driven from multiple outputs.
 
        --numvdesks value
-              number of virtual  desktops  to  provide.  Effective  value  for
-              relative   moves  will  be  the  greatest  integer  multiple  of
+              number  of  virtual  desktops  to  provide.  Effective value for
+              relative  moves  will  be  the  greatest  integer  multiple   of
               --modvdesks less than or equal to this value. Defaults to 8.
 
        --modvdesks value
-              vdesk loop modulus and distance for left/right  relative  vdesk.
-              Relative  movement  up  from n*value-1 or down from n*value will
-              instead move down or  up  (respectively)  by  value-1.  This  is
-              equivalent  to  having  a two-dimensional vdesk array of num/mod
-              (lr) x mod (ud). Defaults to 0. value being 0 is  equivalent  to
+              vdesk  loop  modulus and distance for left/right relative vdesk.
+              Relative movement up from n*value-1 or down  from  n*value  will
+              instead  move  down  or  up  (respectively)  by value-1. This is
+              equivalent to having a two-dimensional vdesk  array  of  num/mod
+              (lr)  x  mod (ud). Defaults to 0. value being 0 is equivalent to
               it being the current value of --numvdesks.
 
               Example: --numvdesks 12 --modvdesks 4 will give a 2x4 array with
@@ -86,54 +88,54 @@ OPTIONS
        --mask1 modifier[+modifier]...
        --mask2 modifier[+modifier]...
        --altmask modifier[+modifier]...
-              override  the  default  keyboard modifiers used to grab keys for
+              override the default keyboard modifiers used to  grab  keys  for
               window manager functionality.
 
               mask1 is used for most keyboard controls (default: control+alt),
-              and mask2 is used for mouse button controls and cycling  windows
-              (default:  alt).  altmask  is  used  to  modify the behaviour of
-              certain controls (default: shift). Modifiers  may  be  separated
-              with  +  signs.  Valid  modifiers are 'shift', 'control'/'ctrl',
+              and  mask2 is used for mouse button controls and cycling windows
+              (default: alt). altmask is  used  to  modify  the  behaviour  of
+              certain  controls  (default:  shift). Modifiers may be separated
+              with + signs. Valid  modifiers  are  'shift',  'control'/'ctrl',
               'mod1'/'alt', 'mod2'...'mod5'.
 
        --bind [modifier+]...key/button=[function[,flag[+flag]...]]
               bind a key or mouse button pressed with specified modifiers to a
-              window manager function. key/button is an  X11  keysym  name  or
-              'buttonN',   where   N   is   a  positive  integer  of  decimal,
-              0xhexadecimal, or 0octal form, modifiers are as above,  but  may
-              also   include  'mask1',  'mask2'  and  'altmask'  to  refer  to
+              window  manager  function.  key/button  is an X11 keysym name or
+              'buttonN',  where  N  is  a   positive   integer   of   decimal,
+              0xhexadecimal,  or  0octal form, modifiers are as above, but may
+              also  include  'mask1',  'mask2'  and  'altmask'  to  refer   to
               configured mask variables. See FUNCTIONS for a list of available
-              functions and the flags they recognise. If function is empty,  a
+              functions  and the flags they recognise. If function is empty, a
               bind is removed.
 
        --bind button=[function[,flag]...]
               bind  a  mouse  button  to  a  window  manager  function.  While
-              modifiers can be specified, they will be ignored; the button  on
+              modifiers  can be specified, they will be ignored; the button on
               its own will trigger if pressed within a window's frame, or with
-              'mask2'  held anywhere within a window. Function and flags is as
+              'mask2' held anywhere within a window. Function and flags is  as
               with key binds above. Valid buttons are
 
        --nodefaultbinds
               don't use the original compiled-in default bindings.
 
        --app [name][/[class][/[title]]]
-              match an application by instance name and  class  (for  help  in
-              finding  these,  use  the  xprop  tool  to  extract the WM_CLASS
-              property; the two  strings  are  name  and  class  respectively,
+              match  an  application  by  instance name and class (for help in
+              finding these, use  the  xprop  tool  to  extract  the  WM_CLASS
+              property;  the  two  strings  are  name  and class respectively,
               checked exactly), and by title (checked as substring, WM_NAME in
               xprop).
 
-              Ex:  --app  a/b/c will match a window with WM_CLASS { "a", "b" }
-              and a WM_NAME containing the letter c  anywhere.   Ex:  --app  a
-              will  match  a  window  with WM_CLASS[0] "a".  Ex: --app /b will
-              match a window with either blank  or  missing  WM_CLASS[0],  and
-              WM_CLASS[1]  "b".   Ex:  --app  //c  will  match  a  window with
-              completely blank/missing WM_CLASS and a WM_NAME  containing  the
-              letter  c  anywhere.  Subsequent --geometry, --dock, --vdesk and
+              Ex: --app a/b/c will match a window with WM_CLASS { "a",  "b"  }
+              and  a  WM_NAME  containing  the letter c anywhere.  Ex: --app a
+              will match a window with WM_CLASS[0] "a".   Ex:  --app  /b  will
+              match  a  window  with  either blank or missing WM_CLASS[0], and
+              WM_CLASS[1] "b".   Ex:  --app  //c  will  match  a  window  with
+              completely  blank/missing  WM_CLASS and a WM_NAME containing the
+              letter c anywhere.  Subsequent --geometry, --dock,  --vdesk  and
               --fixed options will apply to this match.
 
        -g, --geometry geometry
-              apply a  geometry  (using  a  standard  X  geometry  string)  to
+              apply  a  geometry  (using  a  standard  X  geometry  string) to
               applications matching the last --app.
 
        -m, --manual
@@ -145,7 +147,7 @@ OPTIONS
               if it lacks the appropriate property.
 
        -v, --vdesk n
-              specify  a default virtual desktop for applications matching the
+              specify a default virtual desktop for applications matching  the
               last --app. Note that virtual desktops are numbered from zero.
 
        -f, --fixed
@@ -155,49 +157,49 @@ OPTIONS
               show help
 
        -hh, --writedefaults
-              show all option defaults, in a format that could be put in  your
+              show  all option defaults, in a format that could be put in your
               .evilwmrc
 
        -V, --version
               show program version
 
-       evilwm  will  also  read  options,  one  per  line,  from a file called
-       .evilwmrc  in  the  user's  home  directory.  Options   listed   in   a
-       configuration  file should omit the leading dash(es). Options specified
+       evilwm will also read  options,  one  per  line,  from  a  file  called
+       .evilwmrc   in   the   user's  home  directory.  Options  listed  in  a
+       configuration file should omit the leading dash(es). Options  specified
        on the command line override those found in the configuration file.
 
 USAGE & FUNCTIONS
-       In evilwm, the focus follows the mouse pointer, and is not lost if  you
-       stray  onto  the  root window. The current window border is shaded gold
-       (unless it is fixed, in which case blue), with other windows left as  a
+       In  evilwm, the focus follows the mouse pointer, and is not lost if you
+       stray onto the root window. The current window border  is  shaded  gold
+       (unless  it is fixed, in which case blue), with other windows left as a
        dark grey.
 
-       The  keyboard  and  mouse  button  controls  can be configured with the
-       --bind option to a  number  of  built-in  functions.  Typically,  these
-       functions  respond  to  an  additional  set  of flags that modify their
-       behaviour: up/u/on,  down/d/off,  left/l,  right/r,  top,  bottom,  any
+       The keyboard and mouse button  controls  can  be  configured  with  the
+       --bind  option  to  a  number  of  built-in functions. Typically, these
+       functions respond to an additional  set  of  flags  that  modify  their
+       behaviour:  up/u/on,  down/d/off,  left/l,  right/r,  top,  bottom, any
        number, relative/rel, toggle, vertical/v, horizontal/h.
 
        bind command, default key
               Description.
 
-       You  can  use  the mouse to manipulate windows either by click/dragging
+       You can use the mouse to manipulate windows  either  by  click/dragging
        the single-pixel border (easier when they align with a screen edge), or
-       by holding down mask2/Alt and doing so  anywhere  in  the  window.  The
+       by  holding  down  mask2/Alt  and  doing so anywhere in the window. The
        mask2/Alt-based controls are:
 
        move, Button 1
               Move window with mouse.
 
        resize, Button 2
-              Resize  window  between  starting  upper-left  corner  and mouse
+              Resize window  between  starting  upper-left  corner  and  mouse
               position.
 
        lower, Button 3
               Put window at back of render order.
 
        next, Tab
-              Classic Alt+Tab, switch to most  recently  selected  window  and
+              Classic  Alt+Tab,  switch  to  most recently selected window and
               keep switching to less recent windows on every consecutive press
               while the modifier key(s) are held
 
@@ -205,12 +207,12 @@ USAGE & FUNCTIONS
        pressing a key. Available functions are:
 
        spawn, Return
-              Spawn  new  terminal  (or  other  process)  with  the command in
+              Spawn new terminal  (or  other  process)  with  the  command  in
               --term.
 
        delete, Escape
        kill, Shift+Escape
-              Delete current window, nicely. Hold  altmask/Shift  as  well  to
+              Delete  current  window,  nicely.  Hold altmask/Shift as well to
               force kill a client if it does not respond to delete.
 
        lower, Insert
@@ -221,27 +223,27 @@ USAGE & FUNCTIONS
 
        move,relative+, H, J, K, L
        resize,relative+, Shift+ H, J, K, L
-              Move  window left, down, up or right (--kbpx/16 pixels). Holding
-              altmask/Shift resizes the window narrower, taller,  shorter,  or
+              Move window left, down, up or right (--kbpx/16 pixels).  Holding
+              altmask/Shift  resizes  the window narrower, taller, shorter, or
               wider.
 
        move,top+/move,bottom+, Y, U, B, N
-              Move  window  to the top-left, top-right, bottom-left or bottom-
+              Move window to the top-left, top-right, bottom-left  or  bottom-
               right of its current monitor.
 
        info, I
-              Show extra information about the current window for as  long  as
+              Show  extra  information about the current window for as long as
               the key is held.
 
        resize,toggle+, Equals
-              Toggle   maximization  of  current  window  to  current  monitor
+              Toggle  maximization  of  current  window  to  current   monitor
               vertically, or horizontally when holding altmask/Shift
 
        resize,toggle+v+h, X
               Toggle maximization of current window to current monitor.
 
        docks,toggle, D
-              Toggle visible state of windows claiming to be docks  or  marked
+              Toggle  visible  state of windows claiming to be docks or marked
               as docks through --app -d, eg pagers and launch bars.
 
        binds,toggle, Compose
@@ -249,19 +251,19 @@ USAGE & FUNCTIONS
               binds,toggle, binds, up, or mouse actions on the border).
 
        fix,toggle, F
-              Fix  or  unfix current window. Fixed windows remain visible when
+              Fix or unfix current window. Fixed windows remain  visible  when
               you switch virtual desktop.
 
        vdesk,, 1--8
-              Switch to specific virtual  desktop  (internally,  desktops  are
-              numbered  from zero, so this actually switches to desktops 0--7;
+              Switch  to  specific  virtual  desktop (internally, desktops are
+              numbered from zero, so this actually switches to desktops  0--7;
               this only becomes important if you use application matching).
 
        vdesk,relative+down, Left
               Switch to next lower numbered virtual desktop, modulo modvdesks.
 
        vdesk,relative+up, Right
-              Switch  to  next  higher  numbered   virtual   desktop,   modulo
+              Switch   to   next   higher  numbered  virtual  desktop,  modulo
               modvdesks.
 
        vdesk,relative+left, Down
@@ -273,7 +275,7 @@ USAGE & FUNCTIONS
        vdesk,toggle, A
               Switch to the previously selected virtual desktop.
 
-       To  make evilwm reread its config, send a HUP signal to the process. To
+       To make evilwm reread its config, send a HUP signal to the process.  To
        make it quit, kill it, ie send a TERM signal.
 
 FILES
@@ -283,19 +285,19 @@ LICENCE
        Copyright (C) 1999-2022 Ciaran Anscomb <evilwm@6809.org.uk>
 
        This is free software. You can do what you want to it, but if it breaks
-       something, you get to pay for the counselling. The code was  originally
-       based  on  aewm,  so  this  is  distributed under the same terms, which
+       something,  you get to pay for the counselling. The code was originally
+       based on aewm, so this is  distributed  under  the  same  terms,  which
        follow.
 
 AEWM LICENCE
        Copyright (c) 1998-2000 Decklin Foster.
 
        THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS", WITHOUT ANY EXPRESS OR
-       IMPLIED WARRANTIES OF ANY KIND. IN NO EVENT SHALL THE  AUTHOR  BE  HELD
+       IMPLIED  WARRANTIES  OF  ANY KIND. IN NO EVENT SHALL THE AUTHOR BE HELD
        LIABLE FOR ANY DAMAGES CONNECTED WITH THE USE OF THIS PROGRAM.
 
-       You  are  granted  permission to copy, publish, distribute, and/or sell
-       copies of this program and any  modified  versions  or  derived  works,
+       You are granted permission to copy, publish,  distribute,  and/or  sell
+       copies  of  this  program  and  any modified versions or derived works,
        provided that this copyright and notice are not removed or altered.
 
        Portions of the code were based on 9wm, which contains this license:

@@ -70,6 +70,7 @@ static struct xconfig_option evilwm_options[] = {
 	{ XCONFIG_INT,      "snap",         { .i = &option.snap } },
 	{ XCONFIG_INT,      "kbpx",         { .i = &option.kbpx } },
 	{ XCONFIG_DOUBLE,   "quickmove",    { .d = &option.quickmove } },
+	{ XCONFIG_INT,      "quickmovems",  { .i = &option.quickmovems } },
 	{ XCONFIG_BOOL,     "wholescreen",  { .i = &option.wholescreen } },
 	{ XCONFIG_UINT,     "numvdesks",    { .u = &option.vdesks } },
 	{ XCONFIG_UINT,     "modvdesks",    { .u = &option.modvdesks } },
@@ -125,7 +126,8 @@ static void helptext(void) { puts(
 "  --bw PIXELS         window border width [" xstr(DEF_BW) "]\n"
 "  --snap PIXELS       snap distance when dragging windows [" xstr(DEF_SNAP) "]\n"
 "  --kbpx PIXELS       keyboard moveresize distance [" xstr(DEF_KBPX) "]\n"
-"  --quickmove N.N     multiply kbpx by this much when repeated within 250ms [" xstr(DEF_QUICKMOVE) "]\n"
+"  --quickmove N.N     multiply kbpx by this much when repeated [" xstr(DEF_QUICKMOVE) "]\n"
+"  --quickmovems N     multiply kbpx when repeated within N ms [" xstr(DEF_QUICKMOVEMS) "]\n"
 "  --wholescreen       ignore monitor geometries when maximising\n"
 "  --numvdesks N       total number of virtual desktops [" xstr(DEF_VDESKS) "]\n"
 "  --modvdesks N       virtual desktop subdivision size; 0 means value of numvdesks [" xstr(DEF_VDESKSMOD) "]\n"
@@ -174,6 +176,7 @@ static const char *default_options[] = {
 	"snap " xstr(DEF_SNAP),
 	"kbpx " xstr(DEF_KBPX),
 	"quickmove " xstr(DEF_QUICKMOVE),
+	"quickmovems " xstr(DEF_QUICKMOVEMS),
 	"docks 1",
 	"#wholescreen",
 	"numvdesks " xstr(DEF_VDESKS),

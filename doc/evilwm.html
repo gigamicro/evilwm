@@ -127,7 +127,9 @@ pixels to snap to.
 <dd>modify keyboard move/resize distance, in pixels.
 
 <dt><code>--quickmove</code> <var>multiplier</var>
-<dd>multiply keyboard move distance when there was a kbmove in the last 250ms.
+<dt><code>--quickmovems</code> <var>milliseconds</var>
+<dd>multiply keyboard move distance by <var>multiplier</var> when there was a kbmove in the last <var>milliseconds</var> ms.
+Defaults to 1.0 and 250 respectively.
 
 <dt><code>--wholescreen</code>
 <dd>ignore monitor geometry and use the whole screen dimensions.  This is the
