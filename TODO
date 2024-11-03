@@ -79,6 +79,7 @@ setting for effect of border on modifiers
 
 fix fullscreening second-lowest window? breaking ordering
 Actually Fix Window Self Raising Doing That
+use xorg's stacking list, use xorg's kbfocus
 
 fix alt-tab etc grabbing keys we don't need
 
@@ -89,6 +90,4 @@ send to back + select front
 
 cursor position as percent of window dims
 
-use delta-time to accelerate kbmove
-
-use xorg's stacking list, use xorg's kbfocus
+mode to lay everything out and only move the windows on modifier release
