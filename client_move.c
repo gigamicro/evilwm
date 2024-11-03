@@ -524,7 +524,6 @@ void client_intersect(struct client *c) {
 	if (c->x < close->x-c    ->width ) c->x = close->x-c    ->width;
 	if (c->y > close->y+close->height) c->y = close->y+close->height;
 	if (c->y < close->y-c    ->height) c->y = close->y-c    ->height;
-	client_moveresize(c);
 }
 
 // Maximise (or de-maximise) horizontally, vertically, or both.
@@ -635,8 +634,9 @@ void client_select_next(void) {
 	struct client *c = next_visible_client(list_find(clients_tab_order, current));
 	if (!c) c = next_visible_client(&(struct list){.next=clients_tab_order});
 	if (!c) return;
-	client_raise(c);
 	client_intersect(c);
+	client_moveresize(c);
+	client_raise(c);
 	client_select(c);
 #ifdef NEXT_WARP_POINTER
 	setmouse(c->window, c->width/2, c->height/2);

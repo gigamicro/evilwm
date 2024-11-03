@@ -456,7 +456,7 @@ void client_select(struct client *c) {
 		ewmh_set_net_wm_state(c);
 }
 
-void client_point(struct client *c, int margin_l, int margin_u, int margin_r, int margin_d) {
+int client_point(struct client *c, int margin_l, int margin_u, int margin_r, int margin_d) {
 	// setmouse(c->window, c->width + c->border - 1, c->height + c->border - 1);
 	int window_x; int window_y;
 	//dummy:
@@ -464,9 +464,12 @@ void client_point(struct client *c, int margin_l, int margin_u, int margin_r, in
 	Window root;
 	Window child;// that the pointer is in
 	unsigned int mask;//kb modifiers
+	// client_moveresize(c);
 	if (!XQueryPointer(display.dpy, c->window, &root, &child, &root_x, &root_y, &window_x, &window_y, &mask))
-		setmouse(c->window, c->width/2, c->height/2);
+		return setmouse(c->window, c->width/2, c->height/2);
 	else {
+		window_x = root_x - c->x;
+		window_y = root_y - c->y;
 		int x = window_x; int y = window_y;
 
 		if (margin_l+margin_r>=c->width ) x = c->width /2;
@@ -479,8 +482,10 @@ void client_point(struct client *c, int margin_l, int margin_u, int margin_r, in
 		else if (margin_u && y < margin_u) y = margin_u;
 		else if (margin_d && y > c->height - margin_d) y = c->height - margin_d;
 
-		if (x!=window_x || y!=window_y) setmouse(c->window, x, y);
+		if (x!=window_x || y!=window_y) return setmouse(root, c->x+x, c->y+y);
+		// if (x!=window_x || y!=window_y) return setmouse(c->window, x, y);
 	}
+	return 0;
 }
 
 // Move a client to a specific vdesk.  If that means it should no longer be
