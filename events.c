@@ -487,7 +487,7 @@ void event_main_loop(void) {
 	// Main event loop
 	while (!end_event_loop) {
 		if (interruptibleXNextEvent(&ev.xevent)) {
-			if ( ev.xevent.type!=UnmapNotify && ev.xevent.type!=DestroyNotify && ev.xevent.type!=EnterNotify ) {
+			if ( ev.xevent.type!=UnmapNotify && ev.xevent.type!=DestroyNotify && ev.xevent.type!=EnterNotify && ev.xevent.type!=ColormapNotify ) {
 				if (initialising) LOG_XDEBUG("Resetting initialising from 0x%lx to NULL\n",initialising);
 				initialising = None;
 				if (removing) LOG_XDEBUG("Resetting removing from 0x%lx to NULL\n",removing);

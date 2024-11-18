@@ -132,7 +132,7 @@ ignore monitor geometry and use the whole screen dimensions. This is the old beh
 number of virtual desktops to provide. Effective value for relative moves will be the greatest integer multiple of \f(CB\-\-modvdesks\fR less than or equal to this value. Defaults to 8.
 .TP
 \f(CB\-\-modvdesks\fR \fIvalue\fR
-vdesk loop modulus and distance for left/right relative vdesk. Relative movement up from n*\fIvalue\fR-1 or down from n*\fIvalue\fR will instead move down or up (respectively) by \fIvalue\fR-1. This is equivalent to having a two-dimensional vdesk array of num/mod (lr) x mod (ud). Defaults to 0. \fIvalue\fR being 0 is equivalent to it being the current value of \f(CB\-\-numvdesks\fR.
+vdesk loop modulus and distance for left/right relative vdesk. Relative movement up from n*\fIvalue\fR-1 or down from n*\fIvalue\fR will instead move down or up (respectively) by \fIvalue\fR-1. This is equivalent to having a two-dimensional looping vdesk array of num/mod (lr) x mod (ud). Defaults to 0. \fIvalue\fR being 0 is equivalent to it being the current value of \f(CB\-\-numvdesks\fR.
 .IP
 Example: \f(CB\-\-numvdesks 12 \-\-modvdesks 4\fR will give a 2x4 array with numbering
 .IP
