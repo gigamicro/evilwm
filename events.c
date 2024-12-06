@@ -123,20 +123,17 @@ static void do_window_changes(int value_mask, XWindowChanges *wc, struct client 
 		}
 	}
 
-	if (value_mask & CWBorderWidth) {
-		LOG_XDEBUG("CWBorderWidth %i, ignoring\n", wc->border_width);
+	if (value_mask & CWSibling) {
+		LOG_XDEBUG("CWSibling =0x%lx\n", wc->sibling);
 	}
-
 	if (value_mask & CWStackMode) {
-		Window sibling = value_mask & CWSibling ? wc->sibling : None;
-		LOG_XDEBUG("CWSibling =0x%lx\nCWStackMode %i ", sibling, wc->stack_mode);
-		//Above, Below, TopIf, BottomIf, Opposite
+		LOG_XDEBUG("CWSibling =%i?0x%lx\nCWStackMode %i ", value_mask & CWSibling, wc->sibling, wc->stack_mode);
 		switch (wc->stack_mode){
 		case Above:
 			LOG_XDEBUG_("Above\n");
 			if (value_mask & CWSibling) {
 				// place above = place under next higher
-				struct client *sc = find_client(sibling);
+				struct client *sc = find_client(wc->sibling);
 				if (!sc) break;
 				struct list *iter = clients_stacking_order;
 				while (iter && iter->data != sc) iter=iter->next; // back to front
@@ -150,15 +147,29 @@ static void do_window_changes(int value_mask, XWindowChanges *wc, struct client 
 		case Below:
 			LOG_XDEBUG_("Below\n");
 			if (value_mask & CWSibling) {
-				client_under(c,find_client(sibling));
+				client_under(c,find_client(wc->sibling));
 			} else {
 				client_lower(c);
 			}
 			break;
-		case TopIf:    LOG_XDEBUG_("TopIf\n");    LOG_ERROR("Cannot handle CWStackMode %i",wc->stack_mode); break; // if occluded by sibling
-		case BottomIf: LOG_XDEBUG_("BottomIf\n"); LOG_ERROR("Cannot handle CWStackMode %i",wc->stack_mode); break; // if occludes sibling
-		case Opposite: LOG_XDEBUG_("Opposite\n"); LOG_ERROR("Cannot handle CWStackMode %i",wc->stack_mode); break; // one of previous
-		default: LOG_XDEBUG_("?\n");
+		case TopIf:
+			LOG_XDEBUG_("TopIf\n");
+			LOG_ERROR("Cannot handle CWStackMode %i from window=%lx",
+				wc->stack_mode, c->window);
+			break; // raise if occluded by sibling
+		case BottomIf:
+			LOG_XDEBUG_("BottomIf\n");
+			LOG_ERROR("Cannot handle CWStackMode %i from window=%lx",
+				wc->stack_mode, c->window);
+			break; // lower if occludes sibling
+		case Opposite:
+			LOG_XDEBUG_("Opposite\n");
+			LOG_ERROR("Cannot handle CWStackMode %i from window=%lx",
+				wc->stack_mode, c->window);
+			break; // one of previous
+		default:
+			LOG_XDEBUG_("?\n");
+			break;
 		}
 	}
 	value_mask &=~CWStackMode;
@@ -217,7 +228,7 @@ static void handle_configure_request(XConfigureRequestEvent *e) {
 				wc.sibling = sibling->parent;
 			}
 		}
-		do_window_changes(e->value_mask, &wc, c, 0);
+		do_window_changes(e->value_mask, &wc, c, ForgetGravity);
 #ifdef CONFIGURECURRENT_DISCARDENTERS
 		if (c == current)
 			discard_enter_events(c);
