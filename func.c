@@ -27,7 +27,7 @@
 #include "screen.h"
 #include "util.h"
 
-static void do_client_move(struct client *c) {
+static void check_client_dims(struct client *c) {
 	if (abs(c->x) == c->border && c->oldw != 0)
 		c->x = 0;
 	if (abs(c->y) == c->border && c->oldh != 0)
@@ -44,6 +44,33 @@ static void do_client_move(struct client *c) {
 	if (c->max_height && c->height > c->max_height) {
 		c->height = c->max_height;
 	}
+}
+#if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
+static int stack_client(struct client *c, unsigned flags) {
+	Window child;
+	int cx; int cy;  Window root;  int rx; int ry;  unsigned mask; //dummy
+	if (!XQueryPointer(display.dpy, c->screen->root, &root, &child, &rx, &ry, &cx, &cy, &mask) && child)
+		return 0;
+	if (child != c->parent) {
+		struct client *pointerclient = find_client(child);
+		LOG_DEBUG("making room for window=%lx, lowering window=%lx\n",c->window,pointerclient->window);
+		client_under(c,pointerclient);
+		client_under(pointerclient,c);
+		return 1;
+	}
+	if (flags & FL_RELATIVE) {
+		if((flags & FL_RIGHT && c->x          >rx)
+		 ||(flags & FL_LEFT  && c->x+c->width <rx)
+		 ||(flags & FL_DOWN  && c->y          >ry)
+		 ||(flags & FL_UP    && c->y+c->height<ry)
+		) client_intersect(c);
+		return -1;
+	}
+	return -2;
+}
+#endif
+static void do_client_move(struct client *c) {
+	check_client_dims(c);
 	client_moveresize(c);
 #ifdef MOVERESIZE_RAISE
 	client_raise(c);
@@ -138,30 +165,17 @@ void func_move(void *sptr, XEvent *e, unsigned flags) {
 		if (flags & FL_BOTTOM) c->y = monitor->y + monitor->height - c->height - c->border;
 		if (flags & FL_TOP   ) c->y = monitor->y                               + c->border;
 	}
+	check_client_dims(c);
 
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
 	int pointed =
-	client_point(c,
-		!(flags & FL_RELATIVE) ? c->width /2+1 : flags & FL_RIGHT            ? width_inc  : 0,
-		!(flags & FL_RELATIVE) ? c->height/2+1 : flags & (FL_BOTTOM|FL_DOWN) ? height_inc : 0,
-		!(flags & FL_RELATIVE) ? c->width /2   : flags & FL_LEFT             ? width_inc  : 0,
-		!(flags & FL_RELATIVE) ? c->height/2   : flags & (FL_TOP|FL_UP)      ? height_inc : 0
-	);
-	Window child;
-	int cx; int cy;  Window root;  int rx; int ry;  unsigned mask; //dummy
-	if (pointed && XQueryPointer(display.dpy, c->screen->root, &root, &child, &rx, &ry, &cx, &cy, &mask) && child){
-	if (child != c->parent) {
-		struct client *pointerclient = find_client(child);
-		LOG_DEBUG("making room for window=%lx, lowering window=%lx\n",c->window,pointerclient->window);
-		client_under(c,pointerclient);
-		client_under(pointerclient,c);
-	} else if (flags & FL_RELATIVE) {
-		if((flags & FL_RIGHT && c->x          >rx)
-		 ||(flags & FL_LEFT  && c->x+c->width <rx)
-		 ||(flags & FL_DOWN  && c->y          >ry)
-		 ||(flags & FL_UP    && c->y+c->height<ry)
-		) client_intersect(c);
-	}}
+	(flags & FL_RELATIVE) ? client_point(c,
+		flags & FL_RIGHT            ? width_inc  : 0,
+		flags & (FL_BOTTOM|FL_DOWN) ? height_inc : 0,
+		flags & FL_LEFT             ? width_inc  : 0,
+		flags & (FL_TOP|FL_UP)      ? height_inc : 0
+	) : setmouse(c->screen->root, c->x + c->width /2, c->y + c->height/2);
+	if (pointed) stack_client(c, flags);
 #endif
 	do_client_move(c);
 #if !defined(MOVERESIZE_DISCARDENTERS) && defined(KBMOVERESIZE_DISCARDENTERS)
@@ -238,6 +252,7 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 		client_maximise(c, NET_WM_STATE_TOGGLE, hv);
 		return;
 	}
+	check_client_dims(c);
 
 #if !defined(WARP_POINTER) && defined(KBMOVERESIZE_WARP_POINTER)
 	int pointed =
@@ -245,21 +260,7 @@ void func_resize(void *sptr, XEvent *e, unsigned flags) {
 		flags & FL_LEFT ? width_inc  : 0,
 		flags & FL_UP   ? height_inc : 0
 	);
-	Window child;
-	int cx; int cy;  Window root;  int rx; int ry;  unsigned mask; //dummy
-	if (pointed && XQueryPointer(display.dpy, c->screen->root, &root, &child, &rx, &ry, &cx, &cy, &mask) && child){
-	if (child != c->parent) {
-		struct client *pointerclient = find_client(child);
-		LOG_DEBUG("making room for window=%lx, lowering window=%lx\n",c->window,pointerclient->window);
-		client_under(c,pointerclient);
-		client_under(pointerclient,c);
-	} else if (flags & FL_RELATIVE) {
-		if((flags & FL_RIGHT && c->x          >rx)
-		 ||(flags & FL_LEFT  && c->x+c->width <rx)
-		 ||(flags & FL_DOWN  && c->y          >ry)
-		 ||(flags & FL_UP    && c->y+c->height<ry)
-		) client_intersect(c);
-	}}
+	if (pointed) stack_client(c, flags);
 #endif
 	do_client_move(c);
 #if !defined(MOVERESIZE_DISCARDENTERS) && defined(KBMOVERESIZE_DISCARDENTERS)
